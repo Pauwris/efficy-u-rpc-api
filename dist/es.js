@@ -1863,54 +1863,6 @@ class EditRelationObject extends RemoteObject {
 }
 
 /**
- * Class returned by search operations
- * @extends DataSetObject
- * @property {array} items - The to array-converted DataSet. Only available after executeBatch()
- * @property {string} item - When exists, the first item of the items array, else null. Only available after executeBatch()
- */
-class SearchObject extends DataSetObject {
-	/** @private */
-	entity;
-	/** @private */
-	method;
-	/** @private */
-	value;
-	/** @private */
-	own;
-	/** @private */
-	contains;
-	/** @private */
-	opened;
-
-	constructor(remoteAPI, entity, method, value, own, contains, opened) {
-		super(remoteAPI);
-		this.entity = entity;
-		this.method = method;
-		this.value = value;
-		this.own = own;
-		this.contains = contains;
-		this.opened = opened;
-	}
-
-	/** @protected */
-	asJsonRpc() {
-		const requestObject = {
-			"#id": this.id,
-			"@name": "search",
-			"@func": [
-				{"@name": "master", "tableview":0}
-			]
-		};
-
-		["entity", "method", "value", "method", "contains", "own"].forEach(property => {
-			if (this[property] != null) requestObject[property] = this[property];
-		});
-
-		return requestObject;
-	}
-}
-
-/**
  * Class returned by methods such as getCategoryCollection
  * @extends DataSetObject
  */
@@ -2547,22 +2499,6 @@ class CrmRpc extends RemoteAPI {
 	 */
 	getEditRelationObject(editHandle) {
 		return new EditRelationObject(this, editHandle, "", "", 0, 0);
-	}
-
-	/**
-	 * Performs a search on the database and returns the data set with search results.
-	 * @param {string} entity - The entity name, e.g. "Comp"
-	 * @param {string} method - The field to be searched. Special values SEARCHFAST, SEARCHFULL, SEARCHTEXT, SEARCHFILENAME, SEARCHFILE correspond to the search options in the web application user interface
-	 * @param {string} value - 	The value to search
-	 * @param {boolean} [own=false] - If true, search own records only.
-	 * @param {boolean} [contains=true] - If true, allow matches on part of field
-	 * @param {boolean} [opened=true] - If true, search for opened or active records only
-	 * @returns {DataSetObject}
-	 * @example
-	 * const compSearch = crm.search("comp", "SEARCHFAST", "Efficy");
-	 */
-	search(entity, method, value, own = false, contains = true, opened = true) {
-		return new SearchObject(this, entity, method, value, own, contains, opened);
 	}
 
 	/**

@@ -216,19 +216,6 @@ export class CrmRpc extends RemoteAPI {
      */
     getEditRelationObject(editHandle: number): EditRelationObject;
     /**
-     * Performs a search on the database and returns the data set with search results.
-     * @param {string} entity - The entity name, e.g. "Comp"
-     * @param {string} method - The field to be searched. Special values SEARCHFAST, SEARCHFULL, SEARCHTEXT, SEARCHFILENAME, SEARCHFILE correspond to the search options in the web application user interface
-     * @param {string} value - 	The value to search
-     * @param {boolean} [own=false] - If true, search own records only.
-     * @param {boolean} [contains=true] - If true, allow matches on part of field
-     * @param {boolean} [opened=true] - If true, search for opened or active records only
-     * @returns {DataSetObject}
-     * @example
-     * const compSearch = crm.search("comp", "SEARCHFAST", "Efficy");
-     */
-    search(entity: string, method: string, value: string, own?: boolean, contains?: boolean, opened?: boolean): DataSetObject;
-    /**
      * Returns all the Contacts having one of the e-mail provided in their e-mail fields (or in the Cont_Comp relation).
      * @param {Array<string>} recipients - The list of email addresses
      * @returns {DataSetObject}
