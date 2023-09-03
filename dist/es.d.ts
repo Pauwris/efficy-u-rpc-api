@@ -344,7 +344,34 @@ export class CrmRpc extends RemoteAPI {
      * @readonly
      * @enum {object}
      */
-    readonly constants: {};
+    readonly constants: {
+        account_kind: {
+            user: number;
+            group: number;
+            resource: number;
+            team: number;
+        };
+        file_type: {
+            embedded: number;
+            linked: number;
+            remote: number;
+            large: number;
+        };
+        access_code: {
+            search: number;
+            read: number;
+            write: number;
+            delete: number;
+            showcontent: number;
+            addcontent: number;
+            modifycontent: number;
+            deletecontent: number;
+            secure: number;
+            fullcontrol: number;
+            securecontent: number;
+            nocontent: number;
+        };
+    };
 }
 export class FetchQueue {
     static debug: boolean;
