@@ -1,0 +1,32 @@
+{
+	"name": "efficy-u-rpc-api-browser",
+	"description": "The Efficy U API bundled for usage inside an Efficy browser session for client-side JSON RPC requests.",
+	"main": "es.js",
+	"types": "es.d.ts",
+	"files": [
+		"es.js",
+		"es.d.ts"
+	],
+	"scripts": {
+		"typings": "npx -p typescript tsc",
+		"build": "npm-run-all typings"
+	},
+	"version": "1.0.20",
+	"homepage": "https://github.com/Pauwris/efficy-u-rpc-api#readme",
+	"keywords": [
+		"Efficy",
+		"CRM",
+		"JSON RPC",
+		"Browser"
+	],
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/Pauwris/project/issues"
+	},
+	"repository": {
+		"repository": "github:Pauwris/efficy-u-rpc-api"
+	},
+	"author": {
+		"name": "Kristof Pauwels"
+	}
+}

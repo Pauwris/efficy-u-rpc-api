@@ -272,7 +272,7 @@ declare class CrmRpc extends RemoteAPI {
     deleteEntity(entity: string, keys: number | number[]): void;
 
     /**
-     * Efficy Enterprise constants
+     * Efficy U constants
      * @readonly
      * @enum {object}
      */

@@ -1,12 +1,12 @@
 export default CrmEnv;
 /**
- * Class to define the parameters of the Efficy Enterprise server
+ * Class to define the parameters of the Efficy U server
  */
 declare class CrmEnv {
     /**
      * Create a Crm Environment. Set null when executed from browser
      * @param {Object} [env] - The definition object of the targeted CRM environment
-     * @param {string} [env.url=""] - The URL of Efficy Enterprise, e.g. https://mycompany.efficy.cloud/. Set null when executed from browser
+     * @param {string} [env.url=""] - The URL of Efficy U, e.g. https://mycompany.efficy.cloud/. Set null when executed from browser
      * @param {string} [env.customer=""] - The optional customer profile name
      * @param {boolean} [env.logOff=false] - if true, logoff the session after the next executeBatch();
      * @param {string} [env.apiKey=""] - The API Key, if user and password are not used
@@ -18,7 +18,6 @@ declare class CrmEnv {
      *    "url": "https://mycompany.efficy.cloud/",
      *    "apiKey": "86E353284C0C4A848F7ADEA13589C8B6"
      * });
-     * @tutorial CRM Environment
      */
     constructor(env?: {
         url?: string;
@@ -32,7 +31,7 @@ declare class CrmEnv {
     /**
      * Update the Crm Environment set by the constructor
      * @param {Object} env - The definition object of the targeted CRM environment
-     * @param {string} [env.url=""] - The URL of Efficy Enterprise, e.g. https://mycompany.efficy.cloud/. Leave empty when executed from browser
+     * @param {string} [env.url=""] - The URL of Efficy U, e.g. https://mycompany.efficy.cloud/. Leave empty when executed from browser
      * @param {string} [env.customer=""] - The optional customer profile name
      * @param {boolean} [env.logOff=false] - if true, logoff the session after the next executeBatch();
      * @param {string} [env.apiKey=""] - The API Key, if user and password are not used
