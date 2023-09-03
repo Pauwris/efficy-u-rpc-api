@@ -1,0 +1,42 @@
+{
+	"name": "efficy-u-rpc-api",
+	"description": "The Efficy U - RPC API is developed for server-side usage in a Node.js environment (e.g. for integrations) and also bundled for usage inside an Efficy browser session for client-side JSON RPC requests. The API is highly similar to efficy-enterprise-api",
+	"main": "./lib/index.mjs",
+	"scripts": {
+		"docs": "jsdoc --configure jsdoc.conf.json --template ./node_modules/ink-docstrap/template",
+		"typings": "npx -p typescript tsc",
+		"dist": "rollup -c",
+		"build": "npm-run-all docs typings dist"
+	},
+	"version": "1.0.0",
+	"homepage": "https://github.com/Pauwris/efficy-u-rpc-api#readme",
+	"keywords": [
+		"Efficy",
+		"CRM",
+		"U",
+		"JSON RPC",
+		"Node.js"
+	],
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/Pauwris/project/issues"
+	},
+	"repository": {
+		"type": "git",
+		"repository": "https://github.com/Pauwris/efficy-u-rpc-api.git"
+	},
+	"author": {
+		"name": "Kristof Pauwels"
+	},
+	"dependencies": {
+		"node-fetch": "^3.2.4"
+	},
+	"devDependencies": {
+		"ink-docstrap": "^1.3.2",
+		"npm-run-all": "^4.1.5",
+		"rollup-plugin-terser": "^7.0.2",
+		"rollup-plugin-ignore": "^1.0.10",
+		"typescript": "^4.6.3"
+	},
+	"type": "module"
+}

@@ -1,0 +1,60 @@
+{
+	"plugins": [],
+	"recurseDepth": 10,
+	"source": {
+		"include": [
+			"./lib/crm-env.mjs",
+			"./lib/crm-rpc.mjs",
+			"./lib/remote-objects/dataset/dataset-object.mjs",
+			"./lib/remote-objects/list/list-object.mjs",
+			"./lib/remote-objects/base-type/string-object.mjs",
+			"./lib/remote-objects/attachment/type.mjs",
+			"./lib/remote-objects/api.mjs",
+			"./lib/remote-objects/consult.mjs",
+			"./lib/remote-objects/edit.mjs",
+			"./lib/remote-objects/edit-relation.mjs",
+			"./readme.md"
+		],
+		"includePattern": ".+\\.mjs?$",
+		"excludePattern": "(^|\\/|\\\\)_"
+	},
+	"sourceType": "module",
+	"tags": {
+		"allowUnknownTags": true,
+		"dictionaries": [
+			"jsdoc",
+			"closure"
+		]
+	},
+	"templates": {
+		"cleverLinks": true,
+		"monospaceLinks": false,
+		"logoFile": "",
+		"dateFormat": "ddd MMM Do YYYY",
+		"outputSourceFiles": true,
+		"outputSourcePath": true,
+		"systemName": "Efficy U API",
+		"footer": "Efficy U API for Node.js and browser",
+		"copyright": "Created by Kristof Pauwels",
+		"includeDate": false,
+		"navType": "vertical",
+		"theme": "cosmo",
+		"linenums": true,
+		"collapseSymbols": false,
+		"inverseNav": false,
+		"protocol": "html://",
+		"methodHeadingReturns": false,
+		"default": {
+			"useLongnameInNav": true,
+			"includeDate": false
+		}
+	},
+	"opts": {
+		"template": "templates/default",
+		"encoding": "utf8",
+		"destination": "./docs/",
+		"recurse": true,
+		"tutorials": "./tutorials",
+		"readme": "./jsdoc.index.md"
+	}
+}
