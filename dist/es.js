@@ -422,7 +422,7 @@ class RemoteAPI {
 		if (!requestObject.length) return;
 
 		try {
-			const response = await this.post(requestObject);
+			const response = await this.postToCrmJson(requestObject);
 			if (Array.isArray(response)) {
 				// Do nothing, all good!
 			} else if (typeof response === "object" && this.getRpcException(response)) {
@@ -479,12 +479,22 @@ class RemoteAPI {
 	}
 
 	/** @private */
-	async post(requestObject) {
+	async postToCrmJson(requestObject) {
+		const requestUrl = `${this.crmEnv.url}/crm/json${this.crmEnv.customer ? "?customer=" + encodeURIComponent(this.crmEnv.customer) : ""}`;
+		return this.post(requestUrl, requestObject)
+	}
+
+	/**
+	 * Post and receive JSON with custom endpoint
+	 * @param {string} requestUrl
+	 * @param {object} requestObject
+	 * @returns {object}
+	 */
+	async post(requestUrl, requestObject) {
 		var response, responseBody, responseObject;
 
 		try {
 			const request = Object.assign(this.#fetchOptions, {body: JSON.stringify(requestObject)});
-			const requestUrl = `${this.crmEnv.url}/crm/json${this.crmEnv.customer ? "?customer=" + encodeURIComponent(this.crmEnv.customer) : ""}`;
 
 			const rql = new RequestLog(this.requestCounter++, this.logFunction, this.threadId);
 			rql.setRequest(requestUrl, request.method, requestObject);
@@ -2338,6 +2348,16 @@ class CrmRpc extends RemoteAPI {
 	 */
 	logoff() {
 		return super.logoff();
+	}
+
+	/**
+	 * Post and receive JSON with custom endpoint
+	 * @param {string} requestUrl
+	 * @param {object} requestObject
+	 * @returns {object}
+	 */
+	post(requestUrl, requestObject) {
+		return super.post(requestUrl, requestObject);
 	}
 
 	/**
