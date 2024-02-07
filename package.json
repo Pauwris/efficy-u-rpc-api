@@ -8,7 +8,7 @@
 		"dist": "rollup -c",
 		"build": "npm-run-all docs typings dist"
 	},
-	"version": "1.0.3",
+	"version": "1.0.4",
 	"homepage": "https://github.com/Pauwris/efficy-u-rpc-api#readme",
 	"keywords": [
 		"Efficy",
