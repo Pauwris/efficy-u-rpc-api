@@ -435,7 +435,14 @@ declare class RemoteAPI {
     /** @private */
     private registerObject;
     /** @private */
-    private post;
+    private postToCrmJson;
+    /**
+     * Post and receive JSON with custom endpoint
+     * @param {string} requestUrl
+     * @param {object} requestObject
+     * @returns {object}
+     */
+    post(requestUrl: string, requestObject: object): object;
     sessionId: string;
     /** @private */
     private findDataSetArray;
