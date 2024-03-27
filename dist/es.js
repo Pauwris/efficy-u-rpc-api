@@ -2401,7 +2401,7 @@ class CrmRpc extends RemoteAPI {
 	}
 
 	/**
-	 * Retrieves the current user key, e.g. "4"
+	 * Retrieves the current user key
 	 * @returns {PropertyObject}
 	 */
 	get currentUserId() {
@@ -2428,7 +2428,7 @@ class CrmRpc extends RemoteAPI {
 	 * Opens a consult context for the record identified by entity and key.
 	 * A context remains memory-resident (on the web server) until it is closed. Always match with a closeContext() call to avoid memory consumption.
 	 * @param {string} entity - The entity name, e.g. "Comp"
-	 * @param {number} key - The key of the record. Use key = 0 to create a new record.
+	 * @param {string} key - The key of the record. Use key = "" to create a new record.
 	 * @returns {ConsultObject}
 	 * @example
 	 * const comp = crm.openConsultObject("comp", 2);
@@ -2457,7 +2457,7 @@ class CrmRpc extends RemoteAPI {
 	 * Opens an edit context for the record identified by entity and key.
 	 * A context remains memory-resident (on the web server) until it is closed. Always match with a closeContext() call to avoid memory consumption.
 	 * @param {string} entity - The entity name, e.g. "Comp"
-	 * @param {number} [key=0] - The key of the record. Use key = 0 to create a new record.
+	 * @param {string} [key=""] - The key of the record. Use key = "" to create a new record.
 	 * @returns {EditObject}
 	 * @example
 	 * const docu = crm.openEditObject("docu", 0);
@@ -2485,7 +2485,7 @@ class CrmRpc extends RemoteAPI {
 	 * docu.closeContext();
 	 * await crm.executeBatch();
 	 */
-	openEditObject(entity, key = 0) {
+	openEditObject(entity, key = "") {
 		return new EditObject(this, 0, entity, key);
 	}
 
@@ -2494,9 +2494,9 @@ class CrmRpc extends RemoteAPI {
 	 * A context remains memory-resident (on the web server) until it is closed. Always match with a closeContext() call to avoid memory consumption.
 	 * @param {string} entity - The entity name, e.g. "Comp"
 	 * @param {string} detail - The detail name, e.g. "Cont"
-	 * @param {number} key - The key of the entity
-	 * @param {number} detailKey - The key of the detail
-	 * @param {number} [relationId] - The key of the relation if multi-relation is available
+	 * @param {string} key - The key of the entity
+	 * @param {string} detailKey - The key of the detail
+	 * @param {string} [relationId] - The key of the relation if multi-relation is available
 	 * @returns {EditRelationObject}
 	 * @example
 	 * const contCont = crm.openEditRelationObject("cont", "cont", 5, 6);
@@ -2694,7 +2694,7 @@ class CrmRpc extends RemoteAPI {
 	/**
 	 * Deletes records
 	 * @param {string} entity - The entity name, e.g. "Comp"
-	 * @param {number|number[]} keys - List of keys
+	 * @param {string|string[]} keys - List of keys
 	 */
 	deleteEntity(entity, keys) {
 		if (!keys || (Array.isArray(keys) && keys.length === 0)) return;
