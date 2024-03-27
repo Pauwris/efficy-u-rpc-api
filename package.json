@@ -21,7 +21,7 @@
 	"bugs": {
 		"url": "https://github.com/Pauwris/project/issues"
 	},
-	"repository": {
+	"repository": {npm
 		"type": "git",
 		"repository": "https://github.com/Pauwris/efficy-u-rpc-api.git"
 	},
