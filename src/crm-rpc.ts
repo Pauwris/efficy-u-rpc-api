@@ -1,6 +1,6 @@
 import CrmEnv from './crm-env.js';
 import RemoteAPI from './remote-api.js';
-import { QuerySQLObject } from './remote-objects/query.js';
+import { QueryObject, QuerySQLObject } from './remote-objects/query.js';
 /**
  * Class to create Remote Objects
  * @extends RemoteAPI
@@ -39,6 +39,23 @@ class CrmRpc extends RemoteAPI {
 	 */
 	post(requestUrl: string, requestObject: object) {
 		return super.post(requestUrl, requestObject);
+	}
+
+	/**
+	 * Executes a database query stored in QUERIES
+	 * @param idQuery
+	 * @param queryParameters The query parameters delivered via a JS Array
+	 * @param loadBlobs If true, blob fields (e.g. memo, stream) are returned
+	 * @param recordCount If 0, return all records
+	 * @example
+	 * const tags = crm.executeDatabaseQuery(99990034); // Query "Standard: Top company tags"
+	 */
+	executeDatabaseQuery(idQuery: string, queryParameters?: string[], loadBlobs: boolean = false, recordCount: number = 0) {
+		return new QueryObject(this, idQuery, undefined, undefined, queryParameters, loadBlobs, recordCount);
+	}
+
+	executeSystemQuery(master: number, detail: number, queryParameters?: string[], loadBlobs: boolean = false, recordCount: number = 0) {
+		return new QueryObject(this, undefined, master, detail, queryParameters, loadBlobs, recordCount);
 	}
 
 	/**

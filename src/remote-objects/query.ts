@@ -3,17 +3,8 @@ import { DataSetObject } from "./dataset.js";
 import { JSONPrimitive, JSONPrimitiveObject } from "src/types/index.js";
 
 export class QuerySQLObject extends DataSetObject {
-    sql: string;
-    queryParams: JSONPrimitive[];
-    loadBlobs: boolean;
-    recordCount: number;
-
-	constructor(remoteAPI: RemoteAPI, sql: string, queryParams: JSONPrimitive[] = [], loadBlobs = false, recordCount = 0) {
+	constructor(remoteAPI: RemoteAPI, public sql: string, public queryParams: string[] = [], public loadBlobs = false, public recordCount = 0) {
 		super(remoteAPI);
-		this.sql = sql;
-		this.queryParams = queryParams;
-		this.loadBlobs = typeof loadBlobs === "boolean" ? loadBlobs : false;
-		this.recordCount = recordCount;
 	}
 
 	asJsonRpc() {
@@ -34,6 +25,37 @@ export class QuerySQLObject extends DataSetObject {
 			"@func": [api]
 		};
 
+		return requestObject;
+	}
+}
+
+export class QueryObject extends DataSetObject {
+	
+	constructor(remoteAPI: RemoteAPI, public key?: string, public master?: number, public detail?: number, public queryParams: string[] = [], public loadBlobs = false, public recordCount = 0) {
+		super(remoteAPI);
+	}
+
+	asJsonRpc() {
+		const api: JSONPrimitiveObject = {
+			"@name": "query",
+			"loadBlobs": this.loadBlobs,
+			"recordCount": this.recordCount
+		}
+
+		api.key = this.key;
+		if (typeof this.master === "number") api.master = this.master;
+		if (typeof this.detail === "number") api.detail = this.detail;
+
+		if (Array.isArray(this.queryParams)) {
+			api.queryparams = this.queryParams.join("|");
+		}
+
+		const requestObject = this.requestObject = {
+			"#id": this.id,
+			"@name": "api",
+			"@func": [api]
+		};
+		
 		return requestObject;
 	}
 }

@@ -35,11 +35,8 @@ class RemoteAPI {
 
 	#setFetchOptions() {
 		try {
-			let headers: Record<string, any> = {...this.fetchOptions.headers};
+			let headers: Record<string, any> = {...this.fetchOptions.headers};			
 
-			if (this.crmEnv.apiKey) {				
-				headers["X-Efficy-ApiKey"] = this.crmEnv.apiKey;
-			}
 			if (this.crmEnv.apiKey) {				
 				headers["X-Efficy-ApiKey"] = this.crmEnv.apiKey;
 			} else if (this.crmEnv.user && this.crmEnv.pwd) {
@@ -53,6 +50,8 @@ class RemoteAPI {
 			if (this.crmEnv.useFetchQueue) {
 				FetchQueue.forceSequential = true;
 			}			
+
+			this.fetchOptions.headers = headers;
 		} catch(ex: unknown) {
 			if (ex instanceof Error) {
 				this.throwError(`${this.#name}.readEnv::${ex.message}`)
@@ -166,7 +165,7 @@ class RemoteAPI {
 		let responseObject: object = {};
 
 		try {
-			const request: RequestInit = Object.assign(this.fetchOptions, requestObject);
+			const request: RequestInit = Object.assign(this.fetchOptions, {body: JSON.stringify(requestObject)});
 
 			const rql = new RequestLog(this.requestCounter++, this.logFunction, this.threadId);
 			rql.setRequest(requestUrl, request.method ?? "POST", requestObject);

@@ -22,16 +22,28 @@ const crmEnv = new CrmEnv({
 
 test('crmEnv', t => {
   t.is(crmEnv.url, "https://submariners.efficytest.cloud");
+  t.is(crmEnv.user, "adminivm");
 });
 
-async function runQuery() {
+async function executeSqlQuery() {
   const crm = new CrmRpc(crmEnv);
   const sqlQueryText = "select top 5 userKey, userFullname from <#TABLE NAME=User>";
-  const svnQuery = crm.executeSqlQuery(sqlQueryText);
+  const query = crm.executeSqlQuery(sqlQueryText);
   await crm.executeBatch();
-  return svnQuery.items.length === 5;
+  return query.items.length === 5;
 }
 
-test('runQuery', async t => {
-  t.assert(await runQuery())
+test('executeSqlQuery', async t => {
+  t.assert(await executeSqlQuery())
+});
+
+async function executeDatabaseQuery() {
+  const crm = new CrmRpc(crmEnv);
+  const query = crm.executeDatabaseQuery("00011g3c000OCOlJ", undefined, false, 5);
+  await crm.executeBatch();
+  return query.items.length === 10000;
+}
+
+test('executeDatabaseQuery', async t => {
+  t.assert(await executeDatabaseQuery())
 });
