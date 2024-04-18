@@ -48,7 +48,7 @@ class CrmRpc extends RemoteAPI {
 	 * @param loadBlobs If true, blob fields (e.g. memo, stream) are returned
 	 * @param recordCount Limit the returned records
 	 */
-	executeSqlQuery(sqlQueryText: string, queryParameters: string[], loadBlobs: boolean = false, recordCount: number = 0) {
+	executeSqlQuery(sqlQueryText: string, queryParameters?: string[], loadBlobs: boolean = false, recordCount: number = 0) {
 		return new QuerySQLObject(this, sqlQueryText, queryParameters, loadBlobs, recordCount);
 	}	
 

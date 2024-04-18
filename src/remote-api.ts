@@ -2,6 +2,7 @@ import nodeFetch from 'node-fetch';
 import CrmEnv from "./crm-env.js";
 import * as cookieParser from 'cookie';
 import { findDeep, FetchQueue } from './utils/utils.js';
+import { JSONPrimitiveObject } from './types/index.js';
 
 /**
  * Class with low-level JSON RPC functions
@@ -159,10 +160,10 @@ class RemoteAPI {
 	/**
 	 * Post and receive JSON with custom endpoint
 	 */
-	async post(requestUrl: string, requestObject: RequestInit) {
+	async post(requestUrl: string, requestObject: RequestInit): Promise<object> {
 		let response: Response | null = null;
-		let responseBody: any;
-		let responseObject: any;
+		let responseBody: string = "";
+		let responseObject: object = {};
 
 		try {
 			const request: RequestInit = Object.assign(this.fetchOptions, requestObject);
@@ -215,9 +216,7 @@ class RemoteAPI {
 			if (rql.exception?.error === true) {
 				const ex = rql.exception;
 				this.throwError(`/json: ${ex?.code || ex?.errorcode} - ${ex?.message || ex?.errorstring} - ${ex?.detail}`);
-			}
-
-			return responseObject;
+			}			
 		} catch(ex) {
 			if (ex instanceof Error) {
 				this.throwError(`${this.#name}.post::${ex.message}`)
@@ -225,6 +224,8 @@ class RemoteAPI {
 				console.error(ex);
 			}	
 		}
+
+		return responseObject;
 	}
 
 
@@ -327,7 +328,7 @@ class RequestLog {
 	statusCode = 0;
 	statusText = "";
 	requestUrl = "";
-	exception?: Error;
+	exception?: JSONPrimitiveObject;
 
 	// Not exposed when doing JSON.stringify(this)
 	requestObject: any;
@@ -345,7 +346,7 @@ class RequestLog {
 		this.method = method;
 		this.requestObject = requestObject;
 	}
-	setResponse(resp: any, responseObject: any) {
+	setResponse(resp: any, responseObject: object) {
 		this.d_response = new Date();
 		this.statusCode = parseInt(resp.status, 10);
 		this.statusText = resp.statusText;

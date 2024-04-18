@@ -3,10 +3,14 @@
 	"description": "The Efficy U - RPC API is developed for server-side usage in a Node.js environment (e.g. for integrations) and also bundled for usage inside an Efficy browser session for client-side JSON RPC requests. The API is highly similar to efficy-enterprise-api",
 	"main": "./lib/index.mjs",
 	"scripts": {
+		"build": "tsc",
+		"watch": "tsc -w",
+		"clean": "rimraf dist",
+		"prestart": "npm run clean && npm run build",
+		"start": "func start",
 		"docs": "jsdoc --configure jsdoc.conf.json --template ./node_modules/ink-docstrap/template",
-		"typings": "npx -p typescript tsc",
 		"dist": "rollup -c",
-		"build": "npm-run-all docs typings dist"
+		"test": "ava"
 	},
 	"version": "1.0.5",
 	"homepage": "https://github.com/Pauwris/efficy-u-rpc-api#readme",
@@ -30,7 +34,7 @@
 	},
 	"dependencies": {
 		"cookie": "^0.6.0",
-		"node-fetch": "^3.2.4",
+		"node-fetch": "^3.3.2",
 		"tslib": "^2.6.2"
 	},
 	"devDependencies": {
@@ -38,6 +42,8 @@
 		"@types/node": "^20.10.4",
 		"@typescript-eslint/eslint-plugin": "^7.3.1",
 		"@typescript-eslint/parser": "^7.3.1",
+		"ava": "^6.1.2",
+		"dotenv": "^16.4.5",
 		"eslint": "^8.57.0",
 		"eslint-plugin-promise": "^6.1.1",
 		"ink-docstrap": "^1.3.2",
