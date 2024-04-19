@@ -1,6 +1,7 @@
 import RemoteAPI from "src/remote-api.js";
 import { StringifyOptions } from "querystring";
 import { RemoteObject } from "./remote-object.js";
+import { JSONRPCNamedOperation } from "src/types/index.js";
 
 /**
  * Class uses by operations that return a list
@@ -40,7 +41,7 @@ export class SystemSettings extends ListObject {
             "@name": "systemsettings"
         }
 
-        const requestObject = this.requestObject = {
+        const requestObject: JSONRPCNamedOperation = this.requestObject = {
             "#id": this.id,
             "@name": "api",
             "@func": [api]

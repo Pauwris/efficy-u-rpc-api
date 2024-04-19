@@ -36,7 +36,7 @@ test('Settings and session properties', async (t) => {
   const setts = crm.getSystemSettings();
 
   const defaultCurrency = crm.getSetting("Efficy", "defaultCurrency");
-  await crm.executeBatch();  
+  await crm.executeBatch();
 
   t.deepEqual(currentDatabaseAlias.result, customerAlias);
   t.deepEqual(currentLicenseName.result.toLowerCase(), process.env.CRM_USER.toLowerCase());
@@ -56,3 +56,21 @@ test('Multiple queries', async (t) => {
     query1.items.length === 5 && query2.items.length === 10000
   );
 });
+
+test('DataSet extended operations', async (t) => {
+  const crm = new CrmRpc(crmEnv);
+
+  const userList = crm.getUserList()
+  const favoList = crm.consultFavorites();
+  const recentsList = crm.consultRecent();
+  const catgs = crm.getCategoryCollection("comp")
+  await crm.executeBatch();
+
+  const adminUser = userList.items.find(user => user["USERCODE"].toLowerCase() === process.env.CRM_USER.toLowerCase());
+
+  t.assert(adminUser.key != "", "getUserList");
+  t.assert(favoList.items.pop()?.favoKey != "", "consultFavorites");
+  t.assert(recentsList.items.pop()?.TEXT != "", "consultRecent")
+  t.assert(catgs.items.pop()?.kCategory > 0, "getCategoryCollection")
+});
+

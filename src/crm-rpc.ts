@@ -1,6 +1,7 @@
 import CrmEnv from './crm-env.js';
 import RemoteAPI from './remote-api.js';
 import { PropertyObject, SettingObject } from './remote-objects/base-type.js';
+import { CollectionObject, ConsultManyEx, FavoriteList, RecentList, UserList } from './remote-objects/dataset.js';
 import { SystemSettings } from './remote-objects/list-type.js';
 import { QueryObject, QuerySQLObject } from './remote-objects/query.js';
 /**
@@ -109,7 +110,6 @@ class CrmRpc extends RemoteAPI {
 	 * @param module The name of the setting.
 	 * @param name The name of the module (JSON object) that owns the setting.
 	 * @param asString If true, the settings of type TDateTime will be returned as a string formatted with the ShortDateTime format. If false, it will be returned as a float value.
-	 * @returns {StringObject}
 	 * @example
 	 * const workingPeriodFrom = crm.getSetting("user", "WorkingPeriodFrom");
 	 * const workingPeriodFromFloat = crm.getSetting("user", "WorkingPeriodFrom", false);
@@ -121,6 +121,61 @@ class CrmRpc extends RemoteAPI {
 		return new SettingObject(this, module, name, asString);
 	}
 
+	/**
+	 * @deprecated
+	 * Selects records that exactly match certain field values
+	 * @param entity The entity name, e.g. "Comp"
+	 * @param whereFields A list of field names to match (used as WHERE criteria), e.g. ["NAME", "OPENED"]
+	 * @param whereValues A list of values to match, e.g. ["Efficy", "1"]
+	 * @param orderByExpression SQL sort expression, e.g. "K_COMPANY desc"
+	 * @example
+	 * const morningMeetings = crm.consultManyEx("Acti", ["PLANNED", "D_BEGIN"], ["1", "2022-03-14 09:00:00"], "D_BEGIN");
+	 */
+	consultManyEx(entity: string, whereFields: string[] = [], whereValues: string[] = [], orderByExpression: string = "") {
+		return new ConsultManyEx(this, entity, whereFields, whereValues, orderByExpression);
+	}
+
+	/**
+	 * Consult your recent records, optionally extended by additional fields.
+	 * @param entity The entity name, e.g. "Comp"
+	 * @param extraFields A list of extra fields to consult for each recent entity record, e.g. ["POSTCODE", "CITY"]
+	 * @example
+	 * const compRecents = crm.consultRecent("Comp");
+	 * const compRecentsEx = crm.consultRecent("Comp", ["CITY", "COUNTRY"]);
+	 */
+	consultRecent(entity: string, extraFields: string[] = []) {
+		return new RecentList(this, entity, extraFields);
+	}
+
+	/**
+	 * Consult your favorite records.
+	 * @param entity The entity name, e.g. "Comp"
+	 * @example
+	 * const compFavorites = crm.consultFavorites("Comp");
+	 */
+	consultFavorites(entity: string) {
+		return new FavoriteList(this, entity);
+	}
+
+	/**
+	 * Request the accessible categories - for the current user - of the given entity
+	 * @param {string} entity - The entity name, e.g. "Comp"
+	 * @example
+	 * const compCategories = crm.getCategoryCollection("comp");
+	 */
+	getCategoryCollection(entity: string) {
+		const detail = "";
+		return new CollectionObject(this, entity, detail);
+	}
+
+	/**
+	 * Requests a list of users, groups and resources
+	 * @example
+	 * const userList = crm.getUserList();
+	 */
+	getUserList() {
+		return new UserList(this);
+	}
 	
 	/**
 	 * Executes a database query stored in QUERIES
@@ -152,10 +207,8 @@ class CrmRpc extends RemoteAPI {
 
 	/**
 	 * Efficy U constants
-	 * @readonly
-	 * @enum {object}
 	 */
-	constants = {
+	readonly constants = {
 		account_kind: {
 			user: 0,
 			group: 1,
