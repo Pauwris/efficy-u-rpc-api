@@ -2,7 +2,8 @@ import nodeFetch from 'node-fetch';
 import CrmEnv from "./crm-env.js";
 import * as cookieParser from 'cookie';
 import { findDeep, FetchQueue } from './utils/utils.js';
-import { JSONPrimitiveObject } from './types/index.js';
+import { JSONPrimitiveObject, JSONRPCNamedOperation, isJSONRPCNamedOperation } from './types/index.js';
+import { RemoteObject } from './remote-objects/remote-object.js';
 
 /**
  * Class with low-level JSON RPC functions
@@ -10,10 +11,9 @@ import { JSONPrimitiveObject } from './types/index.js';
  */
 class RemoteAPI {
 	#name = "RemoteAPI";
-	remoteObjects: any[] = [];
+	remoteObjects: RemoteObject[] = [];
 	requestCounter: number = 0;
 
-	lastResponseObject?: object;
 	sessionId?: string;
 
 	errorFunction?: Function;	
@@ -74,11 +74,16 @@ class RemoteAPI {
 	 * Execute all assembled and queued RPC operations
 	 */
 	async executeBatch() {
-		const requestObject = [];
-		const responseObject = [];
+		const requestObject: JSONRPCNamedOperation[] = [];
+		const responseArray: JSONRPCNamedOperation[] = [];
 
 		try {
-			requestObject.push(...this.remoteObjects.filter(item => typeof item.asJsonRpc === "function").map(item => item.asJsonRpc()));
+			this.remoteObjects.forEach(item => {
+				const jsonRPC = item.asJsonRpc();
+				if (jsonRPC) {
+					requestObject.push(jsonRPC);
+				}
+			})
 		} catch(ex: unknown) {
 			if (ex instanceof Error) {
 				this.throwError(`${this.#name}.executeBatch::asJsonRpc\n${ex.message}`)
@@ -92,9 +97,14 @@ class RemoteAPI {
 		if (!requestObject.length) return;
 
 		try {
-			const response = await this.postToCrmJson(requestObject);
+			const response: object = await this.postToCrmJson(requestObject);
+			
 			if (Array.isArray(response)) {
-				// Do nothing, all good!
+				response.forEach(item => {
+					if (isJSONRPCNamedOperation(item)) {
+						responseArray.push(item);
+					}
+				})		
 			} else if (typeof response === "object" && this.getRpcException(response)) {
 				const ex = this.getRpcException(response);
 				this.throwError(`${ex["#error"].errorcode} - ${ex["#error"].errorstring}`);
@@ -103,8 +113,6 @@ class RemoteAPI {
 			} else {
 				throw new TypeError(`${this.#name}.executeBatch::responseObject is not an Array`);
 			}
-			responseObject.push(...response);
-			this.lastResponseObject = responseObject;
 		} catch(ex: unknown) {			
 			if (ex instanceof Error) {
 				this.throwError(`${this.#name}.executeBatch::${ex.message}`);
@@ -118,7 +126,7 @@ class RemoteAPI {
 		var index = items.length
 		while (index--) {
 			const operation = items[index];
-			const respOper = responseObject.find(respOper => respOper["#id"] === operation.id);
+			const respOper = responseArray.find(respOper => respOper["#id"] === operation.id);
 			if (!respOper)
 			this.throwError(`${this.#name}.executeBatch::cannot find response for queued operation [${index}/${items.length}]`);
 			Object.assign(operation.responseObject, respOper);
@@ -127,7 +135,7 @@ class RemoteAPI {
 		}
 
 		// Error handling
-		const ex = this.getRpcException(responseObject);
+		const ex = this.getRpcException(responseArray);
 		if (ex) this.throwError(`${ex["#error"].errorcode} - ${ex["#error"].errorstring}`);
 	}
 
@@ -147,7 +155,7 @@ class RemoteAPI {
 		this.#setFetchOptions();
 	}
 
-	registerObject(object: object) {
+	registerObject(object: RemoteObject) {
 		this.remoteObjects.push(object);
 	}
 

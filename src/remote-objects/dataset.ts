@@ -73,7 +73,7 @@ export class DataSetObject extends RemoteObject {
 
 	protected dataSetName?: string;
 
-	protected afterExecute() {
+	afterExecute() {
 		super.afterExecute();
 
 		const dso = new DataSet("main");

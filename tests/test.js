@@ -25,25 +25,17 @@ test('crmEnv', t => {
   t.is(crmEnv.user, "adminivm");
 });
 
-async function executeSqlQuery() {
+async function executeQueries() {
   const crm = new CrmRpc(crmEnv);
+  
   const sqlQueryText = "select top 5 userKey, userFullname from <#TABLE NAME=User>";
-  const query = crm.executeSqlQuery(sqlQueryText);
+  const query1 = crm.executeSqlQuery(sqlQueryText);
+  const query2 = crm.executeDatabaseQuery("00011g3c000OCOlJ", undefined, false, 5);
   await crm.executeBatch();
-  return query.items.length === 5;
+  
+  return query1.items.length === 5 && query2.items.length === 10000;
 }
 
-test('executeSqlQuery', async t => {
-  t.assert(await executeSqlQuery())
-});
-
-async function executeDatabaseQuery() {
-  const crm = new CrmRpc(crmEnv);
-  const query = crm.executeDatabaseQuery("00011g3c000OCOlJ", undefined, false, 5);
-  await crm.executeBatch();
-  return query.items.length === 10000;
-}
-
-test('executeDatabaseQuery', async t => {
-  t.assert(await executeDatabaseQuery())
+test('executeQueries', async t => {
+  t.assert(await executeQueries())
 });
