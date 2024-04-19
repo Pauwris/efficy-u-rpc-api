@@ -9,8 +9,12 @@ dotenv.config();
 // Temporary workaround for "unable to verify the first certificate" errors of Node.js
 process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
 
+// Constants depending on the tested environment
+const url = new URL("https://submariners.efficytest.cloud/");
+const customerAlias = "submariners";
+
 test('process.env', t => {
-  t.is(process.env.CRM_ORIGIN, "https://submariners.efficytest.cloud/");
+  t.is(process.env.CRM_ORIGIN, url.origin + "/");
 });
 
 const crmEnv = new CrmEnv({
@@ -21,8 +25,23 @@ const crmEnv = new CrmEnv({
 })
 
 test('crmEnv', t => {
-  t.is(crmEnv.url, "https://submariners.efficytest.cloud");
-  t.is(crmEnv.user, "adminivm");
+  t.is(crmEnv.url, url.origin);
+});
+
+test('Settings and session properties', async (t) => {
+  const crm = new CrmRpc(crmEnv);
+
+  const currentDatabaseAlias = crm.currentDatabaseAlias;
+  const currentLicenseName = crm.currentUserCode;
+  const setts = crm.getSystemSettings();
+
+  const defaultCurrency = crm.getSetting("Efficy", "defaultCurrency");
+  await crm.executeBatch();  
+
+  t.deepEqual(currentDatabaseAlias.result, customerAlias);
+  t.deepEqual(currentLicenseName.result.toLowerCase(), process.env.CRM_USER.toLowerCase());
+  t.deepEqual(setts.map.get("FileBase"), "efficy/")
+  t.deepEqual(defaultCurrency.result, "EUR")
 });
 
 test('Multiple queries', async (t) => {

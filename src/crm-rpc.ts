@@ -1,5 +1,7 @@
 import CrmEnv from './crm-env.js';
 import RemoteAPI from './remote-api.js';
+import { PropertyObject, SettingObject } from './remote-objects/base-type.js';
+import { SystemSettings } from './remote-objects/list-type.js';
 import { QueryObject, QuerySQLObject } from './remote-objects/query.js';
 /**
  * Class to create Remote Objects
@@ -41,6 +43,85 @@ class CrmRpc extends RemoteAPI {
 		return super.post(requestUrl, requestObject);
 	}
 
+	/**
+	 * Retrieves the alias (name) of the currently connected database
+	 */
+	get currentDatabaseAlias() {
+		return new PropertyObject(this, "currentdatabasealias");
+	}
+
+	/**
+	 * Retrieves the current license name
+	 */
+	get currentLicenseName() {
+		return new PropertyObject(this, "currentlicensename");
+	}
+
+	/**
+	 * Retrieves the current user full name
+	 */
+	get currentUserFullName() {
+		return new PropertyObject(this, "currentuserfullname");
+	}
+
+	/**
+	 * Retrieves the group memberships of the current user as semicolon separated string list, e.g. "1;28;292;936"
+	 */
+	get currentUserGroups() {
+		return new PropertyObject(this, "currentusergroups");
+	}
+
+	/**
+	 * Retrieves the current user key
+	 */
+	get currentUserId() {
+		return new PropertyObject(this, "currentuserid");
+	}
+
+	/**
+	 * Retrieves the current user code, e.g. "CRM01"
+	 */
+	get currentUserCode() {
+		return new PropertyObject(this, "currentusername");
+	}
+
+	/**
+	 * Retrieves the current user timezone
+	 */
+	get currentUserTimezone() {
+		return new PropertyObject(this, "currentusertimezone");
+	}
+
+	/**
+	 * Request a list of system settings. Use the Map object to retrieve settings
+	 * @example
+	 * const settings = crm.getSystemSettings();
+	 * await crm.executeBatch();
+	 * settings.map.get("ShortDateFormat"); // e.g. "dd/mm/yyyy"
+	 * settings.map.forEach(console.log); // prints each setting on console
+	 */
+	getSystemSettings() {
+		return new SystemSettings(this);
+	}
+
+	/**
+	 * Requests the current value of a given Efficy setting.
+	 * @param module The name of the setting.
+	 * @param name The name of the module (JSON object) that owns the setting.
+	 * @param asString If true, the settings of type TDateTime will be returned as a string formatted with the ShortDateTime format. If false, it will be returned as a float value.
+	 * @returns {StringObject}
+	 * @example
+	 * const workingPeriodFrom = crm.getSetting("user", "WorkingPeriodFrom");
+	 * const workingPeriodFromFloat = crm.getSetting("user", "WorkingPeriodFrom", false);
+	 * await crm.executeBatch();
+	 * workingPeriodFrom.result; // e.g. "30/12/1899 08:00"
+	 * workingPeriodFromFloat.result; // e.g. "0.333333333333333
+	 */
+	getSetting(module: string, name: string, asString = true) {
+		return new SettingObject(this, module, name, asString);
+	}
+
+	
 	/**
 	 * Executes a database query stored in QUERIES
 	 * @param idQuery

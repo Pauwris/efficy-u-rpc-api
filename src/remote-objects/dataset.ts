@@ -7,8 +7,8 @@ export type DataSetKind = "main" | "master" | "detail" | "category";
 export class DataSet {
 	tableView: number = 0;
 
-	private _items: any[] = [];
-	private _item: any;
+	private _items: JSONPrimitiveObject[] = [];
+	private _item: JSONPrimitiveObject | null = null;
 
 	constructor(public type: DataSetKind, public name?: string, public filter?: string, public includeBlobContent?: boolean) {
 		if (!["main", "master", "detail", "category"].includes(type)) throw new TypeError("DataSet.constructor::invalid type");
@@ -34,10 +34,10 @@ export class DataSet {
 		return this._item;
 	}
 
-	setItems(value?: JSONPrimitiveObject) {
+	setItems(value?: JSONPrimitiveObject[]) {
 		if (!value) return;
 		if (!Array.isArray(value)) throw new TypeError("DataSet.items::value is not an Array");
-
+		
 		this._items = value;
 		if (this.items.length > 0) {
 			this._item = this.items[0];
@@ -63,8 +63,8 @@ export class DataSet {
  * @extends RemoteObject
  */
 export class DataSetObject extends RemoteObject {
-	#items: any;
-	#item: any;
+	#items: JSONPrimitiveObject[] = [];
+	#item: JSONPrimitiveObject | null = null;
 
 	constructor(remoteAPI: RemoteAPI) {
 		super(remoteAPI);
@@ -73,7 +73,7 @@ export class DataSetObject extends RemoteObject {
 
 	protected dataSetName?: string;
 
-	afterExecute() {
+	protected afterExecute() {
 		super.afterExecute();
 
 		const dso = new DataSet("main");

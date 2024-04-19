@@ -3,11 +3,11 @@ import { DataSetObject } from "./dataset.js";
 import { JSONPrimitive, JSONPrimitiveObject, JSONRPCNamedOperation } from "src/types/index.js";
 
 export class QuerySQLObject extends DataSetObject {
-	constructor(remoteAPI: RemoteAPI, public sql: string, public queryParams: string[] = [], public loadBlobs = false, public recordCount = 0) {
+	constructor(remoteAPI: RemoteAPI, private sql: string, private queryParams: string[] = [], private loadBlobs = false, private recordCount = 0) {
 		super(remoteAPI);
 	}
 
-	asJsonRpc(): JSONRPCNamedOperation {
+	protected asJsonRpc(): JSONRPCNamedOperation {
 		const api: JSONPrimitiveObject = {
 			"@name": "executesqlquery",
 			"sql": this.sql,
@@ -31,11 +31,11 @@ export class QuerySQLObject extends DataSetObject {
 
 export class QueryObject extends DataSetObject {
 	
-	constructor(remoteAPI: RemoteAPI, public key?: string, public master?: number, public detail?: number, public queryParams: string[] = [], public loadBlobs = false, public recordCount = 0) {
+	constructor(remoteAPI: RemoteAPI, private key?: string, private master?: number, private detail?: number, private queryParams: string[] = [], private loadBlobs = false, private recordCount = 0) {
 		super(remoteAPI);
 	}
 
-	asJsonRpc(): JSONRPCNamedOperation {
+	protected asJsonRpc(): JSONRPCNamedOperation {
 		const api: JSONPrimitiveObject = {
 			"@name": "query",
 			"loadBlobs": this.loadBlobs,

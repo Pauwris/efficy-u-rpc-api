@@ -78,6 +78,7 @@ class RemoteAPI {
 
 		try {
 			this.remoteObjects.forEach(item => {
+				// @ts-ignore using protected method
 				const jsonRPC = item.asJsonRpc();
 				if (jsonRPC) {
 					requestObject.push(jsonRPC);
@@ -102,10 +103,15 @@ class RemoteAPI {
 		var index = items.length
 		while (index--) {
 			const operation = items[index];
-			const respOper = responseOperations.find(respOper => respOper["#id"] === operation.id);
+			const respOper = responseOperations.find(respOper => {
+				// @ts-ignore using protected member
+				return respOper["#id"] === operation.id;
+			});
 			if (!respOper)
 			this.throwError(`${this.#name}.executeBatch::cannot find response for queued operation [${index}/${items.length}]`);
+			// @ts-ignore using protected method
 			Object.assign(operation.responseObject, respOper);
+			// @ts-ignore using protected method
 			operation.afterExecute();
 			items.splice(index, 1);
 		}
@@ -239,20 +245,23 @@ class RemoteAPI {
 	}
 
 	
-	findDataSetArray(resp: JSONPrimitiveObject, dataSetName = "dataset") {
-		if (typeof resp !== "object") return;
+	findDataSetArray(resp: JSONPrimitiveObject, dataSetName = "dataset"): JSONPrimitiveObject[] {
+		let list: JSONPrimitiveObject[] = [];
+		if (typeof resp !== "object") return list;
 
 		const result = findDeep(resp, {"#class": dataSetName});
-		if (!result || typeof result["#data"] !== "object" || result["#data"] === null) return;
+		if (!result || typeof result["#data"] !== "object" || result["#data"] === null) return list;
 
 		if (Array.isArray(result["#data"])) {
-			return result["#data"];
+			list = result["#data"] ?? [];
 		} else if (Array.isArray(result["#data"]["data"])) {
-			return result["#data"]["data"]; // Efficy U (with earlier bug)
+			list = result["#data"]["data"] ?? [];
 		}
+
+		return list;
 	}
-	findListArray(resp: JSONPrimitiveObject, listName = "stringlist") {
-		return this.findDataSetArray(resp, listName);
+	findListArray(resp: JSONPrimitiveObject, listName = "stringlist"): JSONPrimitiveObject[] {
+		return this.findDataSetArray(resp, listName) ?? [];
 	}
 	
 	findAttachment(resp: JSONPrimitiveObject, key: string) {

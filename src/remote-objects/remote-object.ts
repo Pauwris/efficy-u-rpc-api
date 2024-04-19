@@ -8,8 +8,8 @@ import { JSONRPCNamedOperation } from 'src/types/index.js';
  */
 export class RemoteObject {
 	protected requestObject: JSONRPCNamedOperation | null;	
-	id;
-	responseObject;
+	protected id;
+	protected responseObject;
 
 	constructor(private remoteAPI: RemoteAPI) {
 		this.remoteAPI = remoteAPI;
@@ -22,11 +22,11 @@ export class RemoteObject {
 		return this.remoteAPI;
 	}
 
-	afterExecute() {
+	protected afterExecute() {
 		this.responseObject = ParseGentle.numberProperties(this.responseObject, ["edithandle"]);
 	}
 
-	asJsonRpc(): JSONRPCNamedOperation | null {
-		return null;
+	protected asJsonRpc(): JSONRPCNamedOperation | null {
+		return null
 	}
 }
