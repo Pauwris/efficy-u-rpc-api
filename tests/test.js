@@ -6,9 +6,6 @@ import process from 'process';
 import dotenv from 'dotenv';
 dotenv.config();
 
-// Temporary workaround for "unable to verify the first certificate" errors of Node.js
-process.env['NODE_TLS_REJECT_UNAUTHORIZED'] = 0
-
 // Constants depending on the tested environment
 const url = new URL("https://submariners.efficytest.cloud/");
 const customerAlias = "submariners";
@@ -63,7 +60,7 @@ test('DataSet extended operations', async (t) => {
   const userList = crm.getUserList()
   const favoList = crm.consultFavorites();
   const recentsList = crm.consultRecent();
-  const catgs = crm.getCategoryCollection("comp")
+  const catgs = crm.getCategoryCollection("comp");
   await crm.executeBatch();
 
   const adminUser = userList.items.find(user => user["USERCODE"].toLowerCase() === process.env.CRM_USER.toLowerCase());
@@ -72,5 +69,12 @@ test('DataSet extended operations', async (t) => {
   t.assert(favoList.items.pop()?.favoKey != "", "consultFavorites");
   t.assert(recentsList.items.pop()?.TEXT != "", "consultRecent")
   t.assert(catgs.items.pop()?.kCategory > 0, "getCategoryCollection")
+
+  try {
+    crm.getCategoryCollection("dummy");
+    await crm.executeBatch();
+  } catch(ex) {
+    t.deepEqual(ex.message, 'EEfficyException - Invalid Entity "dummy" - TAGS-2108', "Error on getCategoryCollection")    
+  }  
 });
 

@@ -54,7 +54,7 @@ class RemoteAPI {
 			this.fetchOptions.headers = headers;
 		} catch(ex: unknown) {
 			if (ex instanceof Error) {
-				this.throwError(`${this.#name}.readEnv::${ex.message}`)
+				this.throwError(`${this.#name}.setFetchOptions::${ex.message}`)
 			} else {
 				console.error(ex);
 			}		
@@ -115,17 +115,14 @@ class RemoteAPI {
 			operation.afterExecute();
 			items.splice(index, 1);
 		}
-
-		// Error handling
-		const ex = this.getRpcException(responseOperations);
-		if (ex) this.throwError(`${ex["#error"].errorcode} - ${ex["#error"].errorstring}`);
 	}
 
-	throwError(message: string) {
+	throwError(rpcException: string | RPCException) {
+		const errorMessage = typeof rpcException === "string" ? rpcException : rpcException.toString();
 		if (typeof this.errorFunction === "function") {
-			this.errorFunction(message);
+			this.errorFunction(errorMessage);
 		} else {
-			throw Error(message);
+			throw Error(errorMessage);
 		}
 	}
 
@@ -145,29 +142,18 @@ class RemoteAPI {
 		const responseOperations: JSONRPCNamedOperation[] = [];
 		const requestUrl = `${this.crmEnv.url}/crm/json${this.crmEnv.customer ? "?customer=" + encodeURIComponent(this.crmEnv.customer) : ""}`;
 
-		try {
-			const response: object = await this.post(requestUrl, requestObject)
+		const response: object = await this.post(requestUrl, requestObject)
 			
-			if (Array.isArray(response)) {
-				response.forEach(item => {
-					if (isJSONRPCNamedOperation(item)) {
-						responseOperations.push(item);
-					}
-				})		
-			} else if (typeof response === "object" && this.getRpcException(response)) {
-				const ex = this.getRpcException(response);
-				this.throwError(`${ex["#error"].errorcode} - ${ex["#error"].errorstring}`);
-			} else if (!response) {
-				throw new TypeError(`${this.#name}.executeBatch::empty response`);
-			} else {
-				throw new TypeError(`${this.#name}.executeBatch::responseObject is not an Array`);
-			}
-		} catch(ex: unknown) {			
-			if (ex instanceof Error) {
-				this.throwError(`${this.#name}.executeBatch::${ex.message}`);
-			} else {
-				console.error(ex);
-			}
+		if (Array.isArray(response)) {
+			response.forEach(item => {
+				if (isJSONRPCNamedOperation(item)) {
+					responseOperations.push(item);
+				}
+			})		
+		} else if (!response) {
+			throw new TypeError(`${this.#name}.postToCrmJson::empty response`);
+		} else {
+			throw new TypeError(`${this.#name}.postToCrmJson::responseObject is not an Array`);
 		}
 
 		return responseOperations;
@@ -180,11 +166,13 @@ class RemoteAPI {
 		let response: Response | null = null;
 		let responseBody: string = "";
 		let responseObject: object = {};
+		let rpcException: RPCException | undefined;
+		
 
 		try {
 			const request: RequestInit = Object.assign(this.fetchOptions, {body: JSON.stringify(requestObject)});
-
 			const rql = new RequestLog(this.requestCounter++, this.logFunction, this.threadId);
+
 			rql.setRequest(requestUrl, request.method ?? "POST", requestObject);
 			if (this.crmEnv.cookieHeader) {
 				request.headers = {
@@ -213,8 +201,8 @@ class RemoteAPI {
 				this.#onAfterFetch(requestUrl, request, response);
 			}
 
-			rql.setResponse(response, responseObject);
-			rql.exception = this.getRpcException(responseObject);
+			rql.setResponse(response, responseObject);			
+			rpcException = rql.rpcException = this.getRpcException(responseObject);
 
 			const cookieString  = response.headers.get('set-cookie');
 			if (cookieString) {
@@ -227,18 +215,17 @@ class RemoteAPI {
 				this.sessionId = this.crmEnv.shortSessionId;
 			}			
 
-			rql.log();
-
-			if (rql.exception?.error === true) {
-				const ex = rql.exception;
-				this.throwError(`/json: ${ex?.code || ex?.errorcode} - ${ex?.message || ex?.errorstring} - ${ex?.detail}`);
-			}			
+			rql.log();			
 		} catch(ex) {
 			if (ex instanceof Error) {
 				this.throwError(`${this.#name}.post::${ex.message}`)
 			} else {
 				console.error(ex);
 			}	
+		}
+
+		if (rpcException instanceof RPCException) {
+			this.throwError(rpcException);
 		}
 
 		return responseObject;
@@ -289,31 +276,22 @@ class RemoteAPI {
 		return Array.isArray(result) ? result : null;
 	}
 	
-	private getRpcException(responseObject: any) {
+	private getRpcException(responseObject: any): RPCException | undefined {
 		if (Array.isArray(responseObject)) {
-			return responseObject.find(operation => operation["@name"] === "exception");
+			const errWrapper = responseObject.find(operation => operation["@name"] === "exception")
+			if (errWrapper && errWrapper["#error"]) {
+				const err = errWrapper["#error"];
+				return new RPCException(err.message ?? err.errorstring, err.code ?? err.errorcode, err.detail);	
+			}			
 		} else if (Array.isArray(responseObject.errors) && responseObject.errors.length > 0) {
-			const [e] = responseObject.errors;
-			return {
-				"#error": {
-					error: true,
-					errorcode: e.id,
-					errorstring: e.detail,
-					extra: e.extra
-				}
-			}
+			const [err] = responseObject.errors;
+			return new RPCException(err.detail, err.id, err.exta);			
 		} else if (typeof responseObject === "object" && typeof responseObject["#error"] === "object") {
-			const errorObject = responseObject["#error"];
-			errorObject.error = true;
-			return errorObject;
+			const err = responseObject["#error"];
+			return new RPCException(err.message ?? err.errorstring, err.code ?? err.errorcode, err.detail);	
 		} else if (typeof responseObject === "object" && responseObject["error"] === true) {
-			return {
-				"#error": {
-					error: true,
-					errorcode: responseObject.code,
-					errorstring: responseObject.message
-				}
-			}
+			const err = responseObject;
+			return new RPCException(err.message ?? err.errorstring, err.code ?? err.errorcode, err.detail);	
 		}
 	}
 
@@ -336,7 +314,7 @@ class RequestLog {
 	statusCode = 0;
 	statusText = "";
 	requestUrl = "";
-	exception?: JSONPrimitiveObject;
+	rpcException?: RPCException;
 
 	// Not exposed when doing JSON.stringify(this)
 	requestObject: any;
@@ -367,7 +345,7 @@ class RequestLog {
 
 		if (typeof this.logFunction === "function") {
 			if (this.statusCode > 0) {
-				this.logFunction(`<${prefix},${this.statusCode} ${this.statusText} (${this.elapsed_ms} ms)${this.sessionId ? `,${this.sessionId}`: ","}${this.exception ? ",EXCEPTION_RPC": ""}`, this);
+				this.logFunction(`<${prefix},${this.statusCode} ${this.statusText} (${this.elapsed_ms} ms)${this.sessionId ? `,${this.sessionId}`: ","}${this.rpcException ? ",EXCEPTION_RPC": ""}`, this);
 			} else {
 				this.logFunction(`>${prefix},FUNCS-${this.countFuncItems(this.requestObject)}`, this);
 			}
@@ -387,6 +365,13 @@ class RequestLog {
 		return data;
 	}
 };
+
+export class RPCException {
+	constructor(public message: string, public code: string = "RPC", public detail: string = "") {}
+	toString() {
+		return [this.code, this.message, this.detail].join(" - ");
+	}
+}
 
 /*
  * Platform agnostic solution for the definition of fetch. Lib node-fetch is excluded by rollup ignore plugin
