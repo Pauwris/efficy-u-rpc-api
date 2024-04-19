@@ -75,7 +75,6 @@ class RemoteAPI {
 	 */
 	async executeBatch() {
 		const requestObject: JSONRPCNamedOperation[] = [];
-		const responseArray: JSONRPCNamedOperation[] = [];
 
 		try {
 			this.remoteObjects.forEach(item => {
@@ -95,38 +94,15 @@ class RemoteAPI {
 
 		// Nothing to execute, ignore silently
 		if (!requestObject.length) return;
-
-		try {
-			const response: object = await this.postToCrmJson(requestObject);
-			
-			if (Array.isArray(response)) {
-				response.forEach(item => {
-					if (isJSONRPCNamedOperation(item)) {
-						responseArray.push(item);
-					}
-				})		
-			} else if (typeof response === "object" && this.getRpcException(response)) {
-				const ex = this.getRpcException(response);
-				this.throwError(`${ex["#error"].errorcode} - ${ex["#error"].errorstring}`);
-			} else if (!response) {
-				throw new TypeError(`${this.#name}.executeBatch::empty response`);
-			} else {
-				throw new TypeError(`${this.#name}.executeBatch::responseObject is not an Array`);
-			}
-		} catch(ex: unknown) {			
-			if (ex instanceof Error) {
-				this.throwError(`${this.#name}.executeBatch::${ex.message}`);
-			} else {
-				console.error(ex);
-			}
-		}
+		
+		const responseOperations: JSONRPCNamedOperation[] = await this.postToCrmJson(requestObject);
 
 		// Add response info to operations and remove executed operations (handled or not)
 		const items = this.remoteObjects;
 		var index = items.length
 		while (index--) {
 			const operation = items[index];
-			const respOper = responseArray.find(respOper => respOper["#id"] === operation.id);
+			const respOper = responseOperations.find(respOper => respOper["#id"] === operation.id);
 			if (!respOper)
 			this.throwError(`${this.#name}.executeBatch::cannot find response for queued operation [${index}/${items.length}]`);
 			Object.assign(operation.responseObject, respOper);
@@ -135,7 +111,7 @@ class RemoteAPI {
 		}
 
 		// Error handling
-		const ex = this.getRpcException(responseArray);
+		const ex = this.getRpcException(responseOperations);
 		if (ex) this.throwError(`${ex["#error"].errorcode} - ${ex["#error"].errorstring}`);
 	}
 
@@ -159,9 +135,36 @@ class RemoteAPI {
 		this.remoteObjects.push(object);
 	}
 
-	private async postToCrmJson(requestObject: object) {
+	private async postToCrmJson(requestObject: object): Promise<JSONRPCNamedOperation[]> {
+		const responseOperations: JSONRPCNamedOperation[] = [];
 		const requestUrl = `${this.crmEnv.url}/crm/json${this.crmEnv.customer ? "?customer=" + encodeURIComponent(this.crmEnv.customer) : ""}`;
-		return this.post(requestUrl, requestObject)
+
+		try {
+			const response: object = await this.post(requestUrl, requestObject)
+			
+			if (Array.isArray(response)) {
+				response.forEach(item => {
+					if (isJSONRPCNamedOperation(item)) {
+						responseOperations.push(item);
+					}
+				})		
+			} else if (typeof response === "object" && this.getRpcException(response)) {
+				const ex = this.getRpcException(response);
+				this.throwError(`${ex["#error"].errorcode} - ${ex["#error"].errorstring}`);
+			} else if (!response) {
+				throw new TypeError(`${this.#name}.executeBatch::empty response`);
+			} else {
+				throw new TypeError(`${this.#name}.executeBatch::responseObject is not an Array`);
+			}
+		} catch(ex: unknown) {			
+			if (ex instanceof Error) {
+				this.throwError(`${this.#name}.executeBatch::${ex.message}`);
+			} else {
+				console.error(ex);
+			}
+		}
+
+		return responseOperations;
 	}
 
 	/**
@@ -235,9 +238,8 @@ class RemoteAPI {
 		return responseObject;
 	}
 
-
-	/** @private */
-	findDataSetArray(resp, dataSetName = "dataset") {
+	
+	findDataSetArray(resp: JSONPrimitiveObject, dataSetName = "dataset") {
 		if (typeof resp !== "object") return;
 
 		const result = findDeep(resp, {"#class": dataSetName});
@@ -249,46 +251,36 @@ class RemoteAPI {
 			return result["#data"]["data"]; // Efficy U (with earlier bug)
 		}
 	}
-	findListArray(resp, listName = "stringlist") {
+	findListArray(resp: JSONPrimitiveObject, listName = "stringlist") {
 		return this.findDataSetArray(resp, listName);
 	}
-	/** @private */
-	findAttachment(resp, key) {
+	
+	findAttachment(resp: JSONPrimitiveObject, key: string) {
 		if (typeof resp !== "object") return;
 		return findDeep(resp, {"@name": "attachment", "key": key});
 	}
-	/** @private */
-	findFunc(resp, name) {
+	
+	findFunc(resp: JSONPrimitiveObject, name: string) {
 		if (typeof resp !== "object" || !Array.isArray(resp["@func"])) return;
 		return resp["@func"].find(item => item["@name"] === name);
 	}
-	/** @private */
-	findFunc2(resp, name, name2, value2) {
+	
+	findFunc2(resp: JSONPrimitiveObject, name: string, name2: string, value2: string | number) {
 		if (typeof resp !== "object" || !Array.isArray(resp["@func"])) return;
 		return resp["@func"].find(item => item["@name"] === name && item[name2] === value2);
 	}
-	/** @private */
-	findFuncArray(resp, name) {
+	
+	findFuncArray(resp: JSONPrimitiveObject, name: string) {
 		var result = this.findDataSetArray(this.findFunc(resp, name));
 		return Array.isArray(result) ? result : null;
 	}
-	/** @private */
-	findFuncArray2(resp, name, name2, value2) {
+	
+	findFuncArray2(resp: JSONPrimitiveObject, name: string, name2: string, value2: string | number) {
 		var result = this.findDataSetArray(this.findFunc2(resp, name, name2, value2));
 		return Array.isArray(result) ? result : null;
 	}
-	/** @private */
-	findFuncCategoryArray(resp, category) {
-		var result = this.findDataSetArray(this.findFunc2(resp, "category", "category", category));
-		return Array.isArray(result) ? result : null;
-	}
-	/** @private */
-	findFuncDetailArray(resp, detail) {
-		var result = this.findDataSetArray(this.findFunc2(resp, "detail", "detail", detail));
-		return Array.isArray(result) ? result : null;
-	}
-	/** @private */
-	getRpcException(responseObject) {
+	
+	private getRpcException(responseObject: any) {
 		if (Array.isArray(responseObject)) {
 			return responseObject.find(operation => operation["@name"] === "exception");
 		} else if (Array.isArray(responseObject.errors) && responseObject.errors.length > 0) {

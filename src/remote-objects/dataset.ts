@@ -8,9 +8,9 @@ export class DataSet {
 	tableView: number = 0;
 
 	private _items: any[] = [];
-    private _item: any;
+	private _item: any;
 
-	constructor(public type: DataSetKind, public name?: string, public filter?:string, public includeBlobContent?: boolean) {
+	constructor(public type: DataSetKind, public name?: string, public filter?: string, public includeBlobContent?: boolean) {
 		if (!["main", "master", "detail", "category"].includes(type)) throw new TypeError("DataSet.constructor::invalid type");
 		if (["detail", "category"].includes(type) && !name) throw new TypeError("DataSet.constructor::name must be specified");
 		this.type = type;
@@ -34,7 +34,7 @@ export class DataSet {
 		return this._item;
 	}
 
-	setItems(value: JSONPrimitiveObject) {
+	setItems(value?: JSONPrimitiveObject) {
 		if (!value) return;
 		if (!Array.isArray(value)) throw new TypeError("DataSet.items::value is not an Array");
 

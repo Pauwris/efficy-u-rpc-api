@@ -1,8 +1,10 @@
+import { JSONPrimitiveObject } from "src/types/index.js";
+
 /**
  * Find and return the first (deep) nested object where all properties of the provided searchObject match.
  * Inspired by https://pretagteam.com/question/finding-an-object-deep-in-a-nested-json-object
  */
-export function findDeep(object: any, searchObject: any): object | undefined {
+export function findDeep(object: any, searchObject: any): JSONPrimitiveObject | undefined {
     if (typeof searchObject !== 'object' || searchObject === null) {
         throw new TypeError('findDeep::searchObject must be a non-null object');
     }
