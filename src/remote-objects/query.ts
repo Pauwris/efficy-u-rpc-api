@@ -1,8 +1,8 @@
 import RemoteAPI from "src/remote-api.js";
-import { DataSetObject } from "./dataset.js";
-import { JSONPrimitive, JSONPrimitiveObject, JSONRPCNamedOperation } from "src/types/index.js";
+import { RemoteDataSet } from "./dataset.js";
+import { JSONPrimitiveObject, JSONRPCNamedOperation } from "src/types/index.js";
 
-export class QuerySQLObject extends DataSetObject {
+export class QuerySQLObject extends RemoteDataSet {
 	constructor(remoteAPI: RemoteAPI, private sql: string, private queryParams: string[] = [], private loadBlobs = false, private recordCount = 0) {
 		super(remoteAPI);
 	}
@@ -29,7 +29,7 @@ export class QuerySQLObject extends DataSetObject {
 	}
 }
 
-export class QueryObject extends DataSetObject {
+export class QueryObject extends RemoteDataSet {
 	
 	constructor(remoteAPI: RemoteAPI, private key?: string, private master?: number, private detail?: number, private queryParams: string[] = [], private loadBlobs = false, private recordCount = 0) {
 		super(remoteAPI);

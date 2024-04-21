@@ -1,6 +1,6 @@
 import RemoteAPI from "src/remote-api.js";
 import { RemoteObject } from "./remote-object.js";
-import { DataSet, DataSetList, DataSetObject } from "./dataset.js";
+import { DataSetList, DataSet } from "./dataset.js";
 import { JSONRPCNamedOperation } from "src/types/index.js";
 
 /**
@@ -41,31 +41,31 @@ class ConsultObject extends RemoteObject {
 	}
 
 	/**
-	 * Retrieves a master [DatasetObject]{@link Dataset.html} from the consult context.
+	 * Retrieves a master DataSet from the consult context.
 	 */
 	getMasterDataSet(): DataSet {
 		this.#setDirty();
-		return this.dataSetList.getMasterDataSet();
+		return this.dataSetList.getMasterDataSet().remoteDataSet;
 	}
 
 	/**
-	 * Retrieves the [DataSet]{@link Dataset.html} for category categoryName. Can be null when the category is not available to the current user.
+	 * Retrieves the DataSet for category categoryName. Can be null when the category is not available to the current user.
 	 * @param {string} categoryName - name of the category, e.g. "DOCU$INVOICING"
 	 */
 	getCategoryDataSet(categoryName: string): DataSet {
 		this.#setDirty();
-		return this.dataSetList.getCategoryDataSet(categoryName);
+		return this.dataSetList.getCategoryDataSet(categoryName).remoteDataSet;
 	}
 
 	/**
-	 * Retrieves a relation [DataSet]{@link Dataset.html} for the specified detail in the edit context.
+	 * Retrieves a relation DataSet for the specified detail in the edit context.
 	 * @param detail The detail name, e.g. "Comp"
 	 * @param filter SQL filter expression, e.g. "COMMENT like '%template%'"
 	 * @param includeBlobContent If true, blob fields (e.g. memo, stream) are returned
 	 */
 	getDetailDataSet(detail: string, filter = "", includeBlobContent = false): DataSet {
 		this.#setDirty();
-		return this.dataSetList.getDetailDataSet(detail, filter, includeBlobContent);
+		return this.dataSetList.getDetailDataSet(detail, filter, includeBlobContent).remoteDataSet;
 	}
 
 	protected asJsonRpc(): JSONRPCNamedOperation {

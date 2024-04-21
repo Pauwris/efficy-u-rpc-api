@@ -4,8 +4,9 @@ import RemoteAPI from 'src/remote-api.js';
 
 export type DataSetKind = "main" | "master" | "detail" | "category";
 
-export class DataSet {
+class DataSetInternal {
 	tableView: number = 0;
+	protected ds: DataSetInternal | null = null;
 
 	private _items: JSONPrimitiveObject[] = [];
 	private _item: JSONPrimitiveObject | null = null;
@@ -37,10 +38,10 @@ export class DataSet {
 	setItems(value?: JSONPrimitiveObject[]) {
 		if (!value) return;
 		if (!Array.isArray(value)) throw new TypeError("DataSet.items::value is not an Array");
-		
+
 		this._items = value;
-		if (this.items.length > 0) {
-			this._item = this.items[0];
+		if (this._items.length > 0) {
+			this._item = this._items[0];
 		}
 	}
 
@@ -55,14 +56,32 @@ export class DataSet {
 
 		return func;
 	};
+
+	get remoteDataSet(): DataSet {
+		return new DataSet(this);
+	}
 }
 
-/**
- * Represents a remotely fetched Efficy DataSet transformed as an array of row items
- */
-export class DataSetObject extends RemoteObject {
-	#items: JSONPrimitiveObject[] = [];
-	#item: JSONPrimitiveObject | null = null;
+export class DataSet {
+	constructor(public ds: DataSetInternal | null) {}
+
+	/**
+	 * The to array converted dataset
+	 */
+	get items() {
+		return this.ds ? this.ds.items : [];
+	}
+
+	/**
+	 * When exists, the first item of the items, else null
+	 */
+	get item() {
+		return this.ds ? this.ds.item : null;
+	}
+}
+
+export class RemoteDataSet extends RemoteObject {
+	protected ds: DataSetInternal | null = null;
 
 	constructor(remoteAPI: RemoteAPI) {
 		super(remoteAPI);
@@ -74,38 +93,36 @@ export class DataSetObject extends RemoteObject {
 	protected afterExecute() {
 		super.afterExecute();
 
-		const dso = new DataSet("main", "main");
-		dso.setItems(this.api.findDataSetArray(this.responseObject, this.dataSetName));
-		this.#items = dso.items;
-		this.#item = dso.item;
+		this.ds = new DataSetInternal("main", "main");
+		this.ds.setItems(this.api.findDataSetArray(this.responseObject, this.dataSetName));
 	}
 
 	/**
 	 * The to array converted dataset
 	 */
 	get items() {
-		return this.#items;
+		return this.ds ? this.ds.items : [];
 	}
 
 	/**
 	 * When exists, the first item of the items, else null
 	 */
 	get item() {
-		return this.#item;
+		return this.ds ? this.ds.item : null;
 	}
 }
 
 class DataSetTableView {
-	category: DataSet[] = []
-	detail: DataSet[] = []
+	category: DataSetInternal[] = []
+	detail: DataSetInternal[] = []
 }
 
 /**
  * Groups a list of DataSet operations that are shared between ConsultObject and EditObject
  */
 export class DataSetList extends RemoteObject {
-	private master: DataSet | null = null;
-	private master1: DataSet | null = null;
+	private master: DataSetInternal | null = null;
+	private master1: DataSetInternal | null = null;
 	private tableView: DataSetTableView = new DataSetTableView();
 
 	constructor(remoteAPI: RemoteAPI) {
@@ -116,13 +133,13 @@ export class DataSetList extends RemoteObject {
 	/**
 	 * Retrieves a master [DataSet]{@link Dataset.html} from the edit context.
 	 */
-	getMasterDataSet(masterView = 0): DataSet {
+	getMasterDataSet(masterView = 0): DataSetInternal {
 		if (masterView > 0) {
-			this.master1 = new DataSet("master", "master", undefined, undefined);
+			this.master1 = new DataSetInternal("master", "master", undefined, undefined);
 			this.master1.tableView = 1;
 			return this.master1;
 		} else {
-			this.master = new DataSet("master", "master", undefined, undefined);
+			this.master = new DataSetInternal("master", "master", undefined, undefined);
 			return this.master;
 		}
 	}
@@ -131,10 +148,10 @@ export class DataSetList extends RemoteObject {
 	 * Retrieves the [DataSet]{@link Dataset.html} for category categoryName. Can be null when the category is not available to the current user.
 	 * @param categoryName name of the category, e.g. "DOCU$INVOICING"
 	 */
-	getCategoryDataSet(categoryName: string): DataSet {
+	getCategoryDataSet(categoryName: string): DataSetInternal {
 		if (typeof categoryName !== "string") throw new TypeError("DataSetList.getCategoryDataSet::categoryName is not a string");
 
-		const ds = new DataSet("category", categoryName);
+		const ds = new DataSetInternal("category", categoryName);
 		this.tableView.category.push(ds)
 
 		return ds;
@@ -146,12 +163,12 @@ export class DataSetList extends RemoteObject {
 	 * @param filter SQL filter expression, e.g. "COMMENT like '%template%'"
 	 * @param includeBlobContent If true, blob fields (e.g. memo, stream) are returned
 	 */
-	getDetailDataSet(detail: string, filter: string = "", includeBlobContent: boolean = false): DataSet {
+	getDetailDataSet(detail: string, filter: string = "", includeBlobContent: boolean = false): DataSetInternal {
 		if (typeof detail !== "string") throw new TypeError("DataSetList.getDetailDataSet::detail is not a string");
 		if (filter && typeof filter !== "string") throw new TypeError("DataSetList.getDetailDataSet::filter is not a string");
 		if (includeBlobContent != null && typeof includeBlobContent !== "boolean") throw new TypeError("DataSetList.getDetailDataSet::includeBlobContent is not a boolean");
-		
-		const ds = new DataSet("detail", detail, filter, includeBlobContent);
+
+		const ds = new DataSetInternal("detail", detail, filter, includeBlobContent);
 		this.tableView.detail.push(ds)
 
 		return ds;
@@ -164,7 +181,7 @@ export class DataSetList extends RemoteObject {
 	}
 
 	get funcs() {
-		const array = [];		
+		const array = [];
 
 		this.master && array.push(this.master.func);
 		this.master1 && array.push(this.master1.func);
@@ -195,29 +212,29 @@ export class DataSetList extends RemoteObject {
 	setData(target: any) {
 		target.data = {};
 		target.data.master = this.master?.item;
-		target.data.master1 = this.master1?.item;		
+		target.data.master1 = this.master1?.item;
 	}
 
-	private setDsoItems(dso: DataSet) {
+	private setDsoItems(dso: DataSetInternal) {
 
-		if (dso instanceof DataSet === false) throw new TypeError("DataSetList.setDsoItems::dso is not an DataSet type");
+		if (dso instanceof DataSetInternal === false) throw new TypeError("DataSetList.setDsoItems::dso is not an DataSet type");
 		if (dso.tableView > 0) {
 			const item = this.api.findFuncArray2(this.responseObject, dso.type, "tableview", dso.tableView);
 			if (item) dso.setItems(item);
-		} else {			
+		} else {
 			const item = this.api.findFuncArray2(this.responseObject, dso.type, dso.type, dso.name);
 			if (item) dso.setItems(item);
 		}
 
-		
+
 	}
 }
 
 /**
  * Class returned by getUserList operation
- * @extends DataSetObject
+ * @extends RemoteDataSet
  */
-export class UserList extends DataSetObject {
+export class UserList extends RemoteDataSet {
 	constructor(remoteAPI: RemoteAPI) {
 		super(remoteAPI);
 	}
@@ -226,7 +243,7 @@ export class UserList extends DataSetObject {
 		const requestObject: JSONRPCNamedOperation = this.requestObject = {
 			"#id": this.id,
 			"@name": "api",
-			"@func": [{"@name": "userlist"}]
+			"@func": [{ "@name": "userlist" }]
 		};
 
 		return requestObject;
@@ -236,13 +253,13 @@ export class UserList extends DataSetObject {
 /**
  * Class returned by consultRecent operations
  */
-export class RecentList extends DataSetObject {
+export class RecentList extends RemoteDataSet {
 	/**
 	 * @param remoteAPI 
 	 * @param entity The entity name, e.g. "Comp"
 	 * @param extraFields A list of extra fields to consult for each recent entity record, e.g. ["POSTCODE", "CITY"]
 	 */
-    constructor(remoteAPI: RemoteAPI, private entity: string, private extraFields: string[] = []) {
+	constructor(remoteAPI: RemoteAPI, private entity: string, private extraFields: string[] = []) {
 		super(remoteAPI);
 		if (extraFields && !Array.isArray(extraFields)) throw TypeError("RecentListEx.constructor::extraFields is not an array");
 	}
@@ -267,7 +284,7 @@ export class RecentList extends DataSetObject {
 /**
  * Class returned by consultFavorites operations
  */
-export class FavoriteList extends DataSetObject {
+export class FavoriteList extends RemoteDataSet {
 	/**
 	 * @param remoteAPI 
 	 * @param entity The entity name, e.g. "Comp"
@@ -295,7 +312,7 @@ export class FavoriteList extends DataSetObject {
 /**
  * Class returned by searchContactsByEmail, searchContactsByPhone operations
  */
-export class ContactsList extends DataSetObject {
+export class ContactsList extends RemoteDataSet {
 	/**
 	 * @param remoteAPI 
 	 * @param recipients The list of email addresses
@@ -335,7 +352,7 @@ export class ContactsList extends DataSetObject {
 /**
  * Class returned by consultManyEx operations
  */
-export class ConsultManyEx extends DataSetObject {
+export class ConsultManyEx extends RemoteDataSet {
 	/**
 	 * @param remoteAPI 
 	 * @param entity The entity name, e.g. "Comp"
@@ -370,7 +387,7 @@ export class ConsultManyEx extends DataSetObject {
 /**
  * Class returned by methods such as getCategoryCollection
  */
-export class CollectionObject extends DataSetObject {
+export class CollectionObject extends RemoteDataSet {
 	constructor(remoteAPI: RemoteAPI, private entity: string, private detail: string) {
 		super(remoteAPI);
 		this.dataSetName = "collection";
