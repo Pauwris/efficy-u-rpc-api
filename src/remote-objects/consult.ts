@@ -26,15 +26,18 @@ class ConsultObject extends RemoteObject {
 		this.key = key;
 		this.dataSetList = new DataSetList(remoteAPI);
 
-		this.#resetState();
-		this.#setDirty();
+		this.resetState();
+		this.setDirty();
 	}
 
-	#resetState() {
+	/**
+	 * resetState and isDirty allows to reuse the existing class after an executeBatch
+	 */
+	private resetState() {
 		this.dataSetList.resetState();
 		this.isDirty = false;
 	}
-	#setDirty() {
+	private setDirty() {
 		if (this.isDirty) return;
 		this.api.registerObject(this);
 		this.isDirty = true;
@@ -44,7 +47,7 @@ class ConsultObject extends RemoteObject {
 	 * Retrieves a master DataSet from the consult context.
 	 */
 	getMasterDataSet(): DataSet {
-		this.#setDirty();
+		this.setDirty();
 		return this.dataSetList.getMasterDataSet().remoteDataSet;
 	}
 
@@ -53,7 +56,7 @@ class ConsultObject extends RemoteObject {
 	 * @param {string} categoryName - name of the category, e.g. "DOCU$INVOICING"
 	 */
 	getCategoryDataSet(categoryName: string): DataSet {
-		this.#setDirty();
+		this.setDirty();
 		return this.dataSetList.getCategoryDataSet(categoryName).remoteDataSet;
 	}
 
@@ -64,7 +67,7 @@ class ConsultObject extends RemoteObject {
 	 * @param includeBlobContent If true, blob fields (e.g. memo, stream) are returned
 	 */
 	getDetailDataSet(detail: string, filter = "", includeBlobContent = false): DataSet {
-		this.#setDirty();
+		this.setDirty();
 		return this.dataSetList.getDetailDataSet(detail, filter, includeBlobContent).remoteDataSet;
 	}
 
@@ -91,7 +94,7 @@ class ConsultObject extends RemoteObject {
 		this.dataSetList.afterExecute();
 		this.dataSetList.setData(this);
 
-		this.#resetState();
+		this.resetState();
 	}
 }
 

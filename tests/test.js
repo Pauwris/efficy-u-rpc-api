@@ -85,10 +85,13 @@ test('Consult operations', async (t) => {
   const comp = crm.openConsultObject("comp", compKeyEfficy);
 	const dsComp = comp.getMasterDataSet();
 	const dsCompCustomer = comp.getCategoryDataSet("COMP$CUSTOMER");
-	const linkedContacts = comp.getDetailDataSet("cont");
+	const linkedContacts = comp.getDetailDataSet("cont");  
+  await crm.executeBatch();
+  const linkedOppo = comp.getDetailDataSet("oppo");
   await crm.executeBatch();
 
   t.deepEqual(dsComp.item.compName, "Efficy", "compName");
   t.deepEqual(dsCompCustomer.item.compcustCompanyKey, compKeyEfficy, "dsCompCustomer");
   t.assert(linkedContacts.items.length > 100, "linkedContacts")	
+  t.assert(linkedOppo.items.length > 10, "linkedOppo")	
 });
