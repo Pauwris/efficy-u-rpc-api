@@ -4,13 +4,13 @@ import RemoteAPI from 'src/remote-api.js';
 
 export type DataSetKind = "main" | "master" | "detail" | "category";
 
-class DataSet {
+export class DataSet {
 	tableView: number = 0;
 
 	private _items: JSONPrimitiveObject[] = [];
 	private _item: JSONPrimitiveObject | null = null;
 
-	constructor(public type: DataSetKind, public name?: string, public filter?: string, public includeBlobContent?: boolean) {
+	constructor(public type: DataSetKind, public name: string, public filter?: string, public includeBlobContent?: boolean) {
 		if (!["main", "master", "detail", "category"].includes(type)) throw new TypeError("DataSet.constructor::invalid type");
 		if (["detail", "category"].includes(type) && !name) throw new TypeError("DataSet.constructor::name must be specified");
 		this.type = type;
@@ -57,7 +57,6 @@ class DataSet {
 	};
 }
 
-
 /**
  * Represents a remotely fetched Efficy DataSet transformed as an array of row items
  */
@@ -75,7 +74,7 @@ export class DataSetObject extends RemoteObject {
 	protected afterExecute() {
 		super.afterExecute();
 
-		const dso = new DataSet("main");
+		const dso = new DataSet("main", "main");
 		dso.setItems(this.api.findDataSetArray(this.responseObject, this.dataSetName));
 		this.#items = dso.items;
 		this.#item = dso.item;
@@ -93,6 +92,124 @@ export class DataSetObject extends RemoteObject {
 	 */
 	get item() {
 		return this.#item;
+	}
+}
+
+class DataSetTableView {
+	category: DataSet[] = []
+	detail: DataSet[] = []
+}
+
+/**
+ * Groups a list of DataSet operations that are shared between ConsultObject and EditObject
+ */
+export class DataSetList extends RemoteObject {
+	private master: DataSet | null = null;
+	private master1: DataSet | null = null;
+	private tableView: DataSetTableView = new DataSetTableView();
+
+	constructor(remoteAPI: RemoteAPI) {
+		super(remoteAPI);
+		this.resetState();
+	}
+
+	/**
+	 * Retrieves a master [DataSet]{@link Dataset.html} from the edit context.
+	 */
+	getMasterDataSet(masterView = 0): DataSet {
+		if (masterView > 0) {
+			this.master1 = new DataSet("master", "master", undefined, undefined);
+			this.master1.tableView = 1;
+			return this.master1;
+		} else {
+			this.master = new DataSet("master", "master", undefined, undefined);
+			return this.master;
+		}
+	}
+
+	/**
+	 * Retrieves the [DataSet]{@link Dataset.html} for category categoryName. Can be null when the category is not available to the current user.
+	 * @param categoryName name of the category, e.g. "DOCU$INVOICING"
+	 */
+	getCategoryDataSet(categoryName: string): DataSet {
+		if (typeof categoryName !== "string") throw new TypeError("DataSetList.getCategoryDataSet::categoryName is not a string");
+
+		const ds = new DataSet("category", categoryName);
+		this.tableView.category.push(ds)
+
+		return ds;
+	}
+
+	/**
+	 * Retrieves a relation [DataSet]{@link Dataset.html} for the specified detail in the edit context.
+	 * @param detail The detail name, e.g. "Comp"
+	 * @param filter SQL filter expression, e.g. "COMMENT like '%template%'"
+	 * @param includeBlobContent If true, blob fields (e.g. memo, stream) are returned
+	 */
+	getDetailDataSet(detail: string, filter: string = "", includeBlobContent: boolean = false): DataSet {
+		if (typeof detail !== "string") throw new TypeError("DataSetList.getDetailDataSet::detail is not a string");
+		if (filter && typeof filter !== "string") throw new TypeError("DataSetList.getDetailDataSet::filter is not a string");
+		if (includeBlobContent != null && typeof includeBlobContent !== "boolean") throw new TypeError("DataSetList.getDetailDataSet::includeBlobContent is not a boolean");
+		
+		const ds = new DataSet("detail", detail, filter, includeBlobContent);
+		this.tableView.detail.push(ds)
+
+		return ds;
+	}
+
+	resetState() {
+		this.master = null;
+		this.master1 = null;
+		this.tableView = new DataSetTableView();
+	}
+
+	get funcs() {
+		const array = [];		
+
+		this.master && array.push(this.master.func);
+		this.master1 && array.push(this.master1.func);
+
+		[...this.tableView.category, ...this.tableView.detail].forEach(ds => {
+			array.push(ds.func)
+		})
+
+		return array;
+	}
+
+	afterExecute() {
+		this.master && this.setDsoItems(this.master);
+		this.master1 && this.setDsoItems(this.master1);
+
+		[...this.tableView.category, ...this.tableView.detail].forEach(ds => {
+			this.setDsoItems(ds)
+		})
+	}
+
+	setResponseObject(value: object) {
+		this.responseObject = value;
+	}
+
+	/**
+	 * Add the remotely fetched master, categories and detail data as properties of data
+	 */
+	setData(target: any) {
+		target.data = {};
+		target.data.master = this.master?.item;
+		target.data.master1 = this.master1?.item;		
+	}
+
+	private setDsoItems(dso: DataSet) {
+
+		if (dso instanceof DataSet === false) throw new TypeError("DataSetList.setDsoItems::dso is not an DataSet type");
+		if (dso.tableView > 0) {
+			const item = this.api.findFuncArray2(this.responseObject, dso.type, "tableview", dso.tableView);
+			if (item) dso.setItems(item);
+		} else {			
+			const item = this.api.findFuncArray2(this.responseObject, dso.type, dso.type, dso.name);
+			if (item) dso.setItems(item);
+		}
+
+		
 	}
 }
 

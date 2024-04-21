@@ -9,6 +9,7 @@ dotenv.config();
 // Constants depending on the tested environment
 const url = new URL("https://submariners.efficytest.cloud/");
 const customerAlias = "submariners";
+const compKeyEfficy = "00010Q0u00001Nvm";
 
 test('process.env', t => {
   t.is(process.env.CRM_ORIGIN, url.origin + "/");
@@ -78,3 +79,16 @@ test('DataSet extended operations', async (t) => {
   }  
 });
 
+test('Consult operations', async (t) => {
+  const crm = new CrmRpc(crmEnv);
+
+  const comp = crm.openConsultObject("comp", compKeyEfficy);
+	const dsComp = comp.getMasterDataSet();
+	const dsCompCustomer = comp.getCategoryDataSet("COMP$CUSTOMER");
+	const linkedContacts = comp.getDetailDataSet("cont");
+  await crm.executeBatch();
+
+  t.deepEqual(dsComp.item.compName, "Efficy", "compName");
+  t.deepEqual(dsCompCustomer.item.compcustCompanyKey, compKeyEfficy, "dsCompCustomer");
+  t.assert(linkedContacts.items.length > 100, "linkedContacts")	
+});

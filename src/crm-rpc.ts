@@ -1,6 +1,7 @@
 import CrmEnv from './crm-env.js';
 import RemoteAPI from './remote-api.js';
 import { PropertyObject, SettingObject } from './remote-objects/base-type.js';
+import ConsultObject from './remote-objects/consult.js';
 import { CollectionObject, ConsultManyEx, FavoriteList, RecentList, UserList } from './remote-objects/dataset.js';
 import { SystemSettings } from './remote-objects/list-type.js';
 import { QueryObject, QuerySQLObject } from './remote-objects/query.js';
@@ -120,6 +121,24 @@ class CrmRpc extends RemoteAPI {
 	getSetting(module: string, name: string, asString = true) {
 		return new SettingObject(this, module, name, asString);
 	}
+
+	/**
+	 * Opens a consult context for the record identified by entity and key.
+	 * A context remains memory-resident (on the web server) until it is closed. Always match with a closeContext() call to avoid memory consumption.
+	 * @param entity The entity name, e.g. "Comp"
+	 * @param key The key of the record. Use key = "" to create a new record.
+	 * @example
+	 * const comp = crm.openConsultObject("comp", 2);
+	 * const dsComp = comp.getMasterDataSet();
+	 * const dsCompAddress = comp.getCategoryDataSet("COMP$ADDRESS");
+	 * const linkedContacts = comp.getDetailDataSet("cont");
+	 * await crm.executeBatch();
+	 * const companyNames = [comp.data.master.NAME, comp.data.category["COMP$ADDRESS"].NAME];
+	 */
+	openConsultObject(entity: string, key: string) {
+		return new ConsultObject(this, entity, key);
+	}
+
 
 	/**
 	 * @deprecated
