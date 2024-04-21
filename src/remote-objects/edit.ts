@@ -6,12 +6,6 @@ import { AttachmentList, AttachmentObject } from "./attachment.js";
 
 /**
  * Constructed class Returned by RemoteObjects.openEditObject
- * @extends RemoteObject
- * @property {string} entity - The entity name of the edited record
- * @property {number} key - The key of the edited record
- * @property {number} edithandle - The handle of the edit operation
- * @property {boolean} inserted - True when record is newly inserted in the DB
- * @property {object} data - The master, categories and detail objects available as properties of data
  */
 class EditObject extends RemoteObject {
 	protected commit: boolean = true;
