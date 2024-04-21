@@ -5,9 +5,14 @@ export type JSONPrimitiveObject = Record<string, JSONPrimitive>
 
 export interface JSONRPCNamedOperation {
     "@name": string;
-    "#id": string;
+    "#id"?: string;
     "@func": object[];
     [key: string]: any;
+}
+
+export interface JSONRPCNameObject {
+    "@name": string;
+    "@func": object[];
 }
 
 export function isJSONRPCNamedOperation(obj: any): obj is JSONRPCNamedOperation {

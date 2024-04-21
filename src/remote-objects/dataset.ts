@@ -131,7 +131,7 @@ export class DataSetList extends RemoteObject {
 	}
 
 	/**
-	 * Retrieves a master [DataSet]{@link Dataset.html} from the edit context.
+	 * Retrieves a master DataSet from the edit context.
 	 */
 	getMasterDataSet(masterView = 0): DataSetInternal {
 		if (masterView > 0) {
@@ -145,7 +145,7 @@ export class DataSetList extends RemoteObject {
 	}
 
 	/**
-	 * Retrieves the [DataSet]{@link Dataset.html} for category categoryName. Can be null when the category is not available to the current user.
+	 * Retrieves the DataSet for category categoryName. Can be null when the category is not available to the current user.
 	 * @param categoryName name of the category, e.g. "DOCU$INVOICING"
 	 */
 	getCategoryDataSet(categoryName: string): DataSetInternal {
@@ -158,7 +158,7 @@ export class DataSetList extends RemoteObject {
 	}
 
 	/**
-	 * Retrieves a relation [DataSet]{@link Dataset.html} for the specified detail in the edit context.
+	 * Retrieves a relation DataSet for the specified detail in the edit context.
 	 * @param detail The detail name, e.g. "Comp"
 	 * @param filter SQL filter expression, e.g. "COMMENT like '%template%'"
 	 * @param includeBlobContent If true, blob fields (e.g. memo, stream) are returned

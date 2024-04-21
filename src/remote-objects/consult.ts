@@ -1,7 +1,7 @@
 import RemoteAPI from "src/remote-api.js";
 import { RemoteObject } from "./remote-object.js";
 import { DataSetList, DataSet } from "./dataset.js";
-import { JSONRPCNamedOperation } from "src/types/index.js";
+import { JSONPrimitiveObject, JSONRPCNameObject, JSONRPCNamedOperation } from "src/types/index.js";
 
 /**
  * Class returned by openConsultObject
@@ -75,8 +75,8 @@ class ConsultObject extends RemoteObject {
 		const requestObject: JSONRPCNamedOperation = {
 			"#id": this.id,
 			"@name": "consult",
-			"@func": [],
-			"closecontext": true
+			"closecontext": true,
+			"@func": []
 		};
 
 		if (this.entity) requestObject.entity = this.entity;
