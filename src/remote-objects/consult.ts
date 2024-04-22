@@ -6,7 +6,7 @@ import { JSONPrimitiveObject, JSONRPCNameObject, JSONRPCNamedOperation } from "s
 /**
  * Class returned by openConsultObject
  */
-class ConsultObject extends RemoteObject {
+export class ConsultObject extends RemoteObject {
 	entity: string;
 	key: string;
 
@@ -97,5 +97,3 @@ class ConsultObject extends RemoteObject {
 		this.resetState();
 	}
 }
-
-export default ConsultObject;

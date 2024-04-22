@@ -7,7 +7,7 @@ import { AttachmentList, AttachmentObject } from "./attachment.js";
 /**
  * Constructed class Returned by RemoteObjects.openEditObject
  */
-class EditObject extends RemoteObject {
+export class EditObject extends RemoteObject {
 	protected commit: boolean = true;
     protected closecontext: boolean = true;
 
@@ -353,9 +353,10 @@ class EditObject extends RemoteObject {
 
 	protected afterExecute() {
 		super.afterExecute();
-
-        if (this.requestObject?.key) {
-            this.key = this.requestObject.key;
+		
+		const resp = this.responseObject as JSONPrimitiveObject;
+        if (resp.key && typeof resp.key === "string") {
+            this.key = resp.key;
         }        
 
 		this.dataSetList.setResponseObject(this.responseObject);
@@ -369,4 +370,29 @@ class EditObject extends RemoteObject {
 	}
 }
 
-export default EditObject;
+
+/**
+ * Class returned by methods such as deleteEntity
+ */
+export class DeleteEntity extends RemoteObject {
+	constructor(remoteAPI: RemoteAPI, public entity: string, public keys: string[]) {
+		super(remoteAPI);
+		this.api.registerObject(this);
+	}
+
+	asJsonRpc() {
+		const api = {
+			"@name": "delete",
+			"entity": this.entity,
+			"keys": this.keys.join(";")
+		}
+
+		const requestObject: JSONRPCNamedOperation = {
+			"#id": this.id,
+			"@name": "api",
+			"@func": [api]
+		};
+
+		return requestObject;
+	}
+}

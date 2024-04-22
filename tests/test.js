@@ -26,6 +26,7 @@ test('crmEnv', t => {
   t.is(crmEnv.url, url.origin);
 });
 
+
 test('Settings and session properties', async (t) => {
   const crm = new CrmRpc(crmEnv);
 
@@ -79,6 +80,7 @@ test('DataSet extended operations', async (t) => {
   }  
 });
 
+
 test('Consult operations', async (t) => {
   const crm = new CrmRpc(crmEnv);
 
@@ -94,4 +96,44 @@ test('Consult operations', async (t) => {
   t.deepEqual(dsCompCustomer.item.compcustCompanyKey, compKeyEfficy, "dsCompCustomer");
   t.assert(linkedContacts.items.length > 100, "linkedContacts")	
   t.assert(linkedOppo.items.length > 10, "linkedOppo")	
+});
+
+
+test('Edit operations', async (t) => {
+  const crm = new CrmRpc(crmEnv);
+  
+  const userList = crm.getUserList();
+  await crm.executeBatch();
+  const userKey = userList.items.filter(user => user.KIND === crm.constants.account_kind.user).pop().K_USER;
+  const groupKey = userList.items.filter(user => user.KIND === crm.constants.account_kind.group).pop().K_USER;
+
+  const comp = crm.openConsultObject("comp", compKeyEfficy);
+	const linkedContacts = comp.getDetailDataSet("cont");  
+  await crm.executeBatch();
+  const contKey = linkedContacts.items.pop().contKey;  
+
+  const docu = crm.openEditObject("Docu");
+  docu.updateField("name", "Unittest");
+  docu.insertDetail("Comp", compKeyEfficy);
+  docu.insertDetail("Cont", contKey, true, true);
+  docu.commitChanges();
+  docu.activateCategory("DOCU$INVOICING");
+  docu.updateCategoryFields("DOCU$INVOICING", {
+    "invoiceDate":"2021-01-08T00:00:00",
+    "communication": "Hello World!"
+  });
+  docu.updateCategoryField("DOCU$INVOICING", "expenses", 123.456)
+  docu.clearDetail("Comp");
+  docu.insertDetail("Comp", compKeyEfficy);
+  docu.insertDetail("Cont", contKey, crm.constants.access_code.fullcontrol);
+  docu.setUsers([userKey], true);
+  docu.setUserSecurity(groupKey, crm.constants.access_code.fullcontrol);
+  docu.commitChanges();  
+  await crm.executeBatch();
+  const docuKey = docu.key;
+
+  crm.deleteEntity("Docu", [docuKey]);
+  await crm.executeBatch();
+
+  t.assert(docuKey != "", "Edit + Delete docu")	
 });

@@ -1,8 +1,9 @@
 import CrmEnv from './crm-env.js';
 import RemoteAPI from './remote-api.js';
 import { PropertyObject, SettingObject } from './remote-objects/base-type.js';
-import ConsultObject from './remote-objects/consult.js';
+import { ConsultObject } from './remote-objects/consult.js';
 import { CollectionObject, ConsultManyEx, FavoriteList, RecentList, UserList } from './remote-objects/dataset.js';
+import { EditObject, DeleteEntity } from './remote-objects/edit.js';
 import { SystemSettings } from './remote-objects/list-type.js';
 import { QueryObject, QuerySQLObject } from './remote-objects/query.js';
 /**
@@ -128,16 +129,26 @@ class CrmRpc extends RemoteAPI {
 	 * @param entity The entity name, e.g. "Comp"
 	 * @param key The key of the record. Use key = "" to create a new record.
 	 * @example
-	 * const comp = crm.openConsultObject("comp", 2);
+	 * const comp = crm.openConsultObject("comp", compKey)
 	 * const dsComp = comp.getMasterDataSet();
-	 * const dsCompAddress = comp.getCategoryDataSet("COMP$ADDRESS");
-	 * const linkedContacts = comp.getDetailDataSet("cont");
+	 * const dsCompCustomer = comp.getCategoryDataSet("COMP$CUSTOMER");
+	 * const linkedContacts = comp.getDetailDataSet("cont");  
 	 * await crm.executeBatch();
-	 * const companyNames = [comp.data.master.NAME, comp.data.category["COMP$ADDRESS"].NAME];
 	 */
 	openConsultObject(entity: string, key: string) {
 		return new ConsultObject(this, entity, key);
 	}
+
+	/**
+	 * Opens an edit context for the record identified by entity and key.
+	 * A context remains memory-resident (on the web server) until it is closed. Always match with a closeContext() call to avoid memory consumption.
+	 * @param entity - The entity name, e.g. "Comp"
+	 * @param key - The key of the record. Use key = "" to create a new record.
+	 */
+	openEditObject(entity: string, key: string = "") {
+		return new EditObject(this, entity, key);
+	}
+
 
 
 	/**
@@ -195,7 +206,7 @@ class CrmRpc extends RemoteAPI {
 	getUserList() {
 		return new UserList(this);
 	}
-	
+
 	/**
 	 * Executes a database query stored in QUERIES
 	 * @param idQuery
@@ -222,7 +233,17 @@ class CrmRpc extends RemoteAPI {
 	 */
 	executeSqlQuery(sqlQueryText: string, queryParameters?: string[], loadBlobs: boolean = false, recordCount: number = 0) {
 		return new QuerySQLObject(this, sqlQueryText, queryParameters, loadBlobs, recordCount);
-	}	
+	}
+
+	/**
+	 * Deletes records
+	 * @param entity The entity name, e.g. "Comp"
+	 * @param keys List of keys
+	 */
+	deleteEntity(entity: string, keys: string[]) {
+		if (!keys || (Array.isArray(keys) && keys.length === 0)) return;
+		new DeleteEntity(this, entity, keys);
+	}
 
 	/**
 	 * Efficy U constants
