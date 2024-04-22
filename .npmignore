@@ -4,4 +4,4 @@
 /tutorials
 /.vscode
 /dist
-rollup.config.js
+/pack

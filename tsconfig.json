@@ -1,18 +1,26 @@
 {
-	// Change this to match your project
-	"include": ["lib/**/*"],
 	"compilerOptions": {
-	  // Tells TypeScript to read JS files, as
-	  // normally they are ignored as source files
-	  "allowJs": true,
-	  // Generate d.ts files
+	  "allowSyntheticDefaultImports": true,
+	  "baseUrl": ".",
 	  "declaration": true,
-	  // This compiler run should
-	  // only output d.ts files
-	  "emitDeclarationOnly": true,
-	  // go to js file when using IDE functions like
-	  // "Go to Definition" in VSCode
-	  "declarationMap": true,
-	  "target": "ES2020"
-	}
+	  "declarationDir": "dist/dts",
+	  "esModuleInterop": true,
+	  "experimentalDecorators": true,
+	  "importHelpers": true,
+	  "isolatedModules": false,
+	  "module": "NodeNext",
+	  "moduleResolution": "NodeNext",
+	  "outDir": "dist/lib",
+	  "resolveJsonModule": true,
+	  "rootDir": "./src",
+	  "skipLibCheck": true,
+	  "sourceMap": true,
+	  "strict": true,
+	  "target": "ESNext",
+	  "useDefineForClassFields": true,
+	},
+	"include": ["src/**/*.ts"],
+	"exclude": [
+	  "node_modules"
+	]
   }
