@@ -1,15 +1,13 @@
-import ignore from 'rollup-plugin-ignore';
+import typescript from '@rollup/plugin-typescript';
 
-export default [
-	{
-		input: 'lib/index.mjs',
-		output: [
-			{
-				file: 'dist/es.js',
-				format: 'es'
-			}
-		],
-		plugins: [ignore(["node-fetch"])],
-	}
-];
-
+export default {
+	input: 'src/index.ts',
+	output: {
+		file: 'dist/index.js',
+		sourcemap: true
+	},
+	external: ['node-fetch', 'cookie'],
+	plugins: [
+		typescript(),
+	],
+};

@@ -9,7 +9,7 @@
 	  "isolatedModules": false,
 	  "module": "NodeNext",
 	  "moduleResolution": "NodeNext",
-	  "outDir": "./dist",
+	  "outDir": "dist/lib",
 	  "resolveJsonModule": true,
 	  "rootDir": "./src",
 	  "skipLibCheck": true,

@@ -1,9 +1,10 @@
+import { Cookie, CrmEnvConfig } from "./types.js";
+
 /**
  * Class to define the parameters of the Efficy U server
  */
-export default class CrmEnv {
-	#name = "CrmEnv";
-	#isNode: boolean = (typeof process !== "undefined" && process.versions?.node != null);
+export class CrmEnv {
+	private name = "CrmEnv";
 
 	url?: string;
 	customer?: string;
@@ -49,16 +50,7 @@ export default class CrmEnv {
 	}
 
 	/**
-	 * Checks if the code runs in a Node.js environment.
-	 * @returns True if running in Node.js, false otherwise.
-	 */
-	get isNode(): boolean {
-		return this.#isNode;
-	}
-
-	/**
 	 * Returns the request header for cookies.
-	 * @returns The cookie header string or an empty string if no cookies are set.
 	 */
 	get cookieHeader(): string {
 		if (!Array.isArray(this.cookies)) return "";
@@ -70,7 +62,6 @@ export default class CrmEnv {
 
 	/**
 	 * Returns the session ID from cookies.
-	 * @returns The session ID string or an empty string if no cookies are set.
 	 */
 	get sessionId(): string {
 		return Array.isArray(this.cookies) && this.cookies.length > 0 ? this.cookies[0].value ?? "" : "";
@@ -78,27 +69,9 @@ export default class CrmEnv {
 
 	/**
 	 * Returns the first part of the session ID.
-	 * @returns The first part of the session ID string or an empty string if no cookies are set.
 	 */
 	get shortSessionId(): string {
 		const str = this.sessionId;
 		return str.split("-")[0] || "";
 	}
-}
-
-interface CrmEnvConfig {
-	url?: string;
-	customer?: string;
-	logOff?: boolean;
-	useFetchQueue?: boolean;
-	apiKey?: string;
-	user?: string;
-	pwd?: string;
-	cookies?: Cookie[];
-}
-
-interface Cookie {
-	name: string;
-	value: string;
-	expires?: string;
 }

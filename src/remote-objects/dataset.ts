@@ -1,8 +1,8 @@
 import { RemoteObject } from './remote-object.js';
-import { JSONPrimitiveObject, JSONRPCNamedOperation } from '../types/index.js'
-import RemoteAPI from 'src/remote-api.js';
+import { JSONPrimitiveObject, JSONRPCNameObject, JSONRPCNamedOperation } from '../types.js'
+import { RemoteAPI } from 'src/remote-api.js';
 
-export type DataSetKind = "main" | "master" | "detail" | "category";
+type DataSetKind = "main" | "master" | "detail" | "category";
 
 class DataSetInternal {
 	tableView: number = 0;
@@ -82,7 +82,7 @@ export class RemoteDataSet extends RemoteObject {
 
 	constructor(remoteAPI: RemoteAPI) {
 		super(remoteAPI);
-		this.api.registerObject(this);
+		this.registerObject(this);
 	}
 
 	protected dataSetName?: string;
@@ -91,7 +91,7 @@ export class RemoteDataSet extends RemoteObject {
 		super.afterExecute();
 
 		this.ds = new DataSetInternal("main", "main");
-		this.ds.setItems(this.api.findDataSetArray(this.responseObject, this.dataSetName));
+		this.ds.setItems(this.findDataSetArray(this.responseObject, this.dataSetName));
 	}
 
 	/**
@@ -127,9 +127,6 @@ export class DataSetList extends RemoteObject {
 		this.resetState();
 	}
 
-	/**
-	 * Retrieves a master DataSet from the edit context.
-	 */
 	getMasterDataSet(masterView = 0): DataSetInternal {
 		if (masterView > 0) {
 			this.master1 = new DataSetInternal("master", "master", undefined, undefined);
@@ -141,10 +138,6 @@ export class DataSetList extends RemoteObject {
 		}
 	}
 
-	/**
-	 * Retrieves the DataSet for category categoryName. Can be null when the category is not available to the current user.
-	 * @param categoryName name of the category, e.g. "DOCU$INVOICING"
-	 */
 	getCategoryDataSet(categoryName: string): DataSetInternal {
 		const ds = new DataSetInternal("category", categoryName);
 		this.tableView.category.push(ds)
@@ -152,12 +145,6 @@ export class DataSetList extends RemoteObject {
 		return ds;
 	}
 
-	/**
-	 * Retrieves a relation DataSet for the specified detail in the edit context.
-	 * @param detail The detail name, e.g. "Comp"
-	 * @param filter SQL filter expression, e.g. "COMMENT like '%template%'"
-	 * @param includeBlobContent If true, blob fields (e.g. memo, stream) are returned
-	 */
 	getDetailDataSet(detail: string, filter: string = "", includeBlobContent: boolean = false): DataSetInternal {
 		const ds = new DataSetInternal("detail", detail, filter, includeBlobContent);
 		this.tableView.detail.push(ds)
@@ -208,10 +195,10 @@ export class DataSetList extends RemoteObject {
 
 	private setDsoItems(dso: DataSetInternal) {
 		if (dso.tableView > 0) {
-			const item = this.api.findFuncArray2(this.responseObject, dso.type, "tableview", dso.tableView);
+			const item = this.findFuncArray2(this.responseObject, dso.type, "tableview", dso.tableView);
 			if (item) dso.setItems(item);
 		} else {
-			const item = this.api.findFuncArray2(this.responseObject, dso.type, dso.type, dso.name);
+			const item = this.findFuncArray2(this.responseObject, dso.type, dso.type, dso.name);
 			if (item) dso.setItems(item);
 		}
 	}
@@ -219,7 +206,6 @@ export class DataSetList extends RemoteObject {
 
 /**
  * Class returned by getUserList operation
- * @extends RemoteDataSet
  */
 export class UserList extends RemoteDataSet {
 	constructor(remoteAPI: RemoteAPI) {
@@ -241,21 +227,17 @@ export class UserList extends RemoteDataSet {
  * Class returned by consultRecent operations
  */
 export class RecentList extends RemoteDataSet {
-	/**
-	 * @param remoteAPI 
-	 * @param entity The entity name, e.g. "Comp"
-	 * @param extraFields A list of extra fields to consult for each recent entity record, e.g. ["POSTCODE", "CITY"]
-	 */
-	constructor(remoteAPI: RemoteAPI, private entity: string, private extraFields: string[] = []) {
+	constructor(remoteAPI: RemoteAPI, private entity: string = "", private extraFields: string[] = []) {
 		super(remoteAPI);
 	}
 
 	protected asJsonRpc() {
-		const api = {
+		const api: JSONPrimitiveObject = {
 			"@name": "recentlistex",
-			"entity": this.entity,
 			"extrafields": this.extraFields.join(","),
 		}
+
+		if (this.entity) api.entity = this.entity;
 
 		const requestObject: JSONRPCNamedOperation = this.requestObject = {
 			"#id": this.id,
@@ -271,19 +253,16 @@ export class RecentList extends RemoteDataSet {
  * Class returned by consultFavorites operations
  */
 export class FavoriteList extends RemoteDataSet {
-	/**
-	 * @param remoteAPI 
-	 * @param entity The entity name, e.g. "Comp"
-	 */
-	constructor(remoteAPI: RemoteAPI, private entity: string) {
+	constructor(remoteAPI: RemoteAPI, private entity?: string) {
 		super(remoteAPI);
 	}
 
 	protected asJsonRpc() {
-		const api = {
-			"@name": "favoritelist",
-			"entity": this.entity
+		const api: JSONPrimitiveObject = {
+			"@name": "favoritelist"		
 		}
+
+		if (this.entity) api.entity = this.entity;
 
 		const requestObject: JSONRPCNamedOperation = this.requestObject = {
 			"#id": this.id,
@@ -338,14 +317,7 @@ export class ContactsList extends RemoteDataSet {
 /**
  * Class returned by consultManyEx operations
  */
-export class ConsultManyEx extends RemoteDataSet {
-	/**
-	 * @param remoteAPI 
-	 * @param entity The entity name, e.g. "Comp"
-	 * @param whereFields A list of field names to match (used as WHERE criteria), e.g. ["NAME", "OPENED"]
-	 * @param whereValues A list of values to match, e.g. ["Efficy", "1"]
-	 * @param orderByExpression SQL sort expression, e.g. "K_COMPANY desc"
-	 */
+export class ConsultManyObject extends RemoteDataSet {
 	constructor(remoteAPI: RemoteAPI, private entity: string, private whereFields: string[] = [], private whereValues: string[] = [], private orderByExpression: string = "") {
 		super(remoteAPI);
 	}

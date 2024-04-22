@@ -1,6 +1,6 @@
-import RemoteAPI from "src/remote-api.js";
+import { RemoteAPI } from "src/remote-api.js";
 import { RemoteObject } from "./remote-object.js";
-import { JSONRPCNamedOperation } from "src/types/index.js";
+import { JSONRPCNamedOperation } from "src/types.js";
 
 /**
  * Class uses by operations that return a string result
@@ -11,12 +11,12 @@ class StringObject extends RemoteObject {
 
 	constructor(remoteAPI: RemoteAPI) {
 		super(remoteAPI);
-		this.api.registerObject(this);
+		this.registerObject(this);
 	}
 
 	protected afterExecute() {
 		super.afterExecute();
-        const output = this.api.findFunc(this.responseObject, this.operationName)?.["#result"];
+        const output = this.findFunc(this.responseObject, this.operationName)?.["#result"];
         if (output && typeof output === "string") {
             this.result = output;
         }		
@@ -30,7 +30,7 @@ export class PropertyObject extends StringObject {
 	constructor(remoteAPI: RemoteAPI, public name: string) {
 		super(remoteAPI);
 		this.operationName = name;
-		this.api.registerObject(this);
+		this.registerObject(this);
 	}
 	
 	protected asJsonRpc() {
@@ -62,7 +62,7 @@ export class SettingObject extends StringObject {
      */
 	constructor(remoteAPI: RemoteAPI, private module: string, private name: string, private asString = true) {
 		super(remoteAPI);
-		this.api.registerObject(this);
+		this.registerObject(this);
 	}
 
 	/** @protected */

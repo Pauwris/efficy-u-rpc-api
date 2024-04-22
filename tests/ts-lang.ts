@@ -1,7 +1,6 @@
-import test from 'ava';
+import { CrmEnv, CrmRpc, Crm } from '../dist/index.js'
 
-import CrmEnv from "../dist/crm-env.js"
-import CrmRpc from "../dist/crm-rpc.js"
+import test from 'ava';
 import process from 'process';
 import dotenv from 'dotenv';
 dotenv.config();
@@ -22,6 +21,9 @@ const crmEnv = new CrmEnv({
   "customer": process.env.CRM_CUSTOMER
 })
 
+if (typeof process.env.CRM_USER !== "string" || !process.env.CRM_USER.toLowerCase()) throw Error("Check .env configuration")
+const currentUserCode = process.env.CRM_USER.toLowerCase();
+
 test('crmEnv', t => {
   t.is(crmEnv.url, url.origin);
 });
@@ -29,7 +31,6 @@ test('crmEnv', t => {
 
 test('Settings and session properties', async (t) => {
   const crm = new CrmRpc(crmEnv);
-
   const currentDatabaseAlias = crm.currentDatabaseAlias;
   const currentLicenseName = crm.currentUserCode;
   const setts = crm.getSystemSettings();
@@ -38,7 +39,7 @@ test('Settings and session properties', async (t) => {
   await crm.executeBatch();
 
   t.deepEqual(currentDatabaseAlias.result, customerAlias);
-  t.deepEqual(currentLicenseName.result.toLowerCase(), process.env.CRM_USER.toLowerCase());
+  t.deepEqual(currentLicenseName.result.toLowerCase(), currentUserCode);
   t.deepEqual(setts.map.get("FileBase"), "efficy/")
   t.deepEqual(defaultCurrency.result, "EUR")
 });
@@ -65,7 +66,7 @@ test('DataSet extended operations', async (t) => {
   const catgs = crm.getCategoryCollection("comp");
   await crm.executeBatch();
 
-  const adminUser = userList.items.find(user => user["USERCODE"].toLowerCase() === process.env.CRM_USER.toLowerCase());
+  const adminUser = userList.items.find(user => user["USERCODE"].toLowerCase() === currentUserCode);
 
   t.assert(adminUser.key != "", "getUserList");
   t.assert(favoList.items.pop()?.favoKey != "", "consultFavorites");
@@ -104,8 +105,8 @@ test('Edit operations', async (t) => {
   
   const userList = crm.getUserList();
   await crm.executeBatch();
-  const userKey = userList.items.filter(user => user.KIND === crm.constants.account_kind.user).pop().K_USER;
-  const groupKey = userList.items.filter(user => user.KIND === crm.constants.account_kind.group).pop().K_USER;
+  const userKey = userList.items.filter(user => user.KIND === Crm.account_kind.user).pop().K_USER;
+  const groupKey = userList.items.filter(user => user.KIND === Crm.account_kind.group).pop().K_USER;
 
   const comp = crm.openConsultObject("comp", compKeyEfficy);
 	const linkedContacts = comp.getDetailDataSet("cont");  
@@ -125,12 +126,13 @@ test('Edit operations', async (t) => {
   docu.updateCategoryField("DOCU$INVOICING", "expenses", 123.456)
   docu.clearDetail("Comp");
   docu.insertDetail("Comp", compKeyEfficy);
-  docu.insertDetail("Cont", contKey, crm.constants.access_code.fullcontrol);
+  docu.insertDetail("Cont", contKey);
   docu.setUsers([userKey], true);
-  docu.setUserSecurity(groupKey, crm.constants.access_code.fullcontrol);
+  docu.setUserSecurity(groupKey, Crm.access_code.fullcontrol);
   docu.commitChanges();  
   await crm.executeBatch();
   const docuKey = docu.key;
+
 
   crm.deleteEntity("Docu", [docuKey]);
   await crm.executeBatch();

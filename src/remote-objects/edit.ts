@@ -1,7 +1,7 @@
-import RemoteAPI from "src/remote-api.js";
+import { RemoteAPI } from "src/remote-api.js";
 import { RemoteObject } from "./remote-object.js";
 import { DataSetList, DataSet } from "./dataset.js";
-import { JSONPrimitiveObject, JSONRPCNameObject, JSONRPCNamedOperation, UKey } from "src/types/index.js";
+import { JSONPrimitiveObject, JSONRPCNameObject, JSONRPCNamedOperation, UKey } from "src/types.js";
 import { AttachmentList, AttachmentObject } from "./attachment.js";
 
 /**
@@ -45,7 +45,7 @@ export class EditObject extends RemoteObject {
 	}
 	private setDirty() {
 		if (this.isDirty) return;
-		this.api.registerObject(this);
+		this.registerObject(this);
 		this.isDirty = true;
 	}
 
@@ -219,6 +219,7 @@ export class EditObject extends RemoteObject {
 	 * Sets the security for a user or group.
 	 * @param userKey The user or group for which security is added.
 	 * @param securityValue A sum of one or more of the following values: 1 (search), 2 (read), 4 (write), 8 (delete) and 256 (secure). Useful combinations are 7 (read/write), 15 (read/write/delete) and 271 (full control = read/write/delete/secure).
+	 * @see {access_code}
 	 */
 	setUserSecurity(userKey: UKey, securityValue: number) {
 		this.otherFuncs.push({
@@ -347,7 +348,7 @@ export class EditObject extends RemoteObject {
 export class DeleteEntity extends RemoteObject {
 	constructor(remoteAPI: RemoteAPI, public entity: string, public keys: UKey[]) {
 		super(remoteAPI);
-		this.api.registerObject(this);
+		this.registerObject(this);
 	}
 
 	asJsonRpc() {

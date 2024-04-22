@@ -15,8 +15,26 @@ export interface JSONRPCNamedOperation {
 export interface JSONRPCNameObject {
     "@name": string;
     "@func": object[];
+	[key: string]: any;
 }
 
 export function isJSONRPCNamedOperation(obj: any): obj is JSONRPCNamedOperation {
     return typeof obj['#id'] === 'string' && typeof obj['@name'] === 'string' && Array.isArray(obj['@func']);
+}
+
+export interface CrmEnvConfig {
+	url?: string;
+	customer?: string;
+	logOff?: boolean;
+	useFetchQueue?: boolean;
+	apiKey?: string;
+	user?: string;
+	pwd?: string;
+	cookies?: Cookie[];
+}
+
+export interface Cookie {
+	name: string;
+	value: string;
+	expires?: string;
 }

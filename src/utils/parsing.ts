@@ -1,4 +1,4 @@
-import { JSONPrimitiveObject } from "src/types/index.js";
+import { JSONPrimitiveObject } from "src/types.js";
 
 // Variables that are primitive are accessed by value
 export const isPrimitive = (val: any) => {

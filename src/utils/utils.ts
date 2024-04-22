@@ -1,4 +1,4 @@
-import { JSONPrimitiveObject } from "src/types/index.js";
+import { JSONPrimitiveObject } from "src/types.js";
 
 /**
  * Find and return the first (deep) nested object where all properties of the provided searchObject match.

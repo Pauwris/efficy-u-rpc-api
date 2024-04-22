@@ -1,6 +1,6 @@
-import RemoteAPI from "src/remote-api.js";
+import { RemoteAPI } from "src/remote-api.js";
 import { RemoteObject } from "./remote-object.js";
-import { JSONPrimitiveObject, UKey } from "src/types/index.js";
+import { JSONPrimitiveObject, UKey } from "src/types.js";
 
 export class AttachmentList extends RemoteObject {
 	private attachments: AttachmentObject[] = [];
@@ -35,7 +35,7 @@ export class AttachmentList extends RemoteObject {
 
 	afterExecute() {
 		this.attachments.forEach(attachment => {
-			const result = this.api.findAttachment(this.responseObject, attachment.key);
+			const result = this.findAttachment(this.responseObject, attachment.key);
             if (result && typeof result["#result"] === "string") {
                 attachment.setStream(result["#result"]);
             }

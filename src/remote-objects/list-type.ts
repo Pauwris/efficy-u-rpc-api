@@ -1,22 +1,21 @@
-import RemoteAPI from "src/remote-api.js";
-import { StringifyOptions } from "querystring";
+import { RemoteAPI } from "src/remote-api.js";
 import { RemoteObject } from "./remote-object.js";
-import { JSONRPCNamedOperation } from "src/types/index.js";
+import { JSONRPCNamedOperation } from "src/types.js";
 
 /**
  * Class uses by operations that return a list
  */
 class ListObject extends RemoteObject {
-    map: Map<string, string> | null = null;
+    map: Map<string, string> = new Map();
 
     constructor(remoteAPI: RemoteAPI) {
         super(remoteAPI);
-        this.api.registerObject(this);
+        this.registerObject(this);
     }
 
     protected afterExecute() {
         super.afterExecute();
-        const items = this.api.findListArray(this.responseObject);
+        const items = this.findListArray(this.responseObject);
 
         if (Array.isArray(items)) {
             this.map = new Map(items
@@ -33,7 +32,7 @@ class ListObject extends RemoteObject {
 export class SystemSettings extends ListObject {
     constructor(remoteAPI: RemoteAPI) {
         super(remoteAPI);
-        this.api.registerObject(this);
+        this.registerObject(this);
     }
 
     protected asJsonRpc() {

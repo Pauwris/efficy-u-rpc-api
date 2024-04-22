@@ -1,7 +1,7 @@
-import RemoteAPI from "src/remote-api.js";
+import { RemoteAPI } from "src/remote-api.js";
 import { RemoteObject } from "./remote-object.js";
 import { DataSetList, DataSet } from "./dataset.js";
-import { JSONRPCNamedOperation, UKey } from "src/types/index.js";
+import { JSONRPCNamedOperation, UKey } from "src/types.js";
 
 /**
  * Class returned by openConsultObject
@@ -34,7 +34,7 @@ export class ConsultObject extends RemoteObject {
 	}
 	private setDirty() {
 		if (this.isDirty) return;
-		this.api.registerObject(this);
+		this.registerObject(this);
 		this.isDirty = true;
 	}
 

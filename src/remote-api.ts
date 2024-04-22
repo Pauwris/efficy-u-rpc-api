@@ -1,15 +1,13 @@
-import nodeFetch from 'node-fetch';
-import CrmEnv from "./crm-env.js";
-import * as cookieParser from 'cookie';
+import { CrmEnv } from "./crm-env.js";
 import { findDeep, FetchQueue } from './utils/utils.js';
-import { JSONPrimitiveObject, JSONRPCNamedOperation, isJSONRPCNamedOperation } from './types/index.js';
+import { JSONRPCNamedOperation, isJSONRPCNamedOperation } from './types.js';
 import { RemoteObject } from './remote-objects/remote-object.js';
+import { parseEfficyCookieString } from "./cookie.js";
 
 /**
  * Class with low-level JSON RPC functions
- * @see {@link https://stackoverflow.com/questions/17575790/environment-detection-node-js-or-browser}
  */
-class RemoteAPI {
+export class RemoteAPI {
 	#name = "RemoteAPI";
 	remoteObjects: RemoteObject[] = [];
 	requestCounter: number = 0;
@@ -30,10 +28,10 @@ class RemoteAPI {
 
 		this.logFunction = logFunction;
 
-		this.#setFetchOptions();
+		this.setFetchOptions();
 	}
 
-	#setFetchOptions() {
+	private setFetchOptions() {
 		try {
 			let headers: Record<string, any> = {...this.fetchOptions.headers};			
 
@@ -61,7 +59,7 @@ class RemoteAPI {
 		}
 	}
 
-	fetchOptions: RequestInit = {
+	private fetchOptions: RequestInit = {
 		method: "POST",
 		headers: {
 			'Content-Type': 'application/json',
@@ -117,7 +115,7 @@ class RemoteAPI {
 		}
 	}
 
-	throwError(rpcException: string | RPCException) {
+	private throwError(rpcException: string | RPCException) {
 		const errorMessage = typeof rpcException === "string" ? rpcException : rpcException.toString();
 		if (typeof this.errorFunction === "function") {
 			this.errorFunction(errorMessage);
@@ -131,11 +129,7 @@ class RemoteAPI {
 	 */
 	logoff() {
 		this.crmEnv.logOff = true;
-		this.#setFetchOptions();
-	}
-
-	registerObject(object: RemoteObject) {
-		this.remoteObjects.push(object);
+		this.setFetchOptions();
 	}
 
 	private async postToCrmJson(requestObject: object): Promise<JSONRPCNamedOperation[]> {
@@ -174,7 +168,7 @@ class RemoteAPI {
 			const rql = new RequestLog(this.requestCounter++, this.logFunction, this.threadId);
 
 			rql.setRequest(requestUrl, request.method ?? "POST", requestObject);
-			if (this.crmEnv.cookieHeader) {
+			if (this.crmEnv.cookieHeader) {				
 				request.headers = {
 					"Cookie": this.crmEnv.cookieHeader
 				}
@@ -206,12 +200,8 @@ class RemoteAPI {
 
 			const cookieString  = response.headers.get('set-cookie');
 			if (cookieString) {
-				const parsedCookies = cookieParser.parse(cookieString);
-
-				const name = parsedCookies["name"];
-				const value = parsedCookies[name];
-				
-				this.crmEnv.cookies = [{name, value}];
+				const cookie = parseEfficyCookieString(cookieString);
+				this.crmEnv.cookies = [cookie];
 				this.sessionId = this.crmEnv.shortSessionId;
 			}			
 
@@ -229,51 +219,6 @@ class RemoteAPI {
 		}
 
 		return responseObject;
-	}
-
-	
-	findDataSetArray(resp: JSONPrimitiveObject, dataSetName = "dataset"): JSONPrimitiveObject[] {
-		let list: JSONPrimitiveObject[] = [];
-		if (typeof resp !== "object") return list;
-
-		const result = findDeep(resp, {"#class": dataSetName});
-		if (!result || typeof result["#data"] !== "object" || result["#data"] === null) return list;
-
-		if (Array.isArray(result["#data"])) {
-			list = result["#data"] ?? [];
-		} else if (Array.isArray(result["#data"]["data"])) {
-			list = result["#data"]["data"] ?? [];
-		}
-
-		return list;
-	}
-	findListArray(resp: JSONPrimitiveObject, listName = "stringlist"): JSONPrimitiveObject[] {
-		return this.findDataSetArray(resp, listName) ?? [];
-	}
-	
-	findAttachment(resp: JSONPrimitiveObject, key: string) {
-		if (typeof resp !== "object") return;
-		return findDeep(resp, {"@name": "attachment", "key": key});
-	}
-	
-	findFunc(resp: JSONPrimitiveObject, name: string) {
-		if (typeof resp !== "object" || !Array.isArray(resp["@func"])) return;
-		return resp["@func"].find(item => item["@name"] === name);
-	}
-	
-	findFunc2(resp: JSONPrimitiveObject, name: string, name2: string, value2: string | number) {
-		if (typeof resp !== "object" || !Array.isArray(resp["@func"])) return;
-		return resp["@func"].find(item => item["@name"] === name && item[name2] === value2);
-	}
-	
-	findFuncArray(resp: JSONPrimitiveObject, name: string) {
-		var result = this.findDataSetArray(this.findFunc(resp, name));
-		return Array.isArray(result) ? result : null;
-	}
-	
-	findFuncArray2(resp: JSONPrimitiveObject, name: string, name2: string, value2: string | number) {
-		var result = this.findDataSetArray(this.findFunc2(resp, name, name2, value2));
-		return Array.isArray(result) ? result : null;
 	}
 	
 	private getRpcException(responseObject: any): RPCException | undefined {
@@ -366,20 +311,9 @@ class RequestLog {
 	}
 };
 
-export class RPCException {
+class RPCException {
 	constructor(public message: string, public code: string = "RPC", public detail: string = "") {}
 	toString() {
 		return [this.code, this.message, this.detail].join(" - ");
 	}
 }
-
-/*
- * Platform agnostic solution for the definition of fetch. Lib node-fetch is excluded by rollup ignore plugin
- */
-const isNode = (typeof process !== "undefined" && process?.versions?.node ? true : false);
-if (isNode) {
-	// @ts-ignore
-	globalThis.fetch = nodeFetch;
-}
-
-export default RemoteAPI;
