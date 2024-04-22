@@ -11,7 +11,8 @@
 		"build:docs": "npx typedoc src/index.ts",
 		"watch": "tsc -w",
 		"test": "ava",
-		"build-all": "npm run build:clean && npm run build:ts && npm run build:js && npm run build:dts && npm run build:docs"
+		"build-all": "npm run build:clean && npm run build:ts && npm run build:js && npm run build:dts && npm run build:docs",
+		"pack": "npm pack --pack-destination pack/"
 	},
 	"version": "1.0.5",
 	"homepage": "https://github.com/Pauwris/efficy-u-rpc-api#readme",
