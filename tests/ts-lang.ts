@@ -1,4 +1,4 @@
-import { CrmEnv, CrmRpc, UKey, Crm } from '../dist/index.js'
+import { CrmEnv, CrmRpc, UKey, Crm } from '../dist/efficy-u-rpc-api-bundle.js'
 
 import test from 'ava';
 import process from 'process';

@@ -1,7 +1,7 @@
 {
 	"name": "efficy-u-rpc-api",
 	"description": "The Efficy U - RPC API is developed for server-side usage in a Node.js environment (e.g. for integrations) and also bundled for usage inside an Efficy browser session for client-side JSON RPC requests. The API is highly similar to efficy-enterprise-api",
-	"main": "./dist/index.js",
+	"main": "./dist/efficy-u-rpc-api-bundle.js",
 	"scripts": {
 		"build": "npm run build-all",
 		"build:clean": "rimraf dist && rimraf docs",
@@ -54,7 +54,7 @@
 	},
 	"type": "module",
 	"files": [
-		"dist/**/*.js",
-		"!**/*.ts"
+		"dist/efficy-u-rpc-api-bundle.js",
+		"dist/efficy-u-rpc-api-bundle.d.ts"
 	]
 }

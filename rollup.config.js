@@ -4,7 +4,7 @@ export default [
 	{
 		input: 'src/index.ts',
 		output: {
-			file: 'dist/index.js',
+			file: 'dist/efficy-u-rpc-api-bundle.js',
 			sourcemap: true
 		},
 		external: ['node-fetch', 'cookie'],
