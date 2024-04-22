@@ -1,6 +1,5 @@
 /node_modules
 /temp
-/docs
 /dist
 /pack
 .env
