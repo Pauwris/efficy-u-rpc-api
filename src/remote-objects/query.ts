@@ -31,7 +31,7 @@ export class QuerySQLObject extends RemoteDataSet {
 
 export class QueryObject extends RemoteDataSet {
 	
-	constructor(remoteAPI: RemoteAPI, private key?: string, private master?: number, private detail?: number, private queryParams: string[] = [], private loadBlobs = false, private recordCount = 0) {
+	constructor(remoteAPI: RemoteAPI, private key?: UKey, private master?: number, private detail?: number, private queryParams: string[] = [], private loadBlobs = false, private recordCount = 0) {
 		super(remoteAPI);
 	}
 

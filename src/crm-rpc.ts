@@ -6,6 +6,7 @@ import { CollectionObject, ConsultManyEx, FavoriteList, RecentList, UserList } f
 import { EditObject, DeleteEntity } from './remote-objects/edit.js';
 import { SystemSettings } from './remote-objects/list-type.js';
 import { QueryObject, QuerySQLObject } from './remote-objects/query.js';
+import { UKey } from './types/index.js';
 /**
  * Class to create Remote Objects
  * @extends RemoteAPI
@@ -135,7 +136,7 @@ class CrmRpc extends RemoteAPI {
 	 * const linkedContacts = comp.getDetailDataSet("cont");  
 	 * await crm.executeBatch();
 	 */
-	openConsultObject(entity: string, key: string) {
+	openConsultObject(entity: string, key: UKey) {
 		return new ConsultObject(this, entity, key);
 	}
 
@@ -145,7 +146,7 @@ class CrmRpc extends RemoteAPI {
 	 * @param entity - The entity name, e.g. "Comp"
 	 * @param key - The key of the record. Use key = "" to create a new record.
 	 */
-	openEditObject(entity: string, key: string = "") {
+	openEditObject(entity: string, key: UKey = "") {
 		return new EditObject(this, entity, key);
 	}
 
@@ -216,7 +217,7 @@ class CrmRpc extends RemoteAPI {
 	 * @example
 	 * const tags = crm.executeDatabaseQuery(99990034); // Query "Standard: Top company tags"
 	 */
-	executeDatabaseQuery(idQuery: string, queryParameters?: string[], loadBlobs: boolean = false, recordCount: number = 0) {
+	executeDatabaseQuery(idQuery: UKey, queryParameters?: string[], loadBlobs: boolean = false, recordCount: number = 0) {
 		return new QueryObject(this, idQuery, undefined, undefined, queryParameters, loadBlobs, recordCount);
 	}
 
@@ -240,7 +241,7 @@ class CrmRpc extends RemoteAPI {
 	 * @param entity The entity name, e.g. "Comp"
 	 * @param keys List of keys
 	 */
-	deleteEntity(entity: string, keys: string[]) {
+	deleteEntity(entity: string, keys: UKey[]) {
 		if (!keys || (Array.isArray(keys) && keys.length === 0)) return;
 		new DeleteEntity(this, entity, keys);
 	}

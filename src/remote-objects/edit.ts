@@ -1,7 +1,7 @@
 import RemoteAPI from "src/remote-api.js";
 import { RemoteObject } from "./remote-object.js";
 import { DataSetList, DataSet } from "./dataset.js";
-import { JSONPrimitiveObject, JSONRPCNameObject, JSONRPCNamedOperation } from "src/types/index.js";
+import { JSONPrimitiveObject, JSONRPCNameObject, JSONRPCNamedOperation, UKey } from "src/types/index.js";
 import { AttachmentList, AttachmentObject } from "./attachment.js";
 
 /**
@@ -25,7 +25,7 @@ export class EditObject extends RemoteObject {
      * @param entity The entity name, e.g. "Comp"
      * @param key The key of the record. Use key = 0 to create a new record
      */
-	constructor(remoteAPI: RemoteAPI, public entity: string, public key: string) {
+	constructor(remoteAPI: RemoteAPI, public entity: string, public key: UKey) {
 		super(remoteAPI);
 		this.dataSetList = new DataSetList(remoteAPI);
 		this.attachmentList = new AttachmentList(remoteAPI);
@@ -80,7 +80,7 @@ export class EditObject extends RemoteObject {
 	/**
 	 * Request attachment from File table
 	 */
-	getAttachment(fileKey: string): AttachmentObject {
+	getAttachment(fileKey: UKey): AttachmentObject {
 		this.setDirty();
 		return this.attachmentList.getAttachment(fileKey);
 	}
@@ -126,7 +126,7 @@ export class EditObject extends RemoteObject {
 	/**
 	 * Inserts a detail relation
 	 */
-	insertDetail(detail: string, detailKey: string, linkMainCompany = false, retrieveName = false) {
+	insertDetail(detail: string, detailKey: UKey, linkMainCompany = false, retrieveName = false) {
 		if (typeof detail !== "string") throw new TypeError("EditObject.insertDetail::detail is not a string");
 
 		const obj: JSONPrimitiveObject = {
@@ -147,7 +147,7 @@ export class EditObject extends RemoteObject {
 	 * @param detailKey  The key of the detail. If detailKey is 0, the current detail record is used
 	 * @param  fieldsObj e.g. {"OPENED": "0"}
 	 */
-	updateDetail(detail: string, detailKey: string, fieldsObj: JSONPrimitiveObject) {
+	updateDetail(detail: string, detailKey: UKey, fieldsObj: JSONPrimitiveObject) {
 		if (typeof detail !== "string") throw new TypeError("EditObject.updateDetail::detail is not a string");
 
 		this.otherFuncs.push({
@@ -164,7 +164,7 @@ export class EditObject extends RemoteObject {
 	 * @param detail The detail name, e.g. "Comp"
 	 * @param detailKey The key of the detail
 	 */
-	deleteDetail(detail: string, detailKey: string) {
+	deleteDetail(detail: string, detailKey: UKey) {
 		if (typeof detail !== "string") throw new TypeError("EditObject.deleteDetail::detail is not a string");
 
 		this.otherFuncs.push({
@@ -220,7 +220,7 @@ export class EditObject extends RemoteObject {
 	 * @param users The array of user IDs (keys).
 	 * @param clear If true, clears the current user selection.
 	 */
-	setUsers(users: string[], clear = false) {
+	setUsers(users: UKey[], clear = false) {
 		if (!Array.isArray(users)) throw new TypeError("EditObject.setUsers::users is not an Array");
 
 		const obj: object = {
@@ -238,7 +238,7 @@ export class EditObject extends RemoteObject {
 	 * @param userKey The user or group for which security is added.
 	 * @param securityValue A sum of one or more of the following values: 1 (search), 2 (read), 4 (write), 8 (delete) and 256 (secure). Useful combinations are 7 (read/write), 15 (read/write/delete) and 271 (full control = read/write/delete/secure).
 	 */
-	setUserSecurity(userKey: string, securityValue: number) {
+	setUserSecurity(userKey: UKey, securityValue: number) {
 		if (!userKey) throw new TypeError("EditObject.setUserSecurity::account is required");
 		if (typeof securityValue !== "number") throw new TypeError("EditObject.setUserSecurity::securityValue is not a number");
 
@@ -272,7 +272,7 @@ export class EditObject extends RemoteObject {
 	 * @param key - Leave null or 0 to set the stream of the just inserted Attachment
 	 * @param base64String
 	 */
-	updateAttachment(key: string | number, base64String: string) {
+	updateAttachment(key: UKey | number, base64String: string) {
 		if (typeof base64String !== "string") throw new TypeError("EditObject.updateAttachment::base64String is not a string");
 
 		this.otherFuncs.push({
@@ -292,7 +292,7 @@ export class EditObject extends RemoteObject {
 	 * @param minTableView The index of first table view to be copied.
 	 * @param maxTableView The index of last table view to be copied.
 	 */
-	copyFromExisting(key: string, minTableView = 0, maxTableView = 999) {
+	copyFromExisting(key: UKey, minTableView = 0, maxTableView = 999) {
 		if (!key) throw new TypeError("EditObject.copyFromExisting::key is required");
 		if (typeof minTableView !== "number") throw new TypeError("EditObject.copyFromExisting::minTableView is not a number");
 		if (typeof maxTableView !== "number") throw new TypeError("EditObject.copyFromExisting::maxTableView is not a number");
@@ -356,7 +356,7 @@ export class EditObject extends RemoteObject {
 		
 		const resp = this.responseObject as JSONPrimitiveObject;
         if (resp.key && typeof resp.key === "string") {
-            this.key = resp.key;
+            this.key = resp.key as UKey;
         }        
 
 		this.dataSetList.setResponseObject(this.responseObject);
@@ -375,7 +375,7 @@ export class EditObject extends RemoteObject {
  * Class returned by methods such as deleteEntity
  */
 export class DeleteEntity extends RemoteObject {
-	constructor(remoteAPI: RemoteAPI, public entity: string, public keys: string[]) {
+	constructor(remoteAPI: RemoteAPI, public entity: string, public keys: UKey[]) {
 		super(remoteAPI);
 		this.api.registerObject(this);
 	}

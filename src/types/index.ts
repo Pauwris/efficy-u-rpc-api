@@ -1,3 +1,5 @@
+export type UKey = "" | string & { length: 16 };
+
 export type Nil = null | undefined;
 export type JSONExtantPrimitive = number | string | boolean;
 export type JSONPrimitive = JSONExtantPrimitive | Nil;

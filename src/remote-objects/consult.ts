@@ -1,15 +1,12 @@
 import RemoteAPI from "src/remote-api.js";
 import { RemoteObject } from "./remote-object.js";
 import { DataSetList, DataSet } from "./dataset.js";
-import { JSONPrimitiveObject, JSONRPCNameObject, JSONRPCNamedOperation } from "src/types/index.js";
+import { JSONRPCNamedOperation, UKey } from "src/types/index.js";
 
 /**
  * Class returned by openConsultObject
  */
 export class ConsultObject extends RemoteObject {
-	entity: string;
-	key: string;
-
 	private dataSetList;
 	private isDirty: boolean = false;
 	
@@ -20,10 +17,8 @@ export class ConsultObject extends RemoteObject {
 	 * @param entity The entity name of the consulted record, e.g. "Comp"
 	 * @param key The key of the consulted record
 	 */
-	constructor(remoteAPI: RemoteAPI, entity: string, key: string) {
+	constructor(remoteAPI: RemoteAPI, public entity: string, public key: UKey) {
 		super(remoteAPI);
-		this.entity = entity;
-		this.key = key;
 		this.dataSetList = new DataSetList(remoteAPI);
 
 		this.resetState();

@@ -1,6 +1,6 @@
 import RemoteAPI from "src/remote-api.js";
 import { RemoteObject } from "./remote-object.js";
-import { JSONPrimitiveObject } from "src/types/index.js";
+import { JSONPrimitiveObject, UKey } from "src/types/index.js";
 
 export class AttachmentList extends RemoteObject {
 	private attachments: AttachmentObject[] = [];
@@ -14,7 +14,7 @@ export class AttachmentList extends RemoteObject {
 	 * Request attachment from File table
 	 * @param fileKey
 	 */
-	getAttachment(fileKey: string): AttachmentObject {
+	getAttachment(fileKey: UKey): AttachmentObject {
 		if (!fileKey) throw new TypeError("AttachmentList.getAttachment::fileKey is required");
 
 		const key = fileKey;
@@ -51,8 +51,7 @@ export class AttachmentList extends RemoteObject {
 export class AttachmentObject {
 	private stream: string = "";
 
-	constructor(public key: string) {
-		this.key = key;
+	constructor(public key: UKey) {
 	}
 
 	setStream(stream: string) {
