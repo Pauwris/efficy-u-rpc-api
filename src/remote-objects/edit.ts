@@ -104,9 +104,7 @@ export class EditObject extends RemoteObject {
 	/**
 	 * Updates the value of a field of any type in a category data set
 	 */
-	updateCategoryField(categoryName: string, name: string, value: string | number) {
-		if (typeof categoryName !== "string") throw new TypeError("EditObject.updateCategoryField::categoryName is not a string");
-        
+	updateCategoryField(categoryName: string, name: string, value: string | number) {       
         this.categories.set(categoryName, {name: value})
 		this.setDirty();
 	}
@@ -117,8 +115,6 @@ export class EditObject extends RemoteObject {
 	 * @param fieldsObj e.g. {"name": "value"}
 	 */
 	updateCategoryFields(categoryName: string, fieldsObj: JSONPrimitiveObject) {
-		if (typeof categoryName !== "string") throw new TypeError("EditObject.updateCategoryFields::categoryName is not a string");
-
         this.categories.set(categoryName, fieldsObj)
 		this.setDirty();
 	}
@@ -127,8 +123,6 @@ export class EditObject extends RemoteObject {
 	 * Inserts a detail relation
 	 */
 	insertDetail(detail: string, detailKey: UKey, linkMainCompany = false, retrieveName = false) {
-		if (typeof detail !== "string") throw new TypeError("EditObject.insertDetail::detail is not a string");
-
 		const obj: JSONPrimitiveObject = {
 			"@name": "insertDetail",
 			"detail": detail,
@@ -148,8 +142,6 @@ export class EditObject extends RemoteObject {
 	 * @param  fieldsObj e.g. {"OPENED": "0"}
 	 */
 	updateDetail(detail: string, detailKey: UKey, fieldsObj: JSONPrimitiveObject) {
-		if (typeof detail !== "string") throw new TypeError("EditObject.updateDetail::detail is not a string");
-
 		this.otherFuncs.push({
 			"@name": "updateDetail",
 			"detail": detail,
@@ -165,8 +157,6 @@ export class EditObject extends RemoteObject {
 	 * @param detailKey The key of the detail
 	 */
 	deleteDetail(detail: string, detailKey: UKey) {
-		if (typeof detail !== "string") throw new TypeError("EditObject.deleteDetail::detail is not a string");
-
 		this.otherFuncs.push({
 			"@name": "deleteDetail",
 			"detail": detail,
@@ -180,8 +170,6 @@ export class EditObject extends RemoteObject {
 	 * @param detail - The detail name, e.g. "Comp"
 	 */
 	clearDetail(detail: string) {
-		if (typeof detail !== "string") throw new TypeError("EditObject.clearDetail::detail is not a string");
-
 		this.otherFuncs.push({
 			"@name": "clearDetail",
 			"detail": detail
@@ -193,8 +181,6 @@ export class EditObject extends RemoteObject {
 	 * Activates a category. If the user does not have the appropriate rights on the category, an exception is thrown.
 	 */
 	activateCategory(categoryName: string) {
-		if (typeof categoryName !== "string") throw new TypeError("EditObject.activateCategory::categoryName is not a string");
-
 		this.otherFuncs.push({
 			"@name": "activateCategory",
 			"category": categoryName
@@ -206,8 +192,6 @@ export class EditObject extends RemoteObject {
 	 * Requests that a unique reference number be generated when committing.
 	 */
 	setReference(id: string) {
-		if (!id) throw new TypeError("EditObject.setReference::id is required");
-
 		this.otherFuncs.push({
 			"@name": "reference",
 			"id": id
@@ -221,8 +205,6 @@ export class EditObject extends RemoteObject {
 	 * @param clear If true, clears the current user selection.
 	 */
 	setUsers(users: UKey[], clear = false) {
-		if (!Array.isArray(users)) throw new TypeError("EditObject.setUsers::users is not an Array");
-
 		const obj: object = {
 			"@name": "setusers",
 			"users": users,
@@ -239,9 +221,6 @@ export class EditObject extends RemoteObject {
 	 * @param securityValue A sum of one or more of the following values: 1 (search), 2 (read), 4 (write), 8 (delete) and 256 (secure). Useful combinations are 7 (read/write), 15 (read/write/delete) and 271 (full control = read/write/delete/secure).
 	 */
 	setUserSecurity(userKey: UKey, securityValue: number) {
-		if (!userKey) throw new TypeError("EditObject.setUserSecurity::account is required");
-		if (typeof securityValue !== "number") throw new TypeError("EditObject.setUserSecurity::securityValue is not a number");
-
 		this.otherFuncs.push({
 			"@name": "setusersecurity",
 			"user": userKey,
@@ -256,9 +235,6 @@ export class EditObject extends RemoteObject {
 	 * @param path The path of the file that will be saved in the filePath field.
 	 */
 	insertAttachment(attachedFileType: number, path: string) {
-		if (typeof attachedFileType !== "number") throw new TypeError("EditObject.insertAttachment::attachedFileType is not a number");
-		if (typeof path !== "string") throw new TypeError("EditObject.insertAttachment::path is not a string");
-
 		this.otherFuncs.push({
 			"@name": "insertAttachment",
 			"type": attachedFileType,
@@ -273,8 +249,6 @@ export class EditObject extends RemoteObject {
 	 * @param base64String
 	 */
 	updateAttachment(key: UKey | number, base64String: string) {
-		if (typeof base64String !== "string") throw new TypeError("EditObject.updateAttachment::base64String is not a string");
-
 		this.otherFuncs.push({
 			"@name": "updateAttachment",
 			"key": key,
@@ -293,10 +267,6 @@ export class EditObject extends RemoteObject {
 	 * @param maxTableView The index of last table view to be copied.
 	 */
 	copyFromExisting(key: UKey, minTableView = 0, maxTableView = 999) {
-		if (!key) throw new TypeError("EditObject.copyFromExisting::key is required");
-		if (typeof minTableView !== "number") throw new TypeError("EditObject.copyFromExisting::minTableView is not a number");
-		if (typeof maxTableView !== "number") throw new TypeError("EditObject.copyFromExisting::maxTableView is not a number");
-
 		this.otherFuncs.push({
 			"@name": "copyFromExisting",
 			"key": key,

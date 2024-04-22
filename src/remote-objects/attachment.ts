@@ -15,8 +15,6 @@ export class AttachmentList extends RemoteObject {
 	 * @param fileKey
 	 */
 	getAttachment(fileKey: UKey): AttachmentObject {
-		if (!fileKey) throw new TypeError("AttachmentList.getAttachment::fileKey is required");
-
 		const key = fileKey;
 		const attachment = new AttachmentObject(key);
 		this.attachments.push(attachment);

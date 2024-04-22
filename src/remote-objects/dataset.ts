@@ -12,8 +12,6 @@ class DataSetInternal {
 	private _item: JSONPrimitiveObject | null = null;
 
 	constructor(public type: DataSetKind, public name: string, public filter?: string, public includeBlobContent?: boolean) {
-		if (!["main", "master", "detail", "category"].includes(type)) throw new TypeError("DataSet.constructor::invalid type");
-		if (["detail", "category"].includes(type) && !name) throw new TypeError("DataSet.constructor::name must be specified");
 		this.type = type;
 		this.name = name;
 
@@ -37,7 +35,6 @@ class DataSetInternal {
 
 	setItems(value?: JSONPrimitiveObject[]) {
 		if (!value) return;
-		if (!Array.isArray(value)) throw new TypeError("DataSet.items::value is not an Array");
 
 		this._items = value;
 		if (this._items.length > 0) {
@@ -149,8 +146,6 @@ export class DataSetList extends RemoteObject {
 	 * @param categoryName name of the category, e.g. "DOCU$INVOICING"
 	 */
 	getCategoryDataSet(categoryName: string): DataSetInternal {
-		if (typeof categoryName !== "string") throw new TypeError("DataSetList.getCategoryDataSet::categoryName is not a string");
-
 		const ds = new DataSetInternal("category", categoryName);
 		this.tableView.category.push(ds)
 
@@ -164,10 +159,6 @@ export class DataSetList extends RemoteObject {
 	 * @param includeBlobContent If true, blob fields (e.g. memo, stream) are returned
 	 */
 	getDetailDataSet(detail: string, filter: string = "", includeBlobContent: boolean = false): DataSetInternal {
-		if (typeof detail !== "string") throw new TypeError("DataSetList.getDetailDataSet::detail is not a string");
-		if (filter && typeof filter !== "string") throw new TypeError("DataSetList.getDetailDataSet::filter is not a string");
-		if (includeBlobContent != null && typeof includeBlobContent !== "boolean") throw new TypeError("DataSetList.getDetailDataSet::includeBlobContent is not a boolean");
-
 		const ds = new DataSetInternal("detail", detail, filter, includeBlobContent);
 		this.tableView.detail.push(ds)
 
@@ -216,8 +207,6 @@ export class DataSetList extends RemoteObject {
 	}
 
 	private setDsoItems(dso: DataSetInternal) {
-
-		if (dso instanceof DataSetInternal === false) throw new TypeError("DataSetList.setDsoItems::dso is not an DataSet type");
 		if (dso.tableView > 0) {
 			const item = this.api.findFuncArray2(this.responseObject, dso.type, "tableview", dso.tableView);
 			if (item) dso.setItems(item);
@@ -225,8 +214,6 @@ export class DataSetList extends RemoteObject {
 			const item = this.api.findFuncArray2(this.responseObject, dso.type, dso.type, dso.name);
 			if (item) dso.setItems(item);
 		}
-
-
 	}
 }
 
@@ -261,7 +248,6 @@ export class RecentList extends RemoteDataSet {
 	 */
 	constructor(remoteAPI: RemoteAPI, private entity: string, private extraFields: string[] = []) {
 		super(remoteAPI);
-		if (extraFields && !Array.isArray(extraFields)) throw TypeError("RecentListEx.constructor::extraFields is not an array");
 	}
 
 	protected asJsonRpc() {
