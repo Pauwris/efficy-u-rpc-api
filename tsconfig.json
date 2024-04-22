@@ -3,6 +3,7 @@
 	  "allowSyntheticDefaultImports": true,
 	  "baseUrl": ".",
 	  "declaration": true,
+	  "declarationDir": "dist/dts",
 	  "esModuleInterop": true,
 	  "experimentalDecorators": true,
 	  "importHelpers": true,

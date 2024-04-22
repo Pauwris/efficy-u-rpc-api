@@ -1,5 +1,3 @@
-import { Cookie, CrmEnvConfig } from "./types.js";
-
 /**
  * Class to define the parameters of the Efficy U server
  */
@@ -13,13 +11,13 @@ export class CrmEnv {
 	apiKey?: string;
 	user?: string;
 	pwd?: string;
-	cookies?: Cookie[];
+	cookies?: ICookie[];
 
 	/**
 	 * Creates a CrmEnv instance.
 	 * @param env The definition object of the targeted CRM environment.
 	 */
-	constructor(private env?: CrmEnvConfig) {
+	constructor(private env?: ICrmEnvConfig) {
 		if (typeof env === "object") {
 			this.setEnv(env);
 		} else {
@@ -33,7 +31,7 @@ export class CrmEnv {
 	 * Updates the CRM environment configuration.
 	 * @param env The definition object of the targeted CRM environment.
 	 */
-	setEnv(env: CrmEnvConfig): void {
+	setEnv(env: ICrmEnvConfig): void {
 		this.url = env.url || "";
 		this.customer = env.customer || "";
 		this.logOff = typeof env.logOff === "boolean" ? env.logOff : false;
@@ -74,4 +72,21 @@ export class CrmEnv {
 		const str = this.sessionId;
 		return str.split("-")[0] || "";
 	}
+}
+
+export interface ICrmEnvConfig {
+	url?: string;
+	customer?: string;
+	logOff?: boolean;
+	useFetchQueue?: boolean;
+	apiKey?: string;
+	user?: string;
+	pwd?: string;
+	cookies?: ICookie[];
+}
+
+export interface ICookie {
+	name: string;
+	value: string;
+	expires?: string;
 }

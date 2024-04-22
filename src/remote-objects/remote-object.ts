@@ -1,13 +1,14 @@
 import { findDeep, uuidv4 } from '../utils/utils.js';
 import { ParseGentle } from '../utils/parsing.js';
 import { RemoteAPI } from 'src/remote-api.js';
-import { JSONPrimitiveObject, JSONRPCNamedOperation } from 'src/types.js';
+import { JSONPrimitiveObject } from 'src/types/public.js';
+import { IRpcNamedOperation } from 'src/types/private.js';
 
 /**
  * Low level class representing an RPC operation
  */
 export class RemoteObject {
-	protected requestObject: JSONRPCNamedOperation | null;	
+	protected requestObject: IRpcNamedOperation | null;	
 	protected id;
 	protected responseObject;
 
@@ -26,7 +27,7 @@ export class RemoteObject {
 		this.responseObject = ParseGentle.numberProperties(this.responseObject, ["edithandle"]);
 	}
 
-	protected asJsonRpc(): JSONRPCNamedOperation | null {
+	protected asJsonRpc(): IRpcNamedOperation | null {
 		return null
 	}
 

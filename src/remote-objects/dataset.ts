@@ -1,5 +1,6 @@
 import { RemoteObject } from './remote-object.js';
-import { JSONPrimitiveObject, JSONRPCNameObject, JSONRPCNamedOperation } from '../types.js'
+import { JSONPrimitiveObject } from '../types/public.js'
+import { IRpcNamedOperation } from '../types/private.js'
 import { RemoteAPI } from 'src/remote-api.js';
 
 type DataSetKind = "main" | "master" | "detail" | "category";
@@ -213,7 +214,7 @@ export class UserList extends RemoteDataSet {
 	}
 
 	protected asJsonRpc() {
-		const requestObject: JSONRPCNamedOperation = this.requestObject = {
+		const requestObject: IRpcNamedOperation = this.requestObject = {
 			"#id": this.id,
 			"@name": "api",
 			"@func": [{ "@name": "userlist" }]
@@ -239,7 +240,7 @@ export class RecentList extends RemoteDataSet {
 
 		if (this.entity) api.entity = this.entity;
 
-		const requestObject: JSONRPCNamedOperation = this.requestObject = {
+		const requestObject: IRpcNamedOperation = this.requestObject = {
 			"#id": this.id,
 			"@name": "api",
 			"@func": [api]
@@ -264,7 +265,7 @@ export class FavoriteList extends RemoteDataSet {
 
 		if (this.entity) api.entity = this.entity;
 
-		const requestObject: JSONRPCNamedOperation = this.requestObject = {
+		const requestObject: IRpcNamedOperation = this.requestObject = {
 			"#id": this.id,
 			"@name": "api",
 			"@func": [api]
@@ -304,7 +305,7 @@ export class ContactsList extends RemoteDataSet {
 
 		if (!api) throw Error("ContactsList.asJsonRpc::unable to define the operation @name");
 
-		const requestObject: JSONRPCNamedOperation = this.requestObject = {
+		const requestObject: IRpcNamedOperation = this.requestObject = {
 			"#id": this.id,
 			"@name": "api",
 			"@func": [api]
@@ -332,7 +333,7 @@ export class ConsultManyObject extends RemoteDataSet {
 			"separator": ";"
 		}
 
-		const requestObject: JSONRPCNamedOperation = this.requestObject = {
+		const requestObject: IRpcNamedOperation = this.requestObject = {
 			"#id": this.id,
 			"@name": "api",
 			"@func": [api]
@@ -359,7 +360,7 @@ export class CollectionObject extends RemoteDataSet {
 		if (this.entity) api.entity = this.entity;
 		if (this.detail) api.detail = this.detail;
 
-		const requestObject: JSONRPCNamedOperation = {
+		const requestObject: IRpcNamedOperation = {
 			"#id": this.id,
 			"@name": "api",
 			"@func": [api]

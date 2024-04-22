@@ -1,6 +1,6 @@
 import { RemoteAPI } from "src/remote-api.js";
 import { RemoteObject } from "./remote-object.js";
-import { JSONRPCNamedOperation } from "src/types.js";
+import { IRpcNamedOperation } from "src/types/private.js";
 
 /**
  * Class uses by operations that return a string result
@@ -38,7 +38,7 @@ export class PropertyObject extends StringObject {
 			"@name": this.operationName
 		}
 
-		const requestObject: JSONRPCNamedOperation = this.requestObject = {
+		const requestObject: IRpcNamedOperation = this.requestObject = {
 			"#id": this.id,
 			"@name": "api",
 			"@func": [api]

@@ -1,6 +1,6 @@
 import { RemoteAPI } from "src/remote-api.js";
 import { RemoteObject } from "./remote-object.js";
-import { JSONPrimitiveObject, UKey } from "src/types.js";
+import { JSONPrimitiveObject, UKey } from "src/types/public.js";
 
 export class AttachmentList extends RemoteObject {
 	private attachments: AttachmentObject[] = [];

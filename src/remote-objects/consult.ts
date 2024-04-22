@@ -1,7 +1,8 @@
 import { RemoteAPI } from "src/remote-api.js";
 import { RemoteObject } from "./remote-object.js";
 import { DataSetList, DataSet } from "./dataset.js";
-import { JSONRPCNamedOperation, UKey } from "src/types.js";
+import { UKey } from "src/types/public.js";
+import { IRpcNamedOperation } from "src/types/private.js";
 
 /**
  * Class returned by openConsultObject
@@ -66,8 +67,8 @@ export class ConsultObject extends RemoteObject {
 		return this.dataSetList.getDetailDataSet(detail, filter, includeBlobContent).remoteDataSet;
 	}
 
-	protected asJsonRpc(): JSONRPCNamedOperation {
-		const requestObject: JSONRPCNamedOperation = {
+	protected asJsonRpc(): IRpcNamedOperation {
+		const requestObject: IRpcNamedOperation = {
 			"#id": this.id,
 			"@name": "consult",
 			"closecontext": true,

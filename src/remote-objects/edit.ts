@@ -1,7 +1,8 @@
 import { RemoteAPI } from "src/remote-api.js";
 import { RemoteObject } from "./remote-object.js";
 import { DataSetList, DataSet } from "./dataset.js";
-import { JSONPrimitiveObject, JSONRPCNameObject, JSONRPCNamedOperation, UKey } from "src/types.js";
+import { JSONPrimitiveObject, UKey } from "src/types/public.js";
+import { IRpcNamedOperation } from "src/types/private.js";
 import { AttachmentList, AttachmentObject } from "./attachment.js";
 
 /**
@@ -287,7 +288,7 @@ export class EditObject extends RemoteObject {
 
 
 	protected asJsonRpc() {
-		const requestObject: JSONRPCNamedOperation = {
+		const requestObject: IRpcNamedOperation = {
 			"#id": this.id,
 			"@name": "edit",
 			"@func": []
@@ -358,7 +359,7 @@ export class DeleteEntity extends RemoteObject {
 			"keys": this.keys.join(";")
 		}
 
-		const requestObject: JSONRPCNamedOperation = {
+		const requestObject: IRpcNamedOperation = {
 			"#id": this.id,
 			"@name": "api",
 			"@func": [api]

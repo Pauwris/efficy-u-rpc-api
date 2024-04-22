@@ -6,7 +6,7 @@ import { CollectionObject, ConsultManyObject, FavoriteList, RecentList, UserList
 import { EditObject, DeleteEntity } from './remote-objects/edit.js';
 import { SystemSettings } from './remote-objects/list-type.js';
 import { QueryObject, QuerySQLObject } from './remote-objects/query.js';
-import { UKey } from './types.js';
+import { UKey } from './types/public.js';
 
 /**
  * Class to create Remote Objects

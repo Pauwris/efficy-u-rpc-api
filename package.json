@@ -4,13 +4,14 @@
 	"main": "./dist/index.js",
 	"scripts": {
 		"build": "npm run build-all",
-		"build:clean": "rimraf dist, docs",
-		"build:ts": "tsc",		
-		"build:rollup": "rollup -c rollup.config.js",
+		"build:clean": "rimraf dist && rimraf docs",
+		"build:ts": "tsc",
+		"build:js": "rollup -c rollup.config.js",
+		"build:dts": "rollup -c rollup.config.dts.js",
 		"build:docs": "npx typedoc src/index.ts",
-		"watch": "tsc -w",		
+		"watch": "tsc -w",
 		"test": "ava",
-		"build-all": "npm run build:clean && npm run build:ts && npm run build:rollup && npm run build:docs"
+		"build-all": "npm run build:clean && npm run build:ts && npm run build:js && npm run build:dts && npm run build:docs"
 	},
 	"version": "1.0.5",
 	"homepage": "https://github.com/Pauwris/efficy-u-rpc-api#readme",
@@ -46,6 +47,7 @@
 		"eslint": "^8.57.0",
 		"eslint-plugin-promise": "^6.1.1",
 		"ink-docstrap": "^1.3.2",
+		"rollup-plugin-dts": "^6.1.0",
 		"typedoc": "^0.25.13",
 		"typescript": "^5.4.3",
 		"typescript-eslint": "^7.3.1"

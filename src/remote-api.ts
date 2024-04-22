@@ -1,6 +1,6 @@
 import { CrmEnv } from "./crm-env.js";
 import { findDeep, FetchQueue } from './utils/utils.js';
-import { JSONRPCNamedOperation, isJSONRPCNamedOperation } from './types.js';
+import { IRpcNamedOperation } from './types/private.js';
 import { RemoteObject } from './remote-objects/remote-object.js';
 import { parseEfficyCookieString } from "./cookie.js";
 
@@ -72,7 +72,7 @@ export class RemoteAPI {
 	 * Execute all assembled and queued RPC operations
 	 */
 	async executeBatch() {
-		const requestObject: JSONRPCNamedOperation[] = [];
+		const requestObject: IRpcNamedOperation[] = [];
 
 		try {
 			this.remoteObjects.forEach(item => {
@@ -94,7 +94,7 @@ export class RemoteAPI {
 		// Nothing to execute, ignore silently
 		if (!requestObject.length) return;
 		
-		const responseOperations: JSONRPCNamedOperation[] = await this.postToCrmJson(requestObject);
+		const responseOperations: IRpcNamedOperation[] = await this.postToCrmJson(requestObject);
 
 		// Add response info to operations and remove executed operations (handled or not)
 		const items = this.remoteObjects;
@@ -132,8 +132,8 @@ export class RemoteAPI {
 		this.setFetchOptions();
 	}
 
-	private async postToCrmJson(requestObject: object): Promise<JSONRPCNamedOperation[]> {
-		const responseOperations: JSONRPCNamedOperation[] = [];
+	private async postToCrmJson(requestObject: object): Promise<IRpcNamedOperation[]> {
+		const responseOperations: IRpcNamedOperation[] = [];
 		const requestUrl = `${this.crmEnv.url}/crm/json${this.crmEnv.customer ? "?customer=" + encodeURIComponent(this.crmEnv.customer) : ""}`;
 
 		const response: object = await this.post(requestUrl, requestObject)
@@ -316,4 +316,8 @@ class RPCException {
 	toString() {
 		return [this.code, this.message, this.detail].join(" - ");
 	}
+}
+
+function isJSONRPCNamedOperation(obj: any): obj is IRpcNamedOperation {
+    return typeof obj['#id'] === 'string' && typeof obj['@name'] === 'string' && Array.isArray(obj['@func']);
 }

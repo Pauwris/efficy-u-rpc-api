@@ -1,13 +1,14 @@
 import { RemoteAPI } from "src/remote-api.js";
 import { RemoteDataSet } from "./dataset.js";
-import { JSONPrimitiveObject, JSONRPCNamedOperation, UKey } from "src/types.js";
+import { JSONPrimitiveObject, UKey } from "src/types/public.js";
+import { IRpcNamedOperation } from "src/types/private.js";
 
 export class QuerySQLObject extends RemoteDataSet {
 	constructor(remoteAPI: RemoteAPI, private sql: string, private queryParams: string[] = [], private loadBlobs = false, private recordCount = 0) {
 		super(remoteAPI);
 	}
 
-	protected asJsonRpc(): JSONRPCNamedOperation {
+	protected asJsonRpc(): IRpcNamedOperation {
 		const api: JSONPrimitiveObject = {
 			"@name": "executesqlquery",
 			"sql": this.sql,
@@ -19,7 +20,7 @@ export class QuerySQLObject extends RemoteDataSet {
 			api.queryparams = this.queryParams.join("\n");
 		}
 
-		const requestObject: JSONRPCNamedOperation = this.requestObject = {
+		const requestObject: IRpcNamedOperation = this.requestObject = {
 			"#id": this.id,
 			"@name": "api",
 			"@func": [api]
@@ -35,7 +36,7 @@ export class QueryObject extends RemoteDataSet {
 		super(remoteAPI);
 	}
 
-	protected asJsonRpc(): JSONRPCNamedOperation {
+	protected asJsonRpc(): IRpcNamedOperation {
 		const api: JSONPrimitiveObject = {
 			"@name": "query",
 			"loadBlobs": this.loadBlobs,
@@ -50,7 +51,7 @@ export class QueryObject extends RemoteDataSet {
 			api.queryparams = this.queryParams.join("|");
 		}
 
-		const requestObject: JSONRPCNamedOperation = this.requestObject = {
+		const requestObject: IRpcNamedOperation = this.requestObject = {
 			"#id": this.id,
 			"@name": "api",
 			"@func": [api]
