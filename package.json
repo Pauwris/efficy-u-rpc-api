@@ -14,7 +14,7 @@
 		"build-all": "npm run build:clean && npm run build:ts && npm run build:js && npm run build:dts && npm run build:docs",
 		"pack": "npm pack --pack-destination pack/"
 	},
-	"version": "2.0.1",
+	"version": "2.0.2",
 	"homepage": "https://github.com/Pauwris/efficy-u-rpc-api#readme",
 	"keywords": [
 		"Efficy",
