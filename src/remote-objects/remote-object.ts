@@ -70,12 +70,12 @@ export class RemoteObject {
 	}
 	
 	protected findFuncArray(resp: JSONPrimitiveObject, name: string) {
-		var result = this.findDataSetArray(this.findFunc(resp, name));
+		const result = this.findDataSetArray(this.findFunc(resp, name));
 		return Array.isArray(result) ? result : null;
 	}
 	
 	protected findFuncArray2(resp: JSONPrimitiveObject, name: string, name2: string, value2: string | number) {
-		var result = this.findDataSetArray(this.findFunc2(resp, name, name2, value2));
+		const result = this.findDataSetArray(this.findFunc2(resp, name, name2, value2));
 		return Array.isArray(result) ? result : null;
 	}
 }

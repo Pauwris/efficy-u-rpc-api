@@ -3,6 +3,7 @@ import { findDeep, FetchQueue } from './utils/utils.js';
 import { IRpcNamedOperation } from './types/private.js';
 import { RemoteObject } from './remote-objects/remote-object.js';
 import { parseEfficyCookieString } from "./cookie.js";
+import { ErrorFunction, LogFunction } from "./types/public.js";
 
 /**
  * Class with low-level JSON RPC functions
@@ -12,16 +13,14 @@ export class RemoteAPI {
 	remoteObjects: RemoteObject[] = [];
 	requestCounter: number = 0;
 	sessionId?: string;
-	errorFunction?: Function;	
-	onBeforeFetch?: Function;
-	onAfterFetch?: Function;
+	errorFunction?: ErrorFunction;	
 
 	protected _lastResponseObject: object | null = null;
 	
 	/**
 	 * Construct a RemoteAPI object
 	 */
-	constructor(public crmEnv = new CrmEnv(), public logFunction?: Function, public threadId: number = 1) {
+	constructor(public crmEnv = new CrmEnv(), public logFunction?: LogFunction, public threadId: number = 1) {
 		if (crmEnv && typeof crmEnv !== "object") throw new TypeError(`${this.#name}.constructor::crmEnv is not an Object`);
 		if (logFunction && typeof logFunction !== "function") throw new TypeError(`${this.#name}.constructor::logFunction is not a function`);
 		if (threadId) this.threadId = threadId;
@@ -33,7 +32,7 @@ export class RemoteAPI {
 
 	private setFetchOptions() {
 		try {
-			let headers: Record<string, any> = {...this.fetchOptions.headers};			
+			const headers: Record<string, any> = {...this.fetchOptions.headers};			
 
 			if (this.crmEnv.apiKey) {				
 				headers["X-Efficy-ApiKey"] = this.crmEnv.apiKey;
@@ -76,7 +75,7 @@ export class RemoteAPI {
 
 		try {
 			this.remoteObjects.forEach(item => {
-				// @ts-ignore using protected method
+				// @ts-expect-error using protected member
 				const jsonRPC = item.asJsonRpc();
 				if (jsonRPC) {
 					requestObject.push(jsonRPC);
@@ -98,18 +97,18 @@ export class RemoteAPI {
 
 		// Add response info to operations and remove executed operations (handled or not)
 		const items = this.remoteObjects;
-		var index = items.length
+		let index = items.length
 		while (index--) {
 			const operation = items[index];
 			const respOper = responseOperations.find(respOper => {
-				// @ts-ignore using protected member
+				// @ts-expect-error using protected member
 				return respOper["#id"] === operation.id;
 			});
 			if (!respOper)
 			this.throwError(`${this.#name}.executeBatch::cannot find response for queued operation [${index}/${items.length}]`);
-			// @ts-ignore using protected method
+			// @ts-expect-error using protected method
 			Object.assign(operation.responseObject, respOper);
-			// @ts-ignore using protected method
+			// @ts-expect-error using protected method
 			operation.afterExecute();
 			items.splice(index, 1);
 		}
@@ -181,7 +180,6 @@ export class RemoteAPI {
 				await fetchQueue.waitMyTurn();
 				rql.log();
 
-				this.#onBeforeFetch(requestUrl, request);
 				response = await fetch(requestUrl, request);
 
 				try {
@@ -193,7 +191,6 @@ export class RemoteAPI {
 				}
 			} finally {
 				fetchQueue.finished();
-				this.#onAfterFetch(requestUrl, request, response);
 			}
 
 			rql.setResponse(response, responseObject);			
@@ -240,15 +237,7 @@ export class RemoteAPI {
 			return new RPCException(err.message ?? err.errorstring, err.code ?? err.errorcode, err.detail);	
 		}
 	}
-
-	#onBeforeFetch(requestUrl: string, request: RequestInit) {
-		if (typeof this.onBeforeFetch === "function") this.onBeforeFetch(this, arguments);
-	}
-
-	#onAfterFetch(requestUrl: string, request: RequestInit, response?: any) {
-		if (typeof this.onAfterFetch === "function") this.onAfterFetch(this, arguments);
-	}
-};
+}
 
 class RequestLog {
 	d_request = new Date();
@@ -266,7 +255,7 @@ class RequestLog {
 	requestObject: any;
 	responseObject: any;
 
-	constructor(public requestId: number, public logFunction?: Function, public threadId?: number) {
+	constructor(public requestId: number, public logFunction?: LogFunction, public threadId?: number) {
 	}
 
 	countFuncItems(rpcObject: object) {
@@ -310,7 +299,7 @@ class RequestLog {
 
 		return data;
 	}
-};
+}
 
 class RPCException {
 	constructor(public message: string, public code: string = "RPC", public detail: string = "") {}

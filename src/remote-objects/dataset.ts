@@ -52,7 +52,7 @@ class DataSetInternal {
 		if (this.includeBlobContent) func["includeblobcontent"] = true;
 
 		return func;
-	};
+	}
 
 	get remoteDataSet(): DataSet {
 		return new DataSet(this);

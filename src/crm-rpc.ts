@@ -6,7 +6,7 @@ import { CollectionObject, ConsultManyObject, FavoriteList, RecentList, UserList
 import { EditObject, DeleteEntity } from './remote-objects/edit.js';
 import { SystemSettings } from './remote-objects/list-type.js';
 import { QueryObject, QuerySQLObject } from './remote-objects/query.js';
-import { UKey } from './types/public.js';
+import { LogFunction, UKey } from './types/public.js';
 import * as Constants from "./constants.js"
 
 /**
@@ -24,7 +24,7 @@ export class CrmRpc extends RemoteAPI {
 	 * }
 	 * const crm = new CrmRpc(crmEnv, logger);
 	 */
-	constructor(crmEnv?: CrmEnv, logFunction?: Function, threadId?: number) {
+	constructor(crmEnv?: CrmEnv, logFunction?: LogFunction, threadId?: number) {
 		super(crmEnv, logFunction, threadId);
 	}
 
@@ -32,7 +32,7 @@ export class CrmRpc extends RemoteAPI {
 	 * Execute all assembled and queued RPC operations
 	 */
 	async executeBatch() {
-		return super.executeBatch();
+		return await super.executeBatch();
 	}
 	/**
 	 * Logoff the remote session
