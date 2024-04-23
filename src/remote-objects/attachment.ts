@@ -68,5 +68,5 @@ export class AttachmentObject {
 		func["@name"] = "attachment";
 		func["key"] = this.key;
 		return func;
-	};
+	}
 }

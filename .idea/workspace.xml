@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="d5474278-a3ab-4c5e-85ea-31138e7b3756" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.npmignore" beforeDir="false" afterPath="$PROJECT_DIR$/.npmignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.AttachmentList.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.AttachmentList.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.AttachmentObject.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.AttachmentObject.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.CollectionObject.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.CollectionObject.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.ConsultManyObject.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.ConsultManyObject.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.ConsultObject.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.ConsultObject.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.ContactsList.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.ContactsList.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.DataSet.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.DataSet.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.DataSetList.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.DataSetList.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.DeleteEntity.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.DeleteEntity.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.EditObject.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.EditObject.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.FavoriteList.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.FavoriteList.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.PropertyObject.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.PropertyObject.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.QueryObject.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.QueryObject.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.QuerySQLObject.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.QuerySQLObject.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.RecentList.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.RecentList.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.RemoteDataSet.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.RemoteDataSet.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.SettingObject.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.SettingObject.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.SystemSettings.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.SystemSettings.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/Crm.UserList.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/Crm.UserList.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/CrmEnv.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/CrmEnv.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/CrmRpc.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/CrmRpc.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/classes/FetchQueue.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/classes/FetchQueue.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/interfaces/ICookie.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/interfaces/ICookie.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/interfaces/ICrmEnvConfig.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/interfaces/ICrmEnvConfig.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/modules/Crm.constants.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/modules/Crm.constants.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/modules/Crm.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/modules/Crm.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/types/JSONPrimitive.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/types/JSONPrimitive.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/types/JSONPrimitiveObject.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/types/JSONPrimitiveObject.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/types/Nil.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/types/Nil.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/types/UKey.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/types/UKey.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/variables/Crm.constants.access_code.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/variables/Crm.constants.access_code.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/variables/Crm.constants.account_kind.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/variables/Crm.constants.account_kind.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/variables/Crm.constants.file_type.html" beforeDir="false" afterPath="$PROJECT_DIR$/docs/variables/Crm.constants.file_type.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/rollup.config.dts.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/rollup.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/rollup.config.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/cookie.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/cookie.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/js-lang.js" beforeDir="false" afterPath="$PROJECT_DIR$/tests/js-lang.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/ts-lang.ts" beforeDir="false" afterPath="$PROJECT_DIR$/tests/ts-lang.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="MarkdownSettingsMigration">
+    <option name="stateVersion" value="1" />
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="ProjectErrors" />
+  </component>
+  <component name="ProjectId" id="2fV9cRErYrd8k2j48RtobFcijby" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "WebServerToolWindowFactoryState": "false",
+    "last_opened_file_path": "C:/Kristof/github/efficy-u-rpc-api",
+    "node.js.detected.package.eslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "ts.external.directory.path": "C:\\Kristof\\github\\efficy-u-rpc-api\\node_modules\\typescript\\lib",
+    "vue.rearranger.settings.migration": "true"
+  }
+}]]></component>
+  <component name="RunManager">
+    <configuration name="build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="build" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="npm.build" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="d5474278-a3ab-4c5e-85ea-31138e7b3756" name="Changes" comment="" />
+      <created>1713875456485</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1713875456485</updated>
+      <workItem from="1713875457520" duration="227000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+</project>

@@ -1,0 +1,13 @@
+{
+  "ignorePatterns": ["dist", "docs", "tests"],
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint", "promise"],
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "rules": {
+    "require-await": "error",
+    "@typescript-eslint/no-unused-vars": "warn"
+  }
+}

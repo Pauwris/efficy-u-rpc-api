@@ -1,7 +1,7 @@
 export function parseEfficyCookieString(cookieStr: string) {
     const keyValuePairs = cookieStr.split(';');
 
-    let name: string = "EfficySession";
+    const name: string = "EfficySession";
     let value: string = "";
     let path: string = "";
     let expires: string = "";
