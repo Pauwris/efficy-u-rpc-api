@@ -8,8 +8,6 @@ The Efficy U - RPC API is developed for server side usage in a [Node.js](https:/
 
 In your [Node.js](https://nodejs.org/en/) project, first install the [efficy-u-rpc-api](https://www.npmjs.com/package/efficy-u-rpc-api) npm package.
 
-**powershell**
-
 ```ps1
 npm i efficy-u-rpc-api
 ```

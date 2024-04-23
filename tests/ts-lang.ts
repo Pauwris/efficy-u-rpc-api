@@ -1,4 +1,4 @@
-import { CrmEnv, CrmRpc, Crm } from '../build/efficy-u-rpc-api-bundle-es.js'
+import { CrmEnv, CrmRpc, Crm, UKey } from '../build/efficy-u-rpc-api-bundle-es.js'
 //import { CrmEnv, CrmRpc, Crm, UKey } from '../src/index.js'
 
 import test from 'ava';
@@ -33,9 +33,12 @@ test('crmEnv', t => {
 	t.is(crmEnv.url, url.origin);
 });
 
+function myLogFunction(message: string) {
+	console.log(`myLogFunction::${message}`)
+}
 
 test('Settings and session properties', async (t) => {
-	const crm = new CrmRpc(crmEnv);
+	const crm = new CrmRpc(crmEnv, myLogFunction);
 	const currentDatabaseAlias = crm.currentDatabaseAlias;
 	const currentLicenseName = crm.currentUserCode;
 	const setts = crm.getSystemSettings();
@@ -110,13 +113,13 @@ test('Edit operations', async (t) => {
 
 	const userList = crm.getUserList();
 	await crm.executeBatch();
-	const userKey = userList.items?.filter(user => user.KIND === Crm.constants.account_kind.user).pop()?.K_USER;
-	const groupKey = userList.items?.filter(user => user.KIND === Crm.constants.account_kind.group).pop()?.K_USER;
+	const userKey = userList.items?.filter(user => user.KIND === Crm.constants.account_kind.user).pop()?.K_USER as string;
+	const groupKey = userList.items?.filter(user => user.KIND === Crm.constants.account_kind.group).pop()?.K_USER as string;
 
 	const comp = crm.openConsultObject("comp", compKeyEfficy);
 	const linkedContacts = comp.getDetailDataSet("cont");
 	await crm.executeBatch();
-	const contKey = linkedContacts.items?.pop()?.contKey;
+	const contKey = linkedContacts.items?.pop()?.contKey as string;
 
 	const docu = crm.openEditObject("Docu");
 	docu.updateField("name", "Unittest");
