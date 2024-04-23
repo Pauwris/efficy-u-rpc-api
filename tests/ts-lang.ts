@@ -105,8 +105,8 @@ test('Edit operations', async (t) => {
   
   const userList = crm.getUserList();
   await crm.executeBatch();
-  const userKey = userList.items?.filter(user => user.KIND === Crm.account_kind.user).pop()?.K_USER;
-  const groupKey = userList.items?.filter(user => user.KIND === Crm.account_kind.group).pop()?.K_USER;
+  const userKey = userList.items?.filter(user => user.KIND === Crm.constants.account_kind.user).pop()?.K_USER;
+  const groupKey = userList.items?.filter(user => user.KIND === Crm.constants.account_kind.group).pop()?.K_USER;
 
   const comp = crm.openConsultObject("comp", compKeyEfficy);
 	const linkedContacts = comp.getDetailDataSet("cont");  
@@ -128,7 +128,7 @@ test('Edit operations', async (t) => {
   docu.insertDetail("Comp", compKeyEfficy);
   docu.insertDetail("Cont", contKey);
   docu.setUsers([userKey], true);
-  docu.setUserSecurity(groupKey, Crm.access_code.fullcontrol);
+  docu.setUserSecurity(groupKey, Crm.constants.access_code.fullcontrol);
   docu.commitChanges();  
   await crm.executeBatch();
   const docuKey = docu.key;

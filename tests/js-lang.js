@@ -66,12 +66,12 @@ test('DataSet extended operations', async (t) => {
   const catgs = crm.getCategoryCollection("comp");
   await crm.executeBatch();
 
-  const adminUser = userList.items.find(user => user["USERCODE"].toLowerCase() === currentUserCode);
+  const adminUser = userList.items.find(user => typeof user["USERCODE"] === "string" && user["USERCODE"].toLowerCase() === currentUserCode);
 
-  t.assert(adminUser.key != "", "getUserList");
+  t.assert(adminUser?.key != "", "getUserList");
   t.assert(favoList.items.pop()?.favoKey != "", "consultFavorites");
   t.assert(recentsList.items.pop()?.TEXT != "", "consultRecent")
-  t.assert(catgs.items.pop()?.kCategory > 0, "getCategoryCollection")
+  t.assert(catgs.items.pop()?.kCategory, "getCategoryCollection")
 
   try {
     crm.getCategoryCollection("dummy");
@@ -93,8 +93,8 @@ test('Consult operations', async (t) => {
   const linkedOppo = comp.getDetailDataSet("oppo");
   await crm.executeBatch();
 
-  t.deepEqual(dsComp.item.compName, "Efficy", "compName");
-  t.deepEqual(dsCompCustomer.item.compcustCompanyKey, compKeyEfficy, "dsCompCustomer");
+  t.deepEqual(dsComp.item?.compName, "Efficy", "compName");
+  t.deepEqual(dsCompCustomer.item?.compcustCompanyKey, compKeyEfficy, "dsCompCustomer");
   t.assert(linkedContacts.items.length > 100, "linkedContacts")	
   t.assert(linkedOppo.items.length > 10, "linkedOppo")	
 });
@@ -105,13 +105,13 @@ test('Edit operations', async (t) => {
   
   const userList = crm.getUserList();
   await crm.executeBatch();
-  const userKey = userList.items.filter(user => user.KIND === Crm.account_kind.user).pop().K_USER;
-  const groupKey = userList.items.filter(user => user.KIND === Crm.account_kind.group).pop().K_USER;
+  const userKey = userList.items?.filter(user => user.KIND === Crm.constants.account_kind.user).pop()?.K_USER;
+  const groupKey = userList.items?.filter(user => user.KIND === Crm.constants.account_kind.group).pop()?.K_USER;
 
   const comp = crm.openConsultObject("comp", compKeyEfficy);
 	const linkedContacts = comp.getDetailDataSet("cont");  
   await crm.executeBatch();
-  const contKey = linkedContacts.items.pop().contKey;  
+  const contKey = linkedContacts.items?.pop()?.contKey;  
 
   const docu = crm.openEditObject("Docu");
   docu.updateField("name", "Unittest");
@@ -128,11 +128,10 @@ test('Edit operations', async (t) => {
   docu.insertDetail("Comp", compKeyEfficy);
   docu.insertDetail("Cont", contKey);
   docu.setUsers([userKey], true);
-  docu.setUserSecurity(groupKey, Crm.access_code.fullcontrol);
+  docu.setUserSecurity(groupKey, Crm.constants.access_code.fullcontrol);
   docu.commitChanges();  
   await crm.executeBatch();
   const docuKey = docu.key;
-
 
   crm.deleteEntity("Docu", [docuKey]);
   await crm.executeBatch();

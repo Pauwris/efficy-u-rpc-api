@@ -7,7 +7,6 @@ type DataSetKind = "main" | "master" | "detail" | "category";
 
 class DataSetInternal {
 	tableView: number = 0;
-	protected ds: DataSetInternal | null = null;
 
 	private _items: JSONPrimitiveObject[] = [];
 	private _item: JSONPrimitiveObject | null = null;
@@ -62,6 +61,19 @@ class DataSetInternal {
 
 export class DataSet {
 	constructor(public ds: DataSetInternal | null) {}
+
+	get name() {
+		return this.ds?.name;
+	}
+	get type() {
+		return this.ds?.type;
+	}
+	get filter() {
+		return this.ds?.filter;
+	}
+	get includeBlobContent() {
+		return this.ds?.includeBlobContent;
+	}
 
 	/**
 	 * The to array converted dataset

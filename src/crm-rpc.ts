@@ -7,6 +7,7 @@ import { EditObject, DeleteEntity } from './remote-objects/edit.js';
 import { SystemSettings } from './remote-objects/list-type.js';
 import { QueryObject, QuerySQLObject } from './remote-objects/query.js';
 import { UKey } from './types/public.js';
+import * as Constants from "./constants.js"
 
 /**
  * Class to create Remote Objects
@@ -45,6 +46,10 @@ export class CrmRpc extends RemoteAPI {
 	 */
 	post(requestUrl: string, requestObject: object) {
 		return super.post(requestUrl, requestObject);
+	}
+
+	get lastResponseObject() {
+		return this._lastResponseObject;
 	}
 
 	/**
@@ -245,4 +250,6 @@ export class CrmRpc extends RemoteAPI {
 		if (!keys || (Array.isArray(keys) && keys.length === 0)) return;
 		new DeleteEntity(this, entity, keys);
 	}
+
+	constants = Constants;
 }

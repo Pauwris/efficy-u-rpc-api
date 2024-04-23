@@ -11,12 +11,12 @@ export class RemoteAPI {
 	#name = "RemoteAPI";
 	remoteObjects: RemoteObject[] = [];
 	requestCounter: number = 0;
-
 	sessionId?: string;
-
 	errorFunction?: Function;	
 	onBeforeFetch?: Function;
 	onAfterFetch?: Function;
+
+	protected _lastResponseObject: object | null = null;
 	
 	/**
 	 * Construct a RemoteAPI object
@@ -187,6 +187,7 @@ export class RemoteAPI {
 				try {
 					responseBody = await response.text();
 					responseObject = JSON.parse(responseBody || "[]");
+					this._lastResponseObject = responseObject;
 				} catch(ex) {
 					this.throwError(`invalid JSON response from resource '${requestUrl}'`)
 				}
