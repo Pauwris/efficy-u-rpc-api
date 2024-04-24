@@ -1,4 +1,4 @@
-import { JsonRpcApi } from "src/crm-rpc.js";
+import { JsonRpcApi } from "src/crm-rpc/index.js";
 import { RemoteDataSet } from "./dataset.js";
 import { JSONPrimitiveObject, UnityKey } from "src/types.js";
 import { RpcNamedOperation } from "src/types.js";

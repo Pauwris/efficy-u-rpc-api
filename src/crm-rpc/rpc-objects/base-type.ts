@@ -1,4 +1,4 @@
-import { JsonRpcApi } from "src/crm-rpc.js";
+import { JsonRpcApi } from "src/crm-rpc/index.js";
 import { RpcObject } from "./rpc-object.js";
 import { RpcNamedOperation } from "src/types.js";
 

@@ -1,15 +1,17 @@
-import { CrmEnv } from './crm-env.js';
-import { PropertyObject, SettingObject } from './rpc/base-type.js';
-import { ConsultObject } from './rpc/consult.js';
-import { CollectionObject, ConsultManyObject, FavoriteList, RecentList, UserList } from './rpc/dataset.js';
-import { EditObject, DeleteEntity } from './rpc/edit.js';
-import { SystemSettings } from './rpc/list-type.js';
-import { QueryObject, QuerySQLObject } from './rpc/query.js';
-import { LogFunction, UnityKey } from './types.js';
-import { CrmFetch } from './crm-fetch.js';
-import { RpcObject } from './rpc/rpc-object.js';
+import { CrmEnv } from '../crm-env.js';
+import { PropertyObject, SettingObject } from './rpc-objects/base-type.js';
+import { ConsultObject } from './rpc-objects/consult.js';
+import { CollectionObject, ConsultManyObject, FavoriteList, RecentList, UserList } from './rpc-objects/dataset.js';
+import { EditObject, DeleteEntity } from './rpc-objects/edit.js';
+import { SystemSettings } from './rpc-objects/list-type.js';
+import { QueryObject, QuerySQLObject } from './rpc-objects/query.js';
+import { LogFunction, UnityKey } from '../types.js';
+import { CrmFetch } from '../crm-fetch.js';
+import { RpcObject } from './rpc-objects/rpc-object.js';
 import { RpcNamedOperation } from './types.js';
-import * as Constants from "./rpc/constants.js"
+import * as RpcConstants from "./constants.js";
+
+export * as CrmRpcObjects from "./rpc-objects/index.js"
 
 /**
  * @private
@@ -346,7 +348,12 @@ export class CrmRpc extends JsonRpcApi {
 		new DeleteEntity(this, entity, keys);
 	}
 
-	constants = Constants;
+	/* The statement `constants = RpcConstants` failed in build:dts process, hence this manual export */
+	constants = {
+		access_code: RpcConstants.access_code,
+		account_kind: RpcConstants.account_kind,
+		file_type: RpcConstants.file_type,
+	};
 }
 
 function isJSONRPCNamedOperation(obj: any): obj is RpcNamedOperation {

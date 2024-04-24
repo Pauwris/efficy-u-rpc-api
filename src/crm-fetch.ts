@@ -1,5 +1,5 @@
 import { CrmEnv } from "./crm-env.js";
-import { findDeep } from './rpc/utils.js';
+import { findDeep } from './crm-rpc/utils.js';
 import { ErrorFunction, LogFunction } from "./types.js";
 
 export class CrmFetch {

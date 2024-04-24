@@ -22,5 +22,6 @@ export interface Cookie {
 	expires?: string;
 }
 
-export * from "./rpc/types"
-export * from "./api/types/search"
+export * from "./crm-api/types"
+export * from "./crm-rpc/types"
+

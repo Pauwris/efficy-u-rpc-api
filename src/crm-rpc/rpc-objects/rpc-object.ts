@@ -1,5 +1,5 @@
-import { findDeep, uuidv4 } from './utils.js';
-import { JsonRpcApi } from 'src/crm-rpc.js';
+import { findDeep, uuidv4 } from '../utils.js';
+import { JsonRpcApi } from 'src/crm-rpc/index.js';
 import { JSONPrimitiveObject } from 'src/types.js';
 import { RpcNamedOperation } from 'src/types.js';
 

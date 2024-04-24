@@ -1,6 +1,6 @@
-import { CrmEnv } from './crm-env.js';
-import { CrmFetch } from './crm-fetch.js';
-import { LogFunction } from './types.js';
+import { CrmEnv } from '../crm-env.js';
+import { CrmFetch } from '../crm-fetch.js';
+import { LogFunction } from '../types.js';
 
 /**
  * Efficy SDK build around crm webrequests such as /query, /global-search, /save

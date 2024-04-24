@@ -1,7 +1,7 @@
 import { RpcObject } from './rpc-object.js';
-import { JSONPrimitiveObject } from '../types.js'
-import { RpcNamedOperation } from '../types.js'
-import { JsonRpcApi } from 'src/crm-rpc.js';
+import { JSONPrimitiveObject } from '../../types.js'
+import { RpcNamedOperation } from '../../types.js'
+import { JsonRpcApi } from 'src/crm-rpc/index.js';
 
 type DataSetKind = "main" | "master" | "detail" | "category";
 
