@@ -1,10 +1,10 @@
 import { CrmEnv, CrmRpc, Crm, UKey } from '../build/efficy-u-rpc-api-bundle-es.js'
-//import { CrmEnv, CrmRpc, Crm, UKey } from '../src/index.js'
 
 import test from 'ava';
 import process from 'process';
 import dotenv from 'dotenv';
 import path from 'path';
+import fs from 'fs';
 dotenv.config();
 
 // Constants depending on the tested environment
@@ -12,8 +12,8 @@ const url = new URL("https://submariners.efficytest.cloud/");
 const customerAlias = "submariners";
 const compKeyEfficy = "00010Q0u00001Nvm";
 const pdfFilePath = "C:\\Temp\\efficy-u-rpc-api\\Welcome to Word.pdf";
-
-const kristof: UKey = "string";
+const crmKey: UKey = "string";
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 test('process.env', t => {
 	t.is(process.env.CRM_ORIGIN, url.origin + "/");
@@ -85,7 +85,11 @@ test('DataSet extended operations', async (t) => {
 		crm.getCategoryCollection("dummy");
 		await crm.executeBatch();
 	} catch (ex) {
-		t.deepEqual(ex.message, 'EEfficyException - Invalid Entity "dummy" - TAGS-2108', "Error on getCategoryCollection")
+		if (ex instanceof Error) {
+			t.deepEqual(ex.message, 'EEfficyException - Invalid Entity "dummy" - TAGS-2108', "Error on getCategoryCollection")
+		} else {
+			console.error(ex);
+		}		
 	}
 });
 
@@ -147,9 +151,14 @@ test('Edit operations', async (t) => {
 	t.assert(docuKey != "", "Edit + Delete docu")
 });
 
+
 test('Attachments', async (t) => {
+	const dirname = path.dirname(pdfFilePath);
 	const fileName = path.basename(pdfFilePath);
-	const base64String = "";
+	const base64FileName = path.join(dirname, fileName + ".txt")
+	const data = await fs.promises.readFile(pdfFilePath);
+	const base64String = Buffer.from(data).toString('base64');
+	await fs.promises.writeFile(base64FileName, base64String)
 
 	const crm = new CrmRpc(crmEnv);
 	const docu = crm.openEditObject("Docu");
@@ -158,5 +167,15 @@ test('Attachments', async (t) => {
 	docu.updateAttachment("", base64String)
 	docu.commitChanges();
 	await crm.executeBatch();
+	const lastResponseObject = crm.lastResponseObject;
 	const docuKey = docu.key;
+
+	//console.log(`${url.origin}/docu/${docuKey}`)
+
+	await sleep(1000); // Avoids concurrency error
+
+	crm.deleteEntity("Docu", [docuKey]);
+	await crm.executeBatch();
+
+	t.assert(docuKey != "", "Attachments")
 });
