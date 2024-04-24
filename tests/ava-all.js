@@ -1,4 +1,4 @@
-import { CrmEnv, CrmRpc, Crm } from '../build/efficy-u-rpc-api-bundle-es.js';
+import { CrmEnv, CrmRpc } from '../build/efficy-u-rpc-api-bundle-es.js';
 import test from 'ava';
 import process from 'process';
 import dotenv from 'dotenv';
@@ -28,7 +28,7 @@ test('crmEnv', t => {
     t.is(crmEnv.url, url.origin);
 });
 function myLogFunction(message) {
-    console.log(`myLogFunction::${message}`);
+    //console.log(`myLogFunction::${message}`)
 }
 test('Settings and session properties', async (t) => {
     const crm = new CrmRpc(crmEnv, myLogFunction);
@@ -80,21 +80,21 @@ test('Consult operations', async (t) => {
     const comp = crm.openConsultObject("comp", compKeyEfficy);
     const dsComp = comp.getMasterDataSet();
     const dsCompCustomer = comp.getCategoryDataSet("COMP$CUSTOMER");
-    const linkedContacts = comp.getDetailDataSet("cont");
+    const dsLinkedContacts = comp.getDetailDataSet("cont");
     await crm.executeBatch();
     const linkedOppo = comp.getDetailDataSet("oppo");
     await crm.executeBatch();
     t.deepEqual(dsComp.item?.compName, "Efficy", "compName");
     t.deepEqual(dsCompCustomer.item?.compcustCompanyKey, compKeyEfficy, "dsCompCustomer");
-    t.assert(linkedContacts.items.length > 100, "linkedContacts");
+    t.assert(dsLinkedContacts.items.length > 100, "linkedContacts");
     t.assert(linkedOppo.items.length > 10, "linkedOppo");
 });
 test('Edit operations', async (t) => {
     const crm = new CrmRpc(crmEnv);
     const userList = crm.getUserList();
     await crm.executeBatch();
-    const userKey = userList.items?.filter(user => user.KIND === Crm.constants.account_kind.user).pop()?.K_USER;
-    const groupKey = userList.items?.filter(user => user.KIND === Crm.constants.account_kind.group).pop()?.K_USER;
+    const userKey = userList.items?.filter(user => user.KIND === crm.constants.account_kind.user).pop()?.K_USER;
+    const groupKey = userList.items?.filter(user => user.KIND === crm.constants.account_kind.group).pop()?.K_USER;
     const comp = crm.openConsultObject("comp", compKeyEfficy);
     const linkedContacts = comp.getDetailDataSet("cont");
     await crm.executeBatch();
@@ -114,7 +114,7 @@ test('Edit operations', async (t) => {
     docu.insertDetail("Comp", compKeyEfficy);
     docu.insertDetail("Cont", contKey);
     docu.setUsers([userKey], true);
-    docu.setUserSecurity(groupKey, Crm.constants.access_code.fullcontrol);
+    docu.setUserSecurity(groupKey, crm.constants.access_code.fullcontrol);
     docu.commitChanges();
     await crm.executeBatch();
     const docuKey = docu.key;

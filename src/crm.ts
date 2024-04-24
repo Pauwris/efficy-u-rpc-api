@@ -1,2 +1,2 @@
-export * from "./remote-objects/_index.js"
-export * as constants from "./constants.js"
+export * from "./rpc/index.js"
+export * as constants from "./rpc/constants.js"

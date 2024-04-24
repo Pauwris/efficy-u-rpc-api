@@ -1,18 +1,117 @@
 import { CrmEnv } from './crm-env.js';
-import { RemoteAPI } from './remote-api.js';
-import { PropertyObject, SettingObject } from './remote-objects/base-type.js';
-import { ConsultObject } from './remote-objects/consult.js';
-import { CollectionObject, ConsultManyObject, FavoriteList, RecentList, UserList } from './remote-objects/dataset.js';
-import { EditObject, DeleteEntity } from './remote-objects/edit.js';
-import { SystemSettings } from './remote-objects/list-type.js';
-import { QueryObject, QuerySQLObject } from './remote-objects/query.js';
-import { LogFunction, UKey } from './types/public.js';
-import * as Constants from "./constants.js"
+import { PropertyObject, SettingObject } from './rpc/base-type.js';
+import { ConsultObject } from './rpc/consult.js';
+import { CollectionObject, ConsultManyObject, FavoriteList, RecentList, UserList } from './rpc/dataset.js';
+import { EditObject, DeleteEntity } from './rpc/edit.js';
+import { SystemSettings } from './rpc/list-type.js';
+import { QueryObject, QuerySQLObject } from './rpc/query.js';
+import { LogFunction, UnityKey } from './types.js';
+import { CrmFetch } from './crm-fetch.js';
+import { RpcObject } from './rpc/rpc-object.js';
+import { RpcNamedOperation } from './types.js';
+import * as Constants from "./rpc/constants.js"
 
 /**
- * Class to create Remote Objects
-*/
-export class CrmRpc extends RemoteAPI {
+ * @private
+ */
+export class JsonRpcApi extends CrmFetch {
+	remoteObjects: RpcObject[] = [];
+
+
+	constructor(public crmEnv = new CrmEnv(), public logFunction?: LogFunction, public threadId: number = 1) {
+		super(crmEnv, logFunction, threadId)
+		this.name = "JsonRpcApi";
+	}
+
+	/**
+	 * Execute all assembled and queued RPC operations
+	 */
+	async executeBatch() {
+		const requestObject: RpcNamedOperation[] = [];
+
+		try {
+			this.remoteObjects.forEach(item => {
+				// @ts-expect-error using protected member
+				const jsonRPC = item.asJsonRpc();
+				if (jsonRPC) {
+					requestObject.push(jsonRPC);
+				}
+			})
+		} catch (ex: unknown) {
+			if (ex instanceof Error) {
+				this.throwError(`${this.name}.executeBatch::asJsonRpc\n${ex.message}`)
+			} else {
+				console.error(ex);
+			}
+		}
+
+
+		// Nothing to execute, ignore silently
+		if (!requestObject.length) return;
+
+		const responseOperations: RpcNamedOperation[] = await this.postToCrmJson(requestObject);
+
+		// Add response info to operations and remove executed operations (handled or not)
+		const items = this.remoteObjects;
+		let index = items.length
+		while (index--) {
+			const operation = items[index];
+			const respOper = responseOperations.find(respOper => {
+				// @ts-expect-error using protected member
+				return respOper["#id"] === operation.id;
+			});
+			if (!respOper)
+				this.throwError(`${this.name}.executeBatch::cannot find response for queued operation [${index}/${items.length}]`);
+			// @ts-expect-error using protected method
+			Object.assign(operation.responseObject, respOper);
+			// @ts-expect-error using protected method
+			operation.afterExecute();
+			items.splice(index, 1);
+		}
+	}
+
+	/**
+	 * Logoff the remote session
+	 */
+	logoff() {
+		this.crmEnv.logOff = true;
+		this.setFetchOptions();
+	}
+
+	private async postToCrmJson(requestObject: object): Promise<RpcNamedOperation[]> {
+		const responseOperations: RpcNamedOperation[] = [];
+		const requestUrl = `${this.crmEnv.url}/crm/json${this.crmEnv.customer ? "?customer=" + encodeURIComponent(this.crmEnv.customer) : ""}`;
+
+		const response: object = await this.fetch(requestUrl, requestObject)
+
+		if (Array.isArray(response)) {
+			response.forEach(item => {
+				if (isJSONRPCNamedOperation(item)) {
+					responseOperations.push(item);
+				}
+			})
+		} else if (!response) {
+			throw new TypeError(`${this.name}.postToCrmJson::empty response`);
+		} else {
+			throw new TypeError(`${this.name}.postToCrmJson::responseObject is not an Array`);
+		}
+
+		return responseOperations;
+	}
+}
+
+/**
+ * Efficy SDK build around crm/json RPC operations, the Efficy Enterprise product style.
+ * @example
+ * const crm = new CrmRpc(crmEnv);
+ * const comp = crm.openConsultObject("comp", compKey);
+ * const dsComp = comp.getMasterDataSet();
+ * const dsCompCustomer = comp.getCategoryDataSet("COMP$CUSTOMER");
+ * const dsLinkedContacts = comp.getDetailDataSet("cont");
+ * await crm.executeBatch();
+ * const compName = dsComp.item?.compName;
+ */
+export class CrmRpc extends JsonRpcApi {
 	/**
 	 * Construct a CrmRpc object
 	 * @param [crmEnv] When empty, uses the Efficy context of the browser
@@ -45,11 +144,7 @@ export class CrmRpc extends RemoteAPI {
 	 * Post and receive JSON with custom endpoint	 
 	 */
 	post(requestUrl: string, requestObject: object) {
-		return super.post(requestUrl, requestObject);
-	}
-
-	get lastResponseObject() {
-		return this._lastResponseObject;
+		return super.fetch(requestUrl, requestObject);
 	}
 
 	/**
@@ -141,7 +236,7 @@ export class CrmRpc extends RemoteAPI {
 	 * const linkedContacts = comp.getDetailDataSet("cont");  
 	 * await crm.executeBatch();
 	 */
-	openConsultObject(entity: string, key: UKey) {
+	openConsultObject(entity: string, key: UnityKey) {
 		return new ConsultObject(this, entity, key);
 	}
 
@@ -151,7 +246,7 @@ export class CrmRpc extends RemoteAPI {
 	 * @param entity - The entity name, e.g. "Comp"
 	 * @param key - The key of the record. Use key = "" to create a new record.
 	 */
-	openEditObject(entity: string, key: UKey = "") {
+	openEditObject(entity: string, key: UnityKey = "") {
 		return new EditObject(this, entity, key);
 	}
 
@@ -222,7 +317,7 @@ export class CrmRpc extends RemoteAPI {
 	 * @example
 	 * const tags = crm.executeDatabaseQuery(99990034); // Query "Standard: Top company tags"
 	 */
-	executeDatabaseQuery(idQuery: UKey, queryParameters?: string[], loadBlobs: boolean = false, recordCount: number = 0) {
+	executeDatabaseQuery(idQuery: UnityKey, queryParameters?: string[], loadBlobs: boolean = false, recordCount: number = 0) {
 		return new QueryObject(this, idQuery, undefined, undefined, queryParameters, loadBlobs, recordCount);
 	}
 
@@ -246,10 +341,14 @@ export class CrmRpc extends RemoteAPI {
 	 * @param entity The entity name, e.g. "Comp"
 	 * @param keys List of keys
 	 */
-	deleteEntity(entity: string, keys: UKey[]) {
+	deleteEntity(entity: string, keys: UnityKey[]) {
 		if (!keys || (Array.isArray(keys) && keys.length === 0)) return;
 		new DeleteEntity(this, entity, keys);
 	}
 
 	constants = Constants;
+}
+
+function isJSONRPCNamedOperation(obj: any): obj is RpcNamedOperation {
+	return typeof obj['#id'] === 'string' && typeof obj['@name'] === 'string' && Array.isArray(obj['@func']);
 }
