@@ -6,6 +6,7 @@
 	"type": "module",
 	"scripts": {
 		"build": "npm run build-all",
+		"build:debug": "npm run build:js && npm run build:dts-es",
 		"build:clean": "rimraf build && rimraf docs",
 		"build:ts": "tsc",
 		"build:js": "rollup -c rollup.config.js",
