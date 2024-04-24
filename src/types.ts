@@ -5,6 +5,27 @@ export type JSONPrimitiveObject = Record<string, JSONPrimitive>
 export type ErrorFunction = (message: string) => void;
 export type LogFunction = (message: string, object: object) => void;
 
+export type ErrorData = Record<"title" | "id" | "detail", string | ErrorDetail>;
+export type ErrorDetail = Record<"id" | "message" | "objectKey", string>;
+export interface JsonApiResponse<Data = unknown> {
+    data: Data;
+    errors?: JsonApiErrorNode[];
+    status?: number[];
+}
+export interface DefaultExtraErrorData {
+    details: ErrorDetail[];
+    key: string;
+    position: string;
+}
+export interface JsonApiErrorNode<E = DefaultExtraErrorData> {
+    detail: string;
+    extra: E;
+    id: string;
+    title: string;
+}
+
+export type QueryStringArgs = Record<string, string | undefined> | object | URLSearchParams
+
 export interface CrmEnvConfig {
 	url?: string;
 	customer?: string;

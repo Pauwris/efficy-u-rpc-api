@@ -41,7 +41,7 @@
 	"devDependencies": {
 		"@rollup/plugin-typescript": "^11.1.6",
 		"@types/cookie": "^0.6.0",
-		"@types/node": "^20.10.4",
+		"@types/node": "^20.12.7",
 		"@typescript-eslint/eslint-plugin": "^7.3.1",
 		"@typescript-eslint/parser": "^7.7.1",
 		"ava": "^6.1.2",
@@ -54,6 +54,7 @@
 		"eslint-plugin-typescript-sort-keys": "^3.2.0",
 		"eslint-plugin-unused-imports": "^3.1.0",
 		"rollup": "^4.16.3",
+		"ts-node": "^10.9.2",
 		"tslib": "^2.6.2",
 		"typedoc": "^0.25.13",
 		"typescript": "^5.4.5",
