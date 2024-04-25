@@ -1,9 +1,12 @@
-import { CrmEnv, CrmApi } from '../build/efficy-u-rpc-api-bundle-es.js'
+import { CrmEnv, CrmApi, GetSearchResultPayload, EntitySearch } from '../build/efficy-u-rpc-api-bundle-es.js'
 
 import test from 'ava';
 import process from 'process';
 import dotenv from 'dotenv';
 dotenv.config();
+
+// Constants depending on the tested environment
+const searchedContact = "Kristof Pauwels";
 
 const crmEnv = new CrmEnv({
 	"url": process.env.CRM_ORIGIN,
@@ -15,19 +18,23 @@ const crmEnv = new CrmEnv({
 if (typeof process.env.CRM_USER !== "string" || !process.env.CRM_USER.toLowerCase()) throw Error("Check .env configuration")
 const currentUserCode = process.env.CRM_USER.toLowerCase();
 
-test('search', t => {    
+test('search', async t => {    
     const crm = new CrmApi(crmEnv);
-    debugger
-    crm.searchGlobal({
-        identifier: "test",
-        search: {
-            value: "test",
-            entities: ["comp"],
-            offset: 0,
-            quantity: 5,
-            refinedOptions: {}
-        },        
-    });
-
-	t.assert(true, "searchGlobal");
+	const payload: GetSearchResultPayload = {
+		identifier: "",
+		search: {
+			entities: ["cont"],
+			value: searchedContact.toLocaleLowerCase(),
+			offset: 0,
+			quantity: 5,
+			refinedOptions: {
+                includeArchived: false,
+                onlyItemsLinkedToMe: false
+            }
+		}
+	}
+	const searchResult: EntitySearch[] = await crm.searchGlobal(payload);	
+    t.assert(searchResult.length > 0, "Has at least one search result");
+    const cont = searchResult[0];
+    t.assert(cont.rows[0].name === "Kristof Pauwels");
 });
