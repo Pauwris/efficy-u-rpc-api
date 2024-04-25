@@ -1,82 +1,109 @@
 import { CrmEnv } from '../crm-env.js';
 import { CrmFetch } from '../crm-fetch.js';
-import { EntitySearch, GetSearchResultPayload, JsonApiResponse, LogFunction, QueryStringArgs, SearchEntityResponse, SearchRequest, TransformItemFunc } from '../types.js';
+import { CustomDatasetPayloads, GetSearchResultPayload, JsonApiResponse, ListSummaryPayload, ListSummaryResponse, ModulePostPayload, QueryStringArgs } from '../types.js';
+
+import searchGlobalService from "./service/search.js";
 
 /**
  * Efficy SDK build around crm JSON web requests with endpoints such as "crm/query", "crm/global-search" and "crm/save".
  * Each method immediatly invokes a request to the server and returns the received data object.
  */
 export class CrmApi extends CrmFetch {
-	constructor(crmEnv?: CrmEnv, logFunction?: LogFunction, threadId?: number) {
-		super(crmEnv, logFunction, threadId);
+	constructor(crmEnv?: CrmEnv) {
+		super(crmEnv);
         this.name = "CrmApi";
 	}
-
-	readonly #urls = {
-        query: "search-global/query"
-    };
     
     /**
      * Global elastic search in Efficy, with various filtering options
+     * @example
+     * const payload: GetSearchResultPayload = {
+     *   identifier: "",
+     *   search: {
+     *     entities: ["cont"],
+     *     value: searchedContact.toLocaleLowerCase(),
+     *     offset: 0,
+     *     quantity: 5,
+     *     refinedOptions: {
+     *       onlyItemsLinkedToMe: false
+     *     }
+     *   }
+     * }
+     * const searchResult: EntitySearch[] = await crm.searchGlobal(payload);	
      */
-	async searchGlobal(payload: GetSearchResultPayload): Promise<EntitySearch[]> {
-		const result: EntitySearch[] = [];
+    searchGlobal = (payload: GetSearchResultPayload) => searchGlobalService(this, payload);
+
+    /**
+     * Generate a list summary query
+     * @example
+     * const payload: ListSummaryPayload = {
+     *   fields: ["crcyName", "crcyCode", "crcySymbol", "crcyCode", "crcyKey"],
+     *   tableName: "Currency",
+     *   query: [["crcyIsDisabled = 0"]]
+     * };
+     * const result = await crm.listSummary<Crcy>(payload);
+     * const euro = result?.list.find(item => item.crcyCode === "EUR")
+     */
+    async listSummary<T = unknown>(payload: CustomDatasetPayloads, all: boolean = true): Promise<ListSummaryResponse<T> | undefined> {
+        const urlQueryStrings = {
+            queryType: "LISTSUMMARY",
+            all,
+        };
+
+        const listSumPayload = payload as ListSummaryPayload;
         
-        if (payload.search.entities.length > 0) {
-            if (payload.searchMine) {
-                payload.search.refinedOptions.onlyMyItems = true;
-            }
-            
-			const queryStringArgs = transformSearchRequestIntoPayload(payload.search);
-            const records = await this.crmGetData<Record<string, SearchEntityResponse>>(this.#urls.query, queryStringArgs);
-
-            for (const entity in records) {
-                const entityValues = records[entity];
-                if (!entityValues) continue;
-                result.push(await parseEntitySearchResult(entityValues, payload.transformItem));
-            }
+        if (listSumPayload.nbOfLines && listSumPayload.nbOfLines === 0) {
+            delete listSumPayload.nbOfLines;
         }
+        
+        return await this.crmPostData<ListSummaryResponse<T>>("query", payload, urlQueryStrings);
+    }
 
-        return result;
-	}
 
-    protected crmGetData = async <R>(url: string, payload?: QueryStringArgs): Promise<R> =>
-        (await this.crmGetRequest<JsonApiResponse<R>>(url, payload)).data;
+    crmGetData = async <R>(crmPath: string, payload?: QueryStringArgs): Promise<R> =>
+        (await this.crmGet<JsonApiResponse<R>>(crmPath, payload)).data;
 
-    private async crmGetRequest<R>(crmPath: string, payload: QueryStringArgs = {}): Promise<R> {
-        const params = new URLSearchParams();
-        for (const [key, value] of Object.entries(payload)) {
-            params.append(key, value.toString());
-        }
+    crmPostData = async <R>(crmPath: string, payload: ModulePostPayload, queryStringArgs: QueryStringArgs): Promise<R> =>
+        (await this.crmPost<JsonApiResponse<R>>(crmPath, payload, queryStringArgs)).data;
 
-        // Useful for development environments
-        if (this.crmEnv.customer) {
-            params.append("customer", this.crmEnv.customer);
-        }
-
-        const queryString = params.toString();
-		const requestUrl = `${this.crmEnv.url}/crm/${crmPath}?${queryString}`;
+    private async crmGet<R>(crmPath: string, queryStringArgs: QueryStringArgs = {}): Promise<R> {        
+		const requestUrl = this.getRequestUrl(crmPath, queryStringArgs)
 		const response: object = await this.fetch(requestUrl);
         if (this.isJsonApiResponse(response)) {
             return response as R;
         } else {
-            throw new Error(`${this.name}.crmGetRequest::unexpected response`);
+            throw new Error(`${this.name}.crmGet::unexpected response`);
         }
 	}
+
+    private async crmPost<R>(crmPath: string, payload: ModulePostPayload, queryStringArgs: QueryStringArgs): Promise<R> {
+        const requestUrl = this.getRequestUrl(crmPath, queryStringArgs)
+        const requestOptions: RequestInit = {
+            body: JSON.stringify(payload)
+        }
+		const response: object = await this.fetch(requestUrl, requestOptions);
+
+        if (this.isJsonApiResponse(response)) {
+            return response as R;
+        } else {
+            throw new Error(`${this.name}.crmPost::unexpected response`);
+        }
+	}
+
+    private getRequestUrl(crmPath: string, queryArgs: QueryStringArgs) {
+        const searchParams = new URLSearchParams();
+        for (const [key, value] of Object.entries(queryArgs)) {
+            searchParams.append(key, value.toString());
+        }
+
+        // Useful for development environments
+        if (this.crmEnv.customer) {
+            searchParams.append("customer", this.crmEnv.customer);
+        }
+
+        const queryString = searchParams.toString();
+		const requestUrl = `${this.crmEnv.url}/crm/${crmPath}?${queryString}`;
+
+		return requestUrl;
+    }
 }
-
-const transformSearchRequestIntoPayload = (search: SearchRequest): QueryStringArgs => ({
-    entities: JSON.stringify(search.entities.filter((entity) => entity)),
-    offset: search.offset.toString(),
-    quantity: search.quantity.toString(),
-    query: search.value,
-    refinedOptions: JSON.stringify(search.refinedOptions),
-});
-
-const parseEntitySearchResult = async (element: SearchEntityResponse, transformFunc?: TransformItemFunc): Promise<EntitySearch> => ({
-    name: element.entity,
-    offset: element.rows.length,
-    rows: transformFunc ? await Promise.all(element.rows.map((item) => transformFunc(item))) : element.rows,
-    total: element.total,
-    uniqueKey: "object-search",
-});

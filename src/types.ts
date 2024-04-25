@@ -7,6 +7,8 @@ export type LogFunction = (message: string, object: object) => void;
 
 export type ErrorData = Record<"title" | "id" | "detail", string | ErrorDetail>;
 export type ErrorDetail = Record<"id" | "message" | "objectKey", string>;
+export type QueryStringArgs = Record<string, string | undefined> | object | URLSearchParams
+export type ModulePostPayload = FormData | object | unknown[] | URLSearchParams
 
 export interface JsonApiResponse<Data = unknown> {
     data: Data;
@@ -19,8 +21,6 @@ export interface JsonApiErrorNode {
     id: string;
     title: string;
 }
-
-export type QueryStringArgs = Record<string, string | undefined> | object | URLSearchParams
 
 export interface CrmEnvConfig {
 	url?: string;

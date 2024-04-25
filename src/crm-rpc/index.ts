@@ -84,7 +84,10 @@ export class JsonRpcApi extends CrmFetch {
 		const responseOperations: RpcNamedOperation[] = [];
 		const requestUrl = `${this.crmEnv.url}/crm/json${this.crmEnv.customer ? "?customer=" + encodeURIComponent(this.crmEnv.customer) : ""}`;
 
-		const response: object = await this.fetch(requestUrl, requestObject)
+		const requestOptions: RequestInit = {
+            body: JSON.stringify(requestObject)
+        } 
+		const response: object = await this.fetch(requestUrl, requestOptions)
 
 		if (Array.isArray(response)) {
 			response.forEach(item => {

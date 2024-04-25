@@ -8,7 +8,7 @@ export class CrmFetch {
 	protected errorFunction?: ErrorFunction;
 	private _lastResponseObject: object | null = null;
 
-	constructor(public crmEnv = new CrmEnv(), public logFunction?: LogFunction, public threadId: number = 1) {
+	constructor(public crmEnv = new CrmEnv(), protected logFunction?: LogFunction, protected threadId: number = 1) {
 		this.setFetchOptions();
 	}
 
@@ -63,26 +63,25 @@ export class CrmFetch {
 		credentials: 'include' // Always send user credentials (cookies, basic http auth, etc..), even for cross-origin calls.
 	}
 
-	protected async fetch(requestUrl: string, requestObject?: RequestInit): Promise<object> {
+	protected async fetch(requestUrl: string, requestOptions?: RequestInit): Promise<object> {
 		let response: Response | null = null;
 		let responseBody: string = "";
 		let responseObject: object = {};
 		let crmException: CrmException | undefined;
 
 		try {
-			const request: RequestInit = Object.assign(this.fetchOptions, { body: JSON.stringify(requestObject) });
+			const init: RequestInit = Object.assign(this.fetchOptions, requestOptions);
 
 			if (this.crmEnv.cookieHeader) {
-				request.headers = {
+				init.headers = {
 					"Cookie": this.crmEnv.cookieHeader
 				}
 			}
 
-
 			const fetchQueue = new FetchQueue();
 			try {
 				await fetchQueue.waitMyTurn();
-				response = await fetch(requestUrl, request);
+				response = await fetch(requestUrl, init);
 
 				try {
 					responseBody = await response.text();
