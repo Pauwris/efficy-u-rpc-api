@@ -10,8 +10,8 @@ export type ErrorDetail = Record<"id" | "message" | "objectKey", string>;
 
 export interface JsonApiResponse<Data = unknown> {
     data: Data;
-    errors?: JsonApiErrorNode[];
-    status?: number[];
+    errors: JsonApiErrorNode[];
+    status: number[];
 }
 export interface JsonApiErrorNode {
     detail: string;

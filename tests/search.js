@@ -3,6 +3,8 @@ import test from 'ava';
 import process from 'process';
 import dotenv from 'dotenv';
 dotenv.config();
+// Constants depending on the tested environment
+const searchedContact = "Kristof Pauwels";
 const crmEnv = new CrmEnv({
     "url": process.env.CRM_ORIGIN,
     "user": process.env.CRM_USER,
@@ -12,18 +14,23 @@ const crmEnv = new CrmEnv({
 if (typeof process.env.CRM_USER !== "string" || !process.env.CRM_USER.toLowerCase())
     throw Error("Check .env configuration");
 const currentUserCode = process.env.CRM_USER.toLowerCase();
-test('search', t => {
+test('search', async (t) => {
     const crm = new CrmApi(crmEnv);
-    debugger;
-    crm.searchGlobal({
-        identifier: "test",
+    const payload = {
+        identifier: "",
         search: {
-            value: "test",
-            entities: ["comp"],
+            entities: ["cont"],
+            value: searchedContact.toLocaleLowerCase(),
             offset: 0,
             quantity: 5,
-            refinedOptions: {}
-        },
-    });
-    t.assert(true, "searchGlobal");
+            refinedOptions: {
+                includeArchived: false,
+                onlyItemsLinkedToMe: false
+            }
+        }
+    };
+    const searchResult = await crm.searchGlobal(payload);
+    t.assert(searchResult.length > 0, "Has at least one search result");
+    const cont = searchResult[0];
+    t.assert(cont.rows[0].name === "Kristof Pauwels");
 });

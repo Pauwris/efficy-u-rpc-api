@@ -16,18 +16,22 @@ export class CrmApi extends CrmFetch {
         query: "search-global/query"
     };
     
+    /**
+     * Global elastic search in Efficy, with various filtering options
+     */
 	async searchGlobal(payload: GetSearchResultPayload): Promise<EntitySearch[]> {
 		const result: EntitySearch[] = [];
+        
         if (payload.search.entities.length > 0) {
             if (payload.searchMine) {
                 payload.search.refinedOptions.onlyMyItems = true;
             }
             
 			const queryStringArgs = transformSearchRequestIntoPayload(payload.search);
-            const response = await this.crmGetData<JsonApiResponse<Record<string, SearchEntityResponse>>>(this.#urls.query, queryStringArgs);
+            const records = await this.crmGetData<Record<string, SearchEntityResponse>>(this.#urls.query, queryStringArgs);
 
-            for (const entity in response.data) {
-                const entityValues = response.data[entity];
+            for (const entity in records) {
+                const entityValues = records[entity];
                 if (!entityValues) continue;
                 result.push(await parseEntitySearchResult(entityValues, payload.transformItem));
             }
@@ -56,13 +60,13 @@ export class CrmApi extends CrmFetch {
         if (this.isJsonApiResponse(response)) {
             return response as R;
         } else {
-            throw new Error(`${this.name}.crmGet::unexpected response`);
+            throw new Error(`${this.name}.crmGetRequest::unexpected response`);
         }
 	}
 }
 
 const transformSearchRequestIntoPayload = (search: SearchRequest): QueryStringArgs => ({
-    entities: JSON.stringify(search.entities.filter((entity) => entity)), // filtering falsy values (like undefined, if not the backend report an error).
+    entities: JSON.stringify(search.entities.filter((entity) => entity)),
     offset: search.offset.toString(),
     quantity: search.quantity.toString(),
     query: search.value,
