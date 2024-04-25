@@ -144,23 +144,6 @@ test('CrmRpc: Attachments', async (t) => {
     await crm.executeBatch();
     t.assert(docuKey != "", "Attachments");
 });
-test('CrmApi: listSummary', async (t) => {
-    const crm = new CrmApi(crmEnv);
-    const payload = {
-        fields: ["crcyName", "crcyCode", "crcySymbol", "crcyCode", "crcyKey"],
-        tableName: "Currency",
-        query: [["crcyIsDisabled = 0"]]
-    };
-    try {
-        const result = await crm.listSummary(payload);
-        const euro = result?.list.find(item => item.crcyCode === "EUR");
-        t.assert(euro?.crcyName === "Euro", "Query Currency");
-    }
-    catch (ex) {
-        console.error(ex);
-    }
-    t.assert(true, "listSummary");
-});
 test('CrmApi: searchGlobal', async (t) => {
     const crm = new CrmApi(crmEnv);
     const payload = {
@@ -179,4 +162,36 @@ test('CrmApi: searchGlobal', async (t) => {
     t.assert(searchResult.length > 0, "Has at least one search result");
     const cont = searchResult[0];
     t.assert(cont.rows[0].name === "Kristof Pauwels");
+});
+test('CrmApi: listSummary Currency', async (t) => {
+    const crm = new CrmApi(crmEnv);
+    const payload = {
+        fields: ["crcyName", "crcyCode", "crcySymbol", "crcyCode", "crcyKey"],
+        tableName: "Currency",
+        query: [["crcyIsDisabled = 0"]]
+    };
+    try {
+        const result = await crm.listSummary(payload);
+        const euro = result?.list.find(item => item.crcyCode === "EUR");
+        t.assert(euro?.crcyName === "Euro");
+    }
+    catch (ex) {
+        console.error(ex);
+    }
+});
+test('CrmApi: listSummary Company', async (t) => {
+    const crm = new CrmApi(crmEnv);
+    const payload = {
+        fields: ["compKey", "compName"],
+        tableName: "Company",
+        query: [["compArchived = 1", "compName like 'Efficy%'"]]
+    };
+    try {
+        const result = await crm.listSummary(payload);
+        const efficyGent = result?.list.find(item => item.compName === "Efficy Gent");
+        t.assert(efficyGent?.compKey != null);
+    }
+    catch (ex) {
+        console.error(ex);
+    }
 });

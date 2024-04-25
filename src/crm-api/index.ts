@@ -36,13 +36,19 @@ export class CrmApi extends CrmFetch {
     /**
      * Generate a list summary query
      * @example
-     * const payload: ListSummaryPayload = {
+     * const currencyPayload: ListSummaryPayload = {
      *   fields: ["crcyName", "crcyCode", "crcySymbol", "crcyCode", "crcyKey"],
      *   tableName: "Currency",
      *   query: [["crcyIsDisabled = 0"]]
      * };
-     * const result = await crm.listSummary<Crcy>(payload);
+     * const result = await crm.listSummary<Crcy>(currencyPayload);
      * const euro = result?.list.find(item => item.crcyCode === "EUR")
+     * 
+     * const companyPayload: ListSummaryPayload = {
+     *   fields: ["compKey", "compName"],
+     *   tableName: "Company",
+     *   query: [["compArchived = 1", "compName like 'Efficy%'"]]
+     * };
      */
     async listSummary<T = unknown>(payload: CustomDatasetPayloads, all: boolean = true): Promise<ListSummaryResponse<T> | undefined> {
         const urlQueryStrings = {

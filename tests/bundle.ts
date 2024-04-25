@@ -180,32 +180,6 @@ test('CrmRpc: Attachments', async (t) => {
 	t.assert(docuKey != "", "Attachments")
 });
 
-test('CrmApi: listSummary', async t => {
-	interface Crcy {
-		crcyName: string;
-		crcyCode: string;
-		crcySymbol: string;
-		crcyKey: UnityKey;
-	}
-
-	const crm = new CrmApi(crmEnv);
-	const payload: ListSummaryPayload = {
-		fields: ["crcyName", "crcyCode", "crcySymbol", "crcyCode", "crcyKey"],
-		tableName: "Currency",
-		query: [["crcyIsDisabled = 0"]]
-	};
-
-	try {
-		const result = await crm.listSummary<Crcy>(payload);
-		const euro = result?.list.find(item => item.crcyCode === "EUR")
-		t.assert(euro?.crcyName === "Euro", "Query Currency")
-	} catch (ex) {
-		console.error(ex)
-	}
-
-	t.assert(true, "listSummary");
-});
-
 test('CrmApi: searchGlobal', async t => {
 	const crm = new CrmApi(crmEnv);
 	const payload: GetSearchResultPayload = {
@@ -224,4 +198,51 @@ test('CrmApi: searchGlobal', async t => {
 	t.assert(searchResult.length > 0, "Has at least one search result");
 	const cont = searchResult[0];
 	t.assert(cont.rows[0].name === "Kristof Pauwels");
+});
+
+test('CrmApi: listSummary Currency', async t => {
+	interface Crcy {
+		crcyName: string;
+		crcyCode: string;
+		crcySymbol: string;
+		crcyKey: UnityKey;
+	}
+
+	const crm = new CrmApi(crmEnv);
+	const payload: ListSummaryPayload = {
+		fields: ["crcyName", "crcyCode", "crcySymbol", "crcyCode", "crcyKey"],
+		tableName: "Currency",
+		query: [["crcyIsDisabled = 0"]]
+	};
+
+	try {
+		const result = await crm.listSummary<Crcy>(payload);
+		const euro = result?.list.find(item => item.crcyCode === "EUR")
+		t.assert(euro?.crcyName === "Euro")
+	} catch (ex) {
+		console.error(ex)
+	}
+});
+
+test('CrmApi: listSummary Company', async t => {
+	interface Company {
+		compKey: UnityKey;
+		compName: string;		
+	}
+
+	const crm = new CrmApi(crmEnv);
+	const payload: ListSummaryPayload = {
+		fields: ["compKey", "compName"],
+		tableName: "Company",
+		query: [["compArchived = 1","compName like 'Efficy%'"]]
+	};
+
+	try {
+		const result = await crm.listSummary<Company>(payload);
+		const efficyGent = result?.list.find(item => item.compName === "Efficy Gent")
+
+		t.assert(efficyGent?.compKey != null)
+	} catch (ex) {
+		console.error(ex)
+	}
 });
