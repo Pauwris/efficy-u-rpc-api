@@ -1,5 +1,5 @@
 import { RpcObject } from './rpc-object.js';
-import { JSONPrimitiveObject } from '../../types.js'
+import { JSONPrimitiveRecord } from '../../types.js'
 import { RpcNamedOperation } from '../../types.js'
 import { JsonRpcApi } from 'src/crm-rpc/index.js';
 
@@ -8,8 +8,8 @@ type DataSetKind = "main" | "master" | "detail" | "category";
 class DataSetInternal {
 	tableView: number = 0;
 
-	private _items: JSONPrimitiveObject[] = [];
-	private _item: JSONPrimitiveObject | null = null;
+	private _items: JSONPrimitiveRecord[] = [];
+	private _item: JSONPrimitiveRecord | null = null;
 
 	constructor(public type: DataSetKind, public name: string, public filter?: string, public includeBlobContent?: boolean) {
 		this.type = type;
@@ -33,7 +33,7 @@ class DataSetInternal {
 		return this._item;
 	}
 
-	setItems(value?: JSONPrimitiveObject[]) {
+	setItems(value?: JSONPrimitiveRecord[]) {
 		if (!value) return;
 
 		this._items = value;
@@ -43,7 +43,7 @@ class DataSetInternal {
 	}
 
 	get func() {
-		const func: JSONPrimitiveObject = {};
+		const func: JSONPrimitiveRecord = {};
 
 		func["@name"] = this.type;
 		if (this.name) func[this.type] = this.name;
@@ -245,7 +245,7 @@ export class RecentList extends RemoteDataSet {
 	}
 
 	protected asJsonRpc() {
-		const api: JSONPrimitiveObject = {
+		const api: JSONPrimitiveRecord = {
 			"@name": "recentlistex",
 			"extrafields": this.extraFields.join(","),
 		}
@@ -271,7 +271,7 @@ export class FavoriteList extends RemoteDataSet {
 	}
 
 	protected asJsonRpc() {
-		const api: JSONPrimitiveObject = {
+		const api: JSONPrimitiveRecord = {
 			"@name": "favoritelist"		
 		}
 
@@ -365,7 +365,7 @@ export class CollectionObject extends RemoteDataSet {
 	}
 
 	protected asJsonRpc() {
-		const api: JSONPrimitiveObject = {
+		const api: JSONPrimitiveRecord = {
 			"@name": "getcategorycollection"
 		}
 

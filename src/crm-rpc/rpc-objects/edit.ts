@@ -1,7 +1,7 @@
 import { JsonRpcApi } from "src/crm-rpc/index.js";
 import { RpcObject } from "./rpc-object.js";
 import { DataSetList, DataSet } from "./dataset.js";
-import { JSONPrimitiveObject, UnityKey } from "src/types.js";
+import { JSONPrimitiveRecord, UnityKey } from "src/types.js";
 import { RpcNamedOperation } from "src/types.js";
 import { AttachmentList, AttachmentObject } from "./attachment.js";
 
@@ -14,7 +14,7 @@ export class EditObject extends RpcObject {
 
 	masterData: Record<string, string | number> = {};	
 	otherFuncs: object[] = [];
-    categories: Map<string, JSONPrimitiveObject> = new Map();
+    categories: Map<string, JSONPrimitiveRecord> = new Map();
 	
 	private attachmentList: AttachmentList;
     private dataSetList;
@@ -97,7 +97,7 @@ export class EditObject extends RpcObject {
 	 * Updates the field values of a master data set.
 	 * @param fieldsObj - e.g. {"archived": "1"}
 	 */
-	updateFields(fieldsObj: JSONPrimitiveObject) {
+	updateFields(fieldsObj: JSONPrimitiveRecord) {
 		Object.assign(this.masterData, fieldsObj);
 		this.setDirty();
 	}
@@ -115,7 +115,7 @@ export class EditObject extends RpcObject {
 	 * @param categoryName
 	 * @param fieldsObj e.g. {"name": "value"}
 	 */
-	updateCategoryFields(categoryName: string, fieldsObj: JSONPrimitiveObject) {
+	updateCategoryFields(categoryName: string, fieldsObj: JSONPrimitiveRecord) {
         this.categories.set(categoryName, fieldsObj)
 		this.setDirty();
 	}
@@ -124,7 +124,7 @@ export class EditObject extends RpcObject {
 	 * Inserts a detail relation
 	 */
 	insertDetail(detail: string, detailKey: UnityKey, linkMainCompany = false, retrieveName = false) {
-		const obj: JSONPrimitiveObject = {
+		const obj: JSONPrimitiveRecord = {
 			"@name": "insertDetail",
 			"detail": detail,
 			"detailkey": detailKey
@@ -142,7 +142,7 @@ export class EditObject extends RpcObject {
 	 * @param detailKey  The key of the detail. If detailKey is 0, the current detail record is used
 	 * @param  fieldsObj e.g. {"OPENED": "0"}
 	 */
-	updateDetail(detail: string, detailKey: UnityKey, fieldsObj: JSONPrimitiveObject) {
+	updateDetail(detail: string, detailKey: UnityKey, fieldsObj: JSONPrimitiveRecord) {
 		this.otherFuncs.push({
 			"@name": "updateDetail",
 			"detail": detail,
@@ -326,7 +326,7 @@ export class EditObject extends RpcObject {
 	protected afterExecute() {
 		super.afterExecute();
 		
-		const resp = this.responseObject as JSONPrimitiveObject;
+		const resp = this.responseObject as JSONPrimitiveRecord;
         if (resp.key && typeof resp.key === "string") {
             this.key = resp.key as UnityKey;
         }        

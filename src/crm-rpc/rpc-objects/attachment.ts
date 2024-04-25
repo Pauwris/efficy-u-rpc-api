@@ -1,6 +1,6 @@
 import { JsonRpcApi } from "src/crm-rpc/index.js";
 import { RpcObject } from "./rpc-object.js";
-import { JSONPrimitiveObject, UnityKey } from "src/types.js";
+import { JSONPrimitiveRecord, UnityKey } from "src/types.js";
 
 export class AttachmentList extends RpcObject {
 	private attachments: AttachmentObject[] = [];
@@ -64,7 +64,7 @@ export class AttachmentObject {
 	}
 
 	get func() {
-		const func: JSONPrimitiveObject = {};
+		const func: JSONPrimitiveRecord = {};
 		func["@name"] = "attachment";
 		func["key"] = this.key;
 		return func;

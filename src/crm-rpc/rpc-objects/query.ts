@@ -1,6 +1,6 @@
 import { JsonRpcApi } from "src/crm-rpc/index.js";
 import { RemoteDataSet } from "./dataset.js";
-import { JSONPrimitiveObject, UnityKey } from "src/types.js";
+import { JSONPrimitiveRecord, UnityKey } from "src/types.js";
 import { RpcNamedOperation } from "src/types.js";
 
 export class QuerySQLObject extends RemoteDataSet {
@@ -9,7 +9,7 @@ export class QuerySQLObject extends RemoteDataSet {
 	}
 
 	protected asJsonRpc(): RpcNamedOperation {
-		const api: JSONPrimitiveObject = {
+		const api: JSONPrimitiveRecord = {
 			"@name": "executesqlquery",
 			"sql": this.sql,
 			"loadBlobs": this.loadBlobs,
@@ -37,7 +37,7 @@ export class QueryObject extends RemoteDataSet {
 	}
 
 	protected asJsonRpc(): RpcNamedOperation {
-		const api: JSONPrimitiveObject = {
+		const api: JSONPrimitiveRecord = {
 			"@name": "query",
 			"loadBlobs": this.loadBlobs,
 			"recordCount": this.recordCount
