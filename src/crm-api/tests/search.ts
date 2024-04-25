@@ -3,7 +3,7 @@ import { CrmApi, CrmEnv } from '../../index.js'
 import test from 'ava';
 import process from 'process';
 import dotenv from 'dotenv';
-import { GetSearchResultPayload } from '../types';
+import { GetSearchResultPayload } from '../types.js';
 dotenv.config();
 
 const crmEnv = new CrmEnv({

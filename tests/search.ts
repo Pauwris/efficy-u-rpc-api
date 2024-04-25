@@ -15,10 +15,19 @@ const crmEnv = new CrmEnv({
 if (typeof process.env.CRM_USER !== "string" || !process.env.CRM_USER.toLowerCase()) throw Error("Check .env configuration")
 const currentUserCode = process.env.CRM_USER.toLowerCase();
 
-test('search', t => {
-    debugger
+test('search', t => {    
     const crm = new CrmApi(crmEnv);
-    crm.searchGlobal();
+    debugger
+    crm.searchGlobal({
+        identifier: "test",
+        search: {
+            value: "test",
+            entities: ["comp"],
+            offset: 0,
+            quantity: 5,
+            refinedOptions: {}
+        },        
+    });
 
 	t.assert(true, "searchGlobal");
 });

@@ -51,7 +51,7 @@ export class JsonRpcApi extends CrmFetch {
 		// Nothing to execute, ignore silently
 		if (!requestObject.length) return;
 
-		const responseOperations: RpcNamedOperation[] = await this.postToCrmJson(requestObject);
+		const responseOperations: RpcNamedOperation[] = await this.fetchPost(requestObject);
 
 		// Add response info to operations and remove executed operations (handled or not)
 		const items = this.remoteObjects;
@@ -80,7 +80,7 @@ export class JsonRpcApi extends CrmFetch {
 		this.setFetchOptions();
 	}
 
-	private async postToCrmJson(requestObject: object): Promise<RpcNamedOperation[]> {
+	private async fetchPost(requestObject: object): Promise<RpcNamedOperation[]> {
 		const responseOperations: RpcNamedOperation[] = [];
 		const requestUrl = `${this.crmEnv.url}/crm/json${this.crmEnv.customer ? "?customer=" + encodeURIComponent(this.crmEnv.customer) : ""}`;
 
@@ -93,9 +93,9 @@ export class JsonRpcApi extends CrmFetch {
 				}
 			})
 		} else if (!response) {
-			throw new TypeError(`${this.name}.postToCrmJson::empty response`);
+			throw new Error(`${this.name}.fetchPost::empty response`);
 		} else {
-			throw new TypeError(`${this.name}.postToCrmJson::responseObject is not an Array`);
+			throw new Error(`${this.name}.fetchPost::responseObject is not an Array`);
 		}
 
 		return responseOperations;
@@ -103,7 +103,9 @@ export class JsonRpcApi extends CrmFetch {
 }
 
 /**
- * Efficy SDK build around crm/json RPC operations, the Efficy Enterprise product style.
+ * Efficy SDK build around JSON RPC operations send to endpoint "crm/json", the Efficy Enterprise product style.
+ * Multiple RPC operations can be registered in a single request until usage of method executeBatch(). 
+ * Only after this method was executed, the RPC Response objects have data available in their item and items attributes.
  * @example
  * const crm = new CrmRpc(crmEnv);
  * const comp = crm.openConsultObject("comp", compKey);

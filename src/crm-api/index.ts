@@ -3,11 +3,13 @@ import { CrmFetch } from '../crm-fetch.js';
 import { EntitySearch, GetSearchResultPayload, JsonApiResponse, LogFunction, QueryStringArgs, SearchEntityResponse, SearchRequest, TransformItemFunc } from '../types.js';
 
 /**
- * Efficy SDK build around crm webrequests such as /query, /global-search, /save
+ * Efficy SDK build around crm JSON web requests with endpoints such as "crm/query", "crm/global-search" and "crm/save".
+ * Each method immediatly invokes a request to the server and returns the received data object.
  */
 export class CrmApi extends CrmFetch {
 	constructor(crmEnv?: CrmEnv, logFunction?: LogFunction, threadId?: number) {
 		super(crmEnv, logFunction, threadId);
+        this.name = "CrmApi";
 	}
 
 	readonly #urls = {
@@ -20,10 +22,9 @@ export class CrmApi extends CrmFetch {
             if (payload.searchMine) {
                 payload.search.refinedOptions.onlyMyItems = true;
             }
-
-            //const response = await this.crmGet<JsonApiResponse<Record<string, SearchEntityResponse>>>(this.#urls.query, transformSearchRequestIntoPayload(payload.search));
-			const fetchPayload = transformSearchRequestIntoPayload(payload.search);
-			const response = await this.fetch(this.#urls.query, {}) as JsonApiResponse<Record<string, SearchEntityResponse>>;
+            
+			const queryStringArgs = transformSearchRequestIntoPayload(payload.search);
+            const response = await this.crmGetData<JsonApiResponse<Record<string, SearchEntityResponse>>>(this.#urls.query, queryStringArgs);
 
             for (const entity in response.data) {
                 const entityValues = response.data[entity];
@@ -33,6 +34,30 @@ export class CrmApi extends CrmFetch {
         }
 
         return result;
+	}
+
+    protected crmGetData = async <R>(url: string, payload?: QueryStringArgs): Promise<R> =>
+        (await this.crmGetRequest<JsonApiResponse<R>>(url, payload)).data;
+
+    private async crmGetRequest<R>(crmPath: string, payload: QueryStringArgs = {}): Promise<R> {
+        const params = new URLSearchParams();
+        for (const [key, value] of Object.entries(payload)) {
+            params.append(key, value.toString());
+        }
+
+        // Useful for development environments
+        if (this.crmEnv.customer) {
+            params.append("customer", this.crmEnv.customer);
+        }
+
+        const queryString = params.toString();
+		const requestUrl = `${this.crmEnv.url}/crm/${crmPath}?${queryString}`;
+		const response: object = await this.fetch(requestUrl);
+        if (this.isJsonApiResponse(response)) {
+            return response as R;
+        } else {
+            throw new Error(`${this.name}.crmGet::unexpected response`);
+        }
 	}
 }
 

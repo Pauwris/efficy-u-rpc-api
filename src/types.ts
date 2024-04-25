@@ -7,19 +7,15 @@ export type LogFunction = (message: string, object: object) => void;
 
 export type ErrorData = Record<"title" | "id" | "detail", string | ErrorDetail>;
 export type ErrorDetail = Record<"id" | "message" | "objectKey", string>;
+
 export interface JsonApiResponse<Data = unknown> {
     data: Data;
     errors?: JsonApiErrorNode[];
     status?: number[];
 }
-export interface DefaultExtraErrorData {
-    details: ErrorDetail[];
-    key: string;
-    position: string;
-}
-export interface JsonApiErrorNode<E = DefaultExtraErrorData> {
+export interface JsonApiErrorNode {
     detail: string;
-    extra: E;
+    extra: any;
     id: string;
     title: string;
 }

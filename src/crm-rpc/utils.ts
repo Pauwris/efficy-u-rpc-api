@@ -6,7 +6,7 @@ import { JSONPrimitiveObject } from "src/types.js";
  */
 export function findDeep(object: any, searchObject: any): JSONPrimitiveObject | undefined {
 	if (typeof searchObject !== 'object' || searchObject === null) {
-		throw new TypeError('findDeep::searchObject must be a non-null object');
+		throw new Error('findDeep::searchObject must be a non-null object');
 	}
 
 	const isEqual = (obj: any): boolean => {
