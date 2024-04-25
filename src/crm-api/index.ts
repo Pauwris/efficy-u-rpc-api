@@ -1,3 +1,4 @@
+import { isJsonApiResponse } from '../dataguards.js';
 import { CrmEnv } from '../crm-env.js';
 import { CrmFetch } from '../crm-fetch.js';
 import { CustomDatasetPayloads, GetSearchResultPayload, JsonApiResponse, ListSummaryPayload, ListSummaryResponse, ModulePostPayload, QueryStringArgs } from '../types.js';
@@ -73,43 +74,28 @@ export class CrmApi extends CrmFetch {
         (await this.crmPost<JsonApiResponse<R>>(crmPath, payload, queryStringArgs)).data;
 
     private async crmGet<R>(crmPath: string, queryStringArgs: QueryStringArgs = {}): Promise<R> {        
+        this.initJsonFetch("GET");
 		const requestUrl = this.getRequestUrl(crmPath, queryStringArgs)
 		const response: object = await this.fetch(requestUrl);
-        if (this.isJsonApiResponse(response)) {
+        if (isJsonApiResponse(response)) {
             return response as R;
         } else {
             throw new Error(`${this.name}.crmGet::unexpected response`);
         }
 	}
 
-    private async crmPost<R>(crmPath: string, payload: ModulePostPayload, queryStringArgs: QueryStringArgs): Promise<R> {
+    private async crmPost<R>(crmPath: string, payload: object, queryStringArgs?: QueryStringArgs): Promise<R> {
+        this.initJsonFetch("POST");
         const requestUrl = this.getRequestUrl(crmPath, queryStringArgs)
         const requestOptions: RequestInit = {
             body: JSON.stringify(payload)
         }
 		const response: object = await this.fetch(requestUrl, requestOptions);
 
-        if (this.isJsonApiResponse(response)) {
+        if (isJsonApiResponse(response)) {
             return response as R;
         } else {
             throw new Error(`${this.name}.crmPost::unexpected response`);
         }
 	}
-
-    private getRequestUrl(crmPath: string, queryArgs: QueryStringArgs) {
-        const searchParams = new URLSearchParams();
-        for (const [key, value] of Object.entries(queryArgs)) {
-            searchParams.append(key, value.toString());
-        }
-
-        // Useful for development environments
-        if (this.crmEnv.customer) {
-            searchParams.append("customer", this.crmEnv.customer);
-        }
-
-        const queryString = searchParams.toString();
-		const requestUrl = `${this.crmEnv.url}/crm/${crmPath}?${queryString}`;
-
-		return requestUrl;
-    }
 }

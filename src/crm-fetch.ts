@@ -1,5 +1,6 @@
 import { CrmEnv } from "./crm-env.js";
-import { ErrorFunction, JsonApiErrorNode, JsonApiResponse, LogFunction } from "./types.js";
+import { isJsonApiErrorNode, isJsonApiResponse } from "./dataguards.js";
+import { ErrorFunction, JsonApiErrorNode, LogFunction, QueryStringArgs } from "./types.js";
 
 export class CrmFetch {
 	protected name = "CrmFetch";
@@ -10,6 +11,14 @@ export class CrmFetch {
 
 	constructor(public crmEnv = new CrmEnv(), protected logFunction?: LogFunction, protected threadId: number = 1) {
 		this.setFetchOptions();
+	}
+
+	fetchOptions: RequestInit = {
+		method: "POST",
+		headers: {			
+			'Accept': 'application/json'
+		},
+		credentials: 'include' // Always send user credentials (cookies, basic http auth, etc..), even for cross-origin calls.
 	}
 
 	get lastResponseObject() {
@@ -51,16 +60,13 @@ export class CrmFetch {
 		} else {
 			throw Error(errorMessage);
 		}
-	}
+	}	
 
-
-	protected fetchOptions: RequestInit = {
-		method: "POST",
-		headers: {
-			'Content-Type': 'application/json',
-			'Accept': 'application/json'
-		},
-		credentials: 'include' // Always send user credentials (cookies, basic http auth, etc..), even for cross-origin calls.
+	protected initJsonFetch(method: "GET" | "POST") {
+		const requestHeaders: HeadersInit = new Headers(this.fetchOptions.headers);
+		requestHeaders.set('Content-Type', 'application/json');
+		this.fetchOptions.headers = requestHeaders;
+		this.fetchOptions.method = method;
 	}
 
 	protected async fetch(requestUrl: string, requestOptions?: RequestInit): Promise<object> {
@@ -70,7 +76,8 @@ export class CrmFetch {
 		let crmException: CrmException | undefined;
 
 		try {
-			const init: RequestInit = Object.assign(this.fetchOptions, requestOptions);
+			const init: RequestInit = {};
+			Object.assign(init, this.fetchOptions, requestOptions);
 
 			if (this.crmEnv.cookieHeader) {
 				init.headers = {
@@ -121,6 +128,26 @@ export class CrmFetch {
 		return responseObject;
 	}
 
+	protected getRequestUrl(crmPath: string, queryArgs?: QueryStringArgs) {
+        const searchParams = new URLSearchParams();
+
+		if (queryArgs) {
+			for (const [key, value] of Object.entries(queryArgs)) {
+				searchParams.append(key, value.toString());
+			}
+		}
+        
+        // Useful for development environments
+        if (this.crmEnv.customer) {
+            searchParams.append("customer", this.crmEnv.customer);
+        }
+
+        const queryString = searchParams.toString();
+		const requestUrl = `${this.crmEnv.url}/crm/${crmPath}?${queryString}`;
+
+		return requestUrl;
+    }
+
 	/**
 	 * Parse errors in both legacy Enterprise format as from the U {data, errors, status} format
 	 * @param responseObject 
@@ -142,28 +169,10 @@ export class CrmFetch {
 		} else if (typeof resp === "object" && resp["error"] === true) {
 			const err = resp;
 			return new CrmException(err.message ?? err.errorstring, err.code ?? err.errorcode, err.detail);
-		} else if (this.isJsonApiResponse(resp) && resp["errors"].length > 0 && this.isJsonApiErrorNode(resp["errors"][0])) {
+		} else if (isJsonApiResponse(resp) && resp["errors"].length > 0 && isJsonApiErrorNode(resp["errors"][0])) {
 			const [err] = resp["errors"];
 			return CrmException.fromJsonApiErrorNode(err);
 		}
-	}
-
-	protected isJsonApiResponse(response: any): response is JsonApiResponse {
-		return (
-			typeof response === 'object' &&	response !== null && 
-			typeof response.data === 'object' &&
-			Array.isArray(response.errors) &&
-			Array.isArray(response.status)
-		);
-	}
-	protected isJsonApiErrorNode(err: any): err is JsonApiErrorNode {
-		return (
-			typeof err === 'object' && err !== null &&
-			'detail' in err && typeof err.detail === 'string' &&
-			'extra' in err && typeof err.extra === 'object' &&
-			'id' in err && typeof err.id === 'string' &&
-			'title' in err && typeof err.title === 'string'
-		);
 	}
 }
 

@@ -1,4 +1,4 @@
-import { CrmApi, CrmEnv, CrmRpc, EntitySearch, GetSearchResultPayload, ListSummaryPayload, UnityKey } from '../build/efficy-u-rpc-api-bundle-es.js'
+import { CrmApi, CrmEnv, CrmNode, CrmRpc, EntitySearch, GetSearchResultPayload, ListSummaryPayload, QueryStringArgs, UnityKey } from '../build/efficy-u-rpc-api-bundle-es.js'
 
 import test from 'ava';
 import process from 'process';
@@ -242,6 +242,54 @@ test('CrmApi: listSummary Company', async t => {
 		const efficyGent = result?.list.find(item => item.compName === "Efficy Gent")
 
 		t.assert(efficyGent?.compKey != null)
+	} catch (ex) {
+		console.error(ex)
+	}
+});
+
+test('CrmNode: POST json echo', async t => {
+	const crm = new CrmNode(crmEnv);
+
+	interface EchoResponse {
+		content: string;
+		method: string;
+		path: string
+	}
+
+	const payload = {
+		msg: "Hello, this is a JSON POST unit test!"
+	};
+
+	try {				
+		const result = await crm.crmNode<EchoResponse>("echo", payload);
+
+		t.deepEqual(JSON.parse(result.content).msg, payload.msg, "msg");
+		t.deepEqual(result.method, "POST", "method")
+		t.deepEqual(result.path, "/node/echo", "path")		
+	} catch (ex) {
+		console.error(ex)
+	}
+});
+
+test('CrmNode: GET echo', async t => {
+	const crm = new CrmNode(crmEnv);
+
+	interface EchoResponse {
+		method: string;
+		path: string
+		query: string
+	}
+
+	const queryStringArgs: QueryStringArgs = {
+		"msg": "Hello, this is a GET unit test!"
+	}
+
+	try {						
+		const result = await crm.crmNode<EchoResponse>("echo", undefined, queryStringArgs);
+
+		t.deepEqual(result.method, "GET", "method")
+		t.deepEqual(result.path, "/node/echo", "path")	
+		t.deepEqual(result.query, 'msg=Hello%2C+this+is+a+GET+unit+test%21', "query")	
 	} catch (ex) {
 		console.error(ex)
 	}

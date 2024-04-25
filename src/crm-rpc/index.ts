@@ -9,8 +9,8 @@ import { LogFunction, UnityKey } from '../types.js';
 import { CrmFetch } from '../crm-fetch.js';
 import { RpcObject } from './rpc-objects/rpc-object.js';
 import { RpcNamedOperation } from './types.js';
+import { isJSONRPCNamedOperation } from '../dataguards.js';
 import * as RpcConstants from "./constants.js";
-
 export * as CrmRpcObjects from "./rpc-objects/index.js"
 
 /**
@@ -81,12 +81,14 @@ export class JsonRpcApi extends CrmFetch {
 	}
 
 	private async fetchPost(requestObject: object): Promise<RpcNamedOperation[]> {
+		this.initJsonFetch("POST");
 		const responseOperations: RpcNamedOperation[] = [];
 		const requestUrl = `${this.crmEnv.url}/crm/json${this.crmEnv.customer ? "?customer=" + encodeURIComponent(this.crmEnv.customer) : ""}`;
 
 		const requestOptions: RequestInit = {
             body: JSON.stringify(requestObject)
         } 
+					
 		const response: object = await this.fetch(requestUrl, requestOptions)
 
 		if (Array.isArray(response)) {
@@ -361,6 +363,3 @@ export class CrmRpc extends JsonRpcApi {
 	};
 }
 
-function isJSONRPCNamedOperation(obj: any): obj is RpcNamedOperation {
-	return typeof obj['#id'] === 'string' && typeof obj['@name'] === 'string' && Array.isArray(obj['@func']);
-}
