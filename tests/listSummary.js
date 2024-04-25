@@ -11,7 +11,7 @@ const crmEnv = new CrmEnv({
 });
 if (typeof process.env.CRM_USER !== "string" || !process.env.CRM_USER.toLowerCase())
     throw Error("Check .env configuration");
-test('listSummary', async (t) => {
+test.skip('listSummary', async (t) => {
     const crm = new CrmApi(crmEnv);
     const payload = {
         fields: ["crcyName", "crcyCode", "crcySymbol", "crcyCode", "crcyKey"],

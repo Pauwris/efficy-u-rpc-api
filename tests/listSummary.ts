@@ -14,14 +14,16 @@ const crmEnv = new CrmEnv({
 
 if (typeof process.env.CRM_USER !== "string" || !process.env.CRM_USER.toLowerCase()) throw Error("Check .env configuration")
 
-interface Crcy {
-	crcyName: string;
-	crcyCode: string;
-	crcySymbol: string;
-	crcyKey: UnityKey;
-}
 
-test('listSummary', async t => {
+
+test.skip('listSummary', async t => {
+	interface Crcy {
+		crcyName: string;
+		crcyCode: string;
+		crcySymbol: string;
+		crcyKey: UnityKey;
+	}
+	
 	const crm = new CrmApi(crmEnv);
 	const payload: ListSummaryPayload = {
 		fields: ["crcyName", "crcyCode", "crcySymbol", "crcyCode", "crcyKey"],

@@ -13,7 +13,7 @@ const crmEnv = new CrmEnv({
 });
 if (typeof process.env.CRM_USER !== "string" || !process.env.CRM_USER.toLowerCase())
     throw Error("Check .env configuration");
-test('search', async (t) => {
+test.skip('search', async (t) => {
     const crm = new CrmApi(crmEnv);
     const payload = {
         identifier: "",

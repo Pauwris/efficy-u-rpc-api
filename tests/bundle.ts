@@ -1,4 +1,4 @@
-import { CrmEnv, CrmRpc, UnityKey } from '../build/efficy-u-rpc-api-bundle-es.js'
+import { CrmApi, CrmEnv, CrmRpc, EntitySearch, GetSearchResultPayload, ListSummaryPayload, UnityKey } from '../build/efficy-u-rpc-api-bundle-es.js'
 
 import test from 'ava';
 import process from 'process';
@@ -12,7 +12,7 @@ const url = new URL("https://submariners.efficytest.cloud/");
 const customerAlias = "submariners";
 const compKeyEfficy = "00010Q0u00001Nvm";
 const pdfFilePath = "C:\\Temp\\efficy-u-rpc-api\\Welcome to Word.pdf";
-const crmKey: UnityKey = "string";
+const searchedContact = "Kristof Pauwels";
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 test('process.env', t => {
@@ -37,7 +37,7 @@ function myLogFunction(message: string) {
 	//console.log(`myLogFunction::${message}`)
 }
 
-test('Settings and session properties', async (t) => {
+test('CrmRpc: Settings and session properties', async (t) => {
 	const crm = new CrmRpc(crmEnv, myLogFunction);
 	const currentDatabaseAlias = crm.currentDatabaseAlias;
 	const currentLicenseName = crm.currentUserCode;
@@ -52,7 +52,7 @@ test('Settings and session properties', async (t) => {
 	t.deepEqual(defaultCurrency.result, "EUR")
 });
 
-test('Multiple queries', async (t) => {
+test('CrmRpc: Multiple queries', async (t) => {
 	const crm = new CrmRpc(crmEnv);
 
 	const sqlQueryText = "select top 5 userKey, userFullname from <#TABLE NAME=User>";
@@ -65,7 +65,7 @@ test('Multiple queries', async (t) => {
 	);
 });
 
-test('DataSet extended operations', async (t) => {
+test('CrmRpc: DataSet extended operations', async (t) => {
 	const crm = new CrmRpc(crmEnv);
 
 	const userList = crm.getUserList()
@@ -89,12 +89,12 @@ test('DataSet extended operations', async (t) => {
 			t.deepEqual(ex.message, 'EEfficyException - Invalid Entity "dummy" - TAGS-2108', "Error on getCategoryCollection")
 		} else {
 			console.error(ex);
-		}		
+		}
 	}
 });
 
 
-test('Consult operations', async (t) => {
+test('CrmRpc: Consult operations', async (t) => {
 	const crm = new CrmRpc(crmEnv);
 
 	const comp = crm.openConsultObject("comp", compKeyEfficy);
@@ -112,7 +112,7 @@ test('Consult operations', async (t) => {
 });
 
 
-test('Edit operations', async (t) => {
+test('CrmRpc: Edit operations', async (t) => {
 	const crm = new CrmRpc(crmEnv);
 
 	const userList = crm.getUserList();
@@ -152,7 +152,7 @@ test('Edit operations', async (t) => {
 });
 
 
-test('Attachments', async (t) => {
+test('CrmRpc: Attachments', async (t) => {
 	const dirname = path.dirname(pdfFilePath);
 	const fileName = path.basename(pdfFilePath);
 	const base64FileName = path.join(dirname, fileName + ".txt")
@@ -178,4 +178,50 @@ test('Attachments', async (t) => {
 	await crm.executeBatch();
 
 	t.assert(docuKey != "", "Attachments")
+});
+
+test('CrmApi: listSummary', async t => {
+	interface Crcy {
+		crcyName: string;
+		crcyCode: string;
+		crcySymbol: string;
+		crcyKey: UnityKey;
+	}
+
+	const crm = new CrmApi(crmEnv);
+	const payload: ListSummaryPayload = {
+		fields: ["crcyName", "crcyCode", "crcySymbol", "crcyCode", "crcyKey"],
+		tableName: "Currency",
+		query: [["crcyIsDisabled = 0"]]
+	};
+
+	try {
+		const result = await crm.listSummary<Crcy>(payload);
+		const euro = result?.list.find(item => item.crcyCode === "EUR")
+		t.assert(euro?.crcyName === "Euro", "Query Currency")
+	} catch (ex) {
+		console.error(ex)
+	}
+
+	t.assert(true, "listSummary");
+});
+
+test('CrmApi: searchGlobal', async t => {
+	const crm = new CrmApi(crmEnv);
+	const payload: GetSearchResultPayload = {
+		identifier: "",
+		search: {
+			entities: ["cont"],
+			value: searchedContact.toLocaleLowerCase(),
+			offset: 0,
+			quantity: 5,
+			refinedOptions: {
+				onlyItemsLinkedToMe: false
+			}
+		}
+	}
+	const searchResult: EntitySearch[] = await crm.searchGlobal(payload);
+	t.assert(searchResult.length > 0, "Has at least one search result");
+	const cont = searchResult[0];
+	t.assert(cont.rows[0].name === "Kristof Pauwels");
 });

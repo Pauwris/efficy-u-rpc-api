@@ -16,9 +16,8 @@ const crmEnv = new CrmEnv({
 })
 
 if (typeof process.env.CRM_USER !== "string" || !process.env.CRM_USER.toLowerCase()) throw Error("Check .env configuration")
-const currentUserCode = process.env.CRM_USER.toLowerCase();
 
-test('search', async t => {    
+test.skip('search', async t => {    
     const crm = new CrmApi(crmEnv);
 	const payload: GetSearchResultPayload = {
 		identifier: "",
@@ -28,7 +27,6 @@ test('search', async t => {
 			offset: 0,
 			quantity: 5,
 			refinedOptions: {
-                includeArchived: false,
                 onlyItemsLinkedToMe: false
             }
 		}

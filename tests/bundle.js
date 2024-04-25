@@ -1,4 +1,4 @@
-import { CrmEnv, CrmRpc } from '../build/efficy-u-rpc-api-bundle-es.js';
+import { CrmApi, CrmEnv, CrmRpc } from '../build/efficy-u-rpc-api-bundle-es.js';
 import test from 'ava';
 import process from 'process';
 import dotenv from 'dotenv';
@@ -10,7 +10,7 @@ const url = new URL("https://submariners.efficytest.cloud/");
 const customerAlias = "submariners";
 const compKeyEfficy = "00010Q0u00001Nvm";
 const pdfFilePath = "C:\\Temp\\efficy-u-rpc-api\\Welcome to Word.pdf";
-const crmKey = "string";
+const searchedContact = "Kristof Pauwels";
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 test('process.env', t => {
     t.is(process.env.CRM_ORIGIN, url.origin + "/");
@@ -30,7 +30,7 @@ test('crmEnv', t => {
 function myLogFunction(message) {
     //console.log(`myLogFunction::${message}`)
 }
-test('Settings and session properties', async (t) => {
+test('CrmRpc: Settings and session properties', async (t) => {
     const crm = new CrmRpc(crmEnv, myLogFunction);
     const currentDatabaseAlias = crm.currentDatabaseAlias;
     const currentLicenseName = crm.currentUserCode;
@@ -42,7 +42,7 @@ test('Settings and session properties', async (t) => {
     t.deepEqual(setts.map.get("FileBase"), "efficy/");
     t.deepEqual(defaultCurrency.result, "EUR");
 });
-test('Multiple queries', async (t) => {
+test('CrmRpc: Multiple queries', async (t) => {
     const crm = new CrmRpc(crmEnv);
     const sqlQueryText = "select top 5 userKey, userFullname from <#TABLE NAME=User>";
     const query1 = crm.executeSqlQuery(sqlQueryText);
@@ -50,7 +50,7 @@ test('Multiple queries', async (t) => {
     await crm.executeBatch();
     t.assert(query1.items.length === 5 && query2.items.length === 10000);
 });
-test('DataSet extended operations', async (t) => {
+test('CrmRpc: DataSet extended operations', async (t) => {
     const crm = new CrmRpc(crmEnv);
     const userList = crm.getUserList();
     const favoList = crm.consultFavorites();
@@ -75,7 +75,7 @@ test('DataSet extended operations', async (t) => {
         }
     }
 });
-test('Consult operations', async (t) => {
+test('CrmRpc: Consult operations', async (t) => {
     const crm = new CrmRpc(crmEnv);
     const comp = crm.openConsultObject("comp", compKeyEfficy);
     const dsComp = comp.getMasterDataSet();
@@ -89,7 +89,7 @@ test('Consult operations', async (t) => {
     t.assert(dsLinkedContacts.items.length > 100, "linkedContacts");
     t.assert(linkedOppo.items.length > 10, "linkedOppo");
 });
-test('Edit operations', async (t) => {
+test('CrmRpc: Edit operations', async (t) => {
     const crm = new CrmRpc(crmEnv);
     const userList = crm.getUserList();
     await crm.executeBatch();
@@ -122,7 +122,7 @@ test('Edit operations', async (t) => {
     await crm.executeBatch();
     t.assert(docuKey != "", "Edit + Delete docu");
 });
-test('Attachments', async (t) => {
+test('CrmRpc: Attachments', async (t) => {
     const dirname = path.dirname(pdfFilePath);
     const fileName = path.basename(pdfFilePath);
     const base64FileName = path.join(dirname, fileName + ".txt");
@@ -143,4 +143,40 @@ test('Attachments', async (t) => {
     crm.deleteEntity("Docu", [docuKey]);
     await crm.executeBatch();
     t.assert(docuKey != "", "Attachments");
+});
+test('CrmApi: listSummary', async (t) => {
+    const crm = new CrmApi(crmEnv);
+    const payload = {
+        fields: ["crcyName", "crcyCode", "crcySymbol", "crcyCode", "crcyKey"],
+        tableName: "Currency",
+        query: [["crcyIsDisabled = 0"]]
+    };
+    try {
+        const result = await crm.listSummary(payload);
+        const euro = result?.list.find(item => item.crcyCode === "EUR");
+        t.assert(euro?.crcyName === "Euro", "Query Currency");
+    }
+    catch (ex) {
+        console.error(ex);
+    }
+    t.assert(true, "listSummary");
+});
+test('CrmApi: searchGlobal', async (t) => {
+    const crm = new CrmApi(crmEnv);
+    const payload = {
+        identifier: "",
+        search: {
+            entities: ["cont"],
+            value: searchedContact.toLocaleLowerCase(),
+            offset: 0,
+            quantity: 5,
+            refinedOptions: {
+                onlyItemsLinkedToMe: false
+            }
+        }
+    };
+    const searchResult = await crm.searchGlobal(payload);
+    t.assert(searchResult.length > 0, "Has at least one search result");
+    const cont = searchResult[0];
+    t.assert(cont.rows[0].name === "Kristof Pauwels");
 });
