@@ -9,7 +9,7 @@ import { AttachmentList, AttachmentObject } from "./attachment.js";
  * Constructed class Returned by RemoteObjects.openEditObject
  */
 export class EditObject extends RpcObject {
-	protected commit: boolean = true;
+	protected commit: boolean = false;
     protected closecontext: boolean = true;
 
 	masterData: Record<string, string | number> = {};	
