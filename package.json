@@ -3,8 +3,9 @@
 	"description": "The Efficy U - RPC API is developed for server side usage in a Node.js environment and also bundled for usage inside an Efficy browser session for client-side JSON RPC requests.",
 	"type": "module",
 	"exports": {
-		"import": "./build/efficy-u-rpc-api-bundle.mjs",
-		"require": "./build/efficy-u-rpc-api-bundle.cjs"
+		"import": "./build/efficy-u-rpc-api-bundle-es.mjs",
+		"require": "./build/efficy-u-rpc-api-bundle.cjs",
+		"types": "./build/efficy-u-rpc-api-bundle-es.d.ts"
 	},
 	"scripts": {
 		"build": "npm run build-all",
@@ -12,13 +13,12 @@
 		"build:clean": "rimraf build && rimraf docs",
 		"build:ts": "tsc",
 		"build:js": "rollup -c rollup.config.js",
-		"build:dts-js": "npx dts-bundle-generator -o build/efficy-u-rpc-api-bundle.d.ts src/index.ts",
 		"build:dts-es": "npx dts-bundle-generator -o build/efficy-u-rpc-api-bundle-es.d.ts src/index.ts",
 		"build:docs": "npx typedoc src/index.ts",
 		"lint": "eslint . --no-fix --ignore-path .gitignore",
 		"watch": "tsc -w",
 		"test": "ava",
-		"build-all": "npm run build:clean && npm run build:ts && npm run build:js && npm run build:dts-js&& npm run build:dts-es && npm run build:docs",
+		"build-all": "npm run build:clean && npm run build:ts && npm run build:js && npm run build:dts-es && npm run build:docs",
 		"pack": "npm pack --pack-destination pack/"
 	},
 	"version": "2.0.7",
