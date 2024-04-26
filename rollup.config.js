@@ -10,7 +10,7 @@ export default [
         exports: 'named',
       },
       {
-        file: "build/efficy-u-rpc-api-bundle-es.mjs",
+        file: "build/efficy-u-rpc-api-bundle.mjs",
         format: 'es',
         exports: 'named',
       },
