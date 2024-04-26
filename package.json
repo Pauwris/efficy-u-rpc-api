@@ -13,7 +13,7 @@
 		"build:clean": "rimraf build && rimraf docs",
 		"build:ts": "tsc",
 		"build:js": "rollup -c rollup.config.js",
-		"build:dts-es": "npx dts-bundle-generator -o build/efficy-u-rpc-api-bundle-es.d.ts src/index.ts",
+		"build:dts-es": "npx dts-bundle-generator -o build/efficy-u-rpc-api-bundle.d.ts src/index.ts",
 		"build:docs": "npx typedoc src/index.ts",
 		"lint": "eslint . --no-fix --ignore-path .gitignore",
 		"watch": "tsc -w",
