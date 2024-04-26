@@ -5,7 +5,7 @@ export default [
     input: 'src/index.ts',
     output: [
       {
-        file: "build/efficy-u-rpc-api-bundle.js",
+        file: "build/efficy-u-rpc-api-bundle.cjs",
         format: 'cjs',
         exports: 'named',
       },
