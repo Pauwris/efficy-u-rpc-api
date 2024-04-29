@@ -3,7 +3,7 @@
 	"description": "The Efficy U - RPC API is developed for server side usage in a Node.js environment and also bundled for usage inside an Efficy browser session for client-side JSON RPC requests.",
 	"type": "module",
 	"exports": {
-		"import": "./build/efficy-u-rpc-api-bundle.mjs",
+		"import": "./build/efficy-u-rpc-api-bundle.js",
 		"require": "./build/efficy-u-rpc-api-bundle.cjs",
 		"types": "./build/efficy-u-rpc-api-bundle.d.ts"
 	},
@@ -17,7 +17,7 @@
 		"build:docs": "npx typedoc src/index.ts",
 		"lint": "eslint . --no-fix --ignore-path .gitignore",
 		"watch": "tsc -w",
-		"test": "ava",
+		"test": "ava --timeout=45s",
 		"build-all": "npm run build:clean && npm run build:ts && npm run build:js && npm run build:dts-es && npm run build:docs",
 		"pack": "npm pack --pack-destination pack/"
 	},

@@ -1,4 +1,4 @@
-import { CrmApi, CrmEnv, CrmNode, CrmRpc, EntitySearch, GetSearchResultPayload, ListSummaryPayload, QueryStringArgs, UnityKey } from '../build/efficy-u-rpc-api-bundle-es.js'
+import { CrmApi, CrmEnv, CrmNode, CrmRpc, EntitySearch, GetSearchResultPayload, ListSummaryPayload, QueryStringArgs, UnityKey } from '../build/efficy-u-rpc-api-bundle.js'
 
 import test from 'ava';
 import process from 'process';
@@ -14,6 +14,7 @@ const compKeyEfficy = "00010Q0u00001Nvm";
 const pdfFilePath = "C:\\Temp\\efficy-u-rpc-api\\Welcome to Word.pdf";
 const searchedContact = "Kristof Pauwels";
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 
 test('process.env', t => {
 	t.is(process.env.CRM_ORIGIN, url.origin + "/");
@@ -261,11 +262,18 @@ test('CrmNode: POST json echo', async t => {
 	};
 
 	try {				
-		const result = await crm.crmNode<EchoResponse>("echo", payload);
+		const result = await crm.crmNodeData<EchoResponse>("echo", payload);
 
 		t.deepEqual(JSON.parse(result.content).msg, payload.msg, "msg");
 		t.deepEqual(result.method, "POST", "method")
 		t.deepEqual(result.path, "/node/echo", "path")		
+	} catch (ex) {
+		console.error(ex)
+	}
+
+	try {				
+		const result = await crm.crmNode("echo", payload);
+		t.assert(result && typeof result.data === "object")
 	} catch (ex) {
 		console.error(ex)
 	}
@@ -285,7 +293,7 @@ test('CrmNode: GET echo', async t => {
 	}
 
 	try {						
-		const result = await crm.crmNode<EchoResponse>("echo", undefined, queryStringArgs);
+		const result = await crm.crmNodeData<EchoResponse>("echo", undefined, queryStringArgs);
 
 		t.deepEqual(result.method, "GET", "method")
 		t.deepEqual(result.path, "/node/echo", "path")	

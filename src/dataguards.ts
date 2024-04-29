@@ -1,6 +1,6 @@
 import { JsonApiErrorNode, JsonApiResponse, RpcNamedOperation } from "./types";
 
-export function isJSONRPCNamedOperation(obj: any): obj is RpcNamedOperation {
+export function isRPCNamedOperation(obj: any): obj is RpcNamedOperation {
 	return typeof obj['#id'] === 'string' && typeof obj['@name'] === 'string' && Array.isArray(obj['@func']);
 }
 

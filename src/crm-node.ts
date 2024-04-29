@@ -19,9 +19,28 @@ export class CrmNode extends CrmFetch {
 	 * @param queryStringArgs 
 	 * @example
 	 * const payload = {msg: "Hello, this is a unit test!"};
-	 * const result = await crm.crmNode<EchoResponse>("echo", payload);
+	 * const result = await crm.crmNodeData<EchoResponse>("echo", payload);
 	 */
-	async crmNode<R>(nodePath: string, payload?: ModulePostPayload, queryStringArgs?: QueryStringArgs): Promise<R> {
+	async crmNodeData<R>(nodePath: string, payload?: ModulePostPayload, queryStringArgs?: QueryStringArgs): Promise<R> {
+		const response: object = await this.crmNode(nodePath, payload, queryStringArgs);
+
+		if (isJsonApiResponse(response)) {
+			return response.data as R;
+		} else {
+			throw new Error(`${this.name}.crmNode::unexpected response`);
+		}
+	}
+
+	/**
+	 * 
+	 * @param nodePath The node path without the "/crm/node/"" prefix, e.g. "echo"
+	 * @param payload 
+	 * @param queryStringArgs 
+	 * @example
+	 * const payload = {msg: "Hello, this is a unit test!"};
+	 * const result = await crm.crmNode("echo", payload)?.data;
+	 */
+	async crmNode(nodePath: string, payload?: ModulePostPayload, queryStringArgs?: QueryStringArgs): Promise<any> {
 		const requestUrl = this.getRequestUrl("node/" + nodePath, queryStringArgs);
 
 		const requestOptions: RequestInit = {}
@@ -41,12 +60,6 @@ export class CrmNode extends CrmFetch {
 			this.fetchOptions.method = "GET"
 		}
 
-		const response: object = await this.fetch(requestUrl, requestOptions);
-
-		if (isJsonApiResponse(response)) {
-			return response.data as R;
-		} else {
-			throw new Error(`${this.name}.crmNode::unexpected response`);
-		}
+		return await this.fetch(requestUrl, requestOptions);
 	}
 }

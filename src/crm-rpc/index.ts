@@ -9,7 +9,7 @@ import { LogFunction, UnityKey } from '../types.js';
 import { CrmFetch } from '../crm-fetch.js';
 import { RpcObject } from './rpc-objects/rpc-object.js';
 import { RpcNamedOperation } from './types.js';
-import { isJSONRPCNamedOperation } from '../dataguards.js';
+import { isRPCNamedOperation } from '../dataguards.js';
 import * as RpcConstants from "./constants.js";
 export * as CrmRpcObjects from "./rpc-objects/index.js"
 
@@ -93,7 +93,7 @@ export class JsonRpcApi extends CrmFetch {
 
 		if (Array.isArray(response)) {
 			response.forEach(item => {
-				if (isJSONRPCNamedOperation(item)) {
+				if (isRPCNamedOperation(item)) {
 					responseOperations.push(item);
 				}
 			})
