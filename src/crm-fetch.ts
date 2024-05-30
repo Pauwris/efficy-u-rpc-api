@@ -69,10 +69,11 @@ export class CrmFetch {
 		this.fetchOptions.method = method;
 	}
 
-	protected async fetch(requestUrl: string, requestOptions?: RequestInit): Promise<object> {
+	protected async fetch(requestUrl: string, requestOptions?: RequestInit, isRetry: boolean = false): Promise<object> {
 		let response: Response | null = null;
 		let responseBody: string = "";
 		let responseObject: object = {};
+		let responseStatusCode: number = 0;
 		let crmException: CrmException | undefined;
 
 		try {
@@ -92,6 +93,7 @@ export class CrmFetch {
 
 				try {
 					responseBody = await response.text();
+					responseStatusCode = response.status;
 					responseObject = JSON.parse(responseBody || "[]");
 					this._lastResponseObject = responseObject;
 				} catch (ex) {
@@ -104,7 +106,7 @@ export class CrmFetch {
 			} finally {
 				fetchQueue.finished();
 			}
-
+			
 			crmException = this.getCrmException(responseObject);
 
 			const cookieString = response.headers.get('set-cookie');
@@ -119,6 +121,18 @@ export class CrmFetch {
 			} else {
 				console.error(ex);
 			}
+		}
+
+		// CFT-2024-354876
+		const couldBeExpiredSession = (
+			responseStatusCode === 401
+			|| crmException?.message.includes("You do not have the right to perform this operation")
+			|| crmException?.message.includes("Invalid User")
+		)
+
+		if (couldBeExpiredSession && this.crmEnv.retryWithNewSession && isRetry === false) {
+			this.crmEnv.clearCookies();
+			return this.fetch(requestUrl, requestOptions, true);
 		}
 
 		if (crmException instanceof CrmException) {

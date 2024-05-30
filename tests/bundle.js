@@ -20,7 +20,8 @@ const crmEnv = new CrmEnv({
     "url": process.env.CRM_ORIGIN,
     "user": process.env.CRM_USER,
     "pwd": process.env.CRM_PWD,
-    "customer": process.env.CRM_CUSTOMER
+    "customer": process.env.CRM_CUSTOMER,
+    "retryWithNewSession": true
 });
 if (typeof process.env.CRM_USER !== "string" || !process.env.CRM_USER.toLowerCase())
     throw Error("Check .env configuration");

@@ -25,12 +25,14 @@ export interface JsonApiErrorNode {
 export interface CrmEnvConfig {
 	url?: string;
 	customer?: string;
-	logOff?: boolean;
-	useFetchQueue?: boolean;
 	apiKey?: string;
 	user?: string;
 	pwd?: string;
 	cookies?: Cookie[];
+
+	logOff?: boolean;
+	useFetchQueue?: boolean;
+	retryWithNewSession?: boolean;
 }
 
 export interface Cookie {
