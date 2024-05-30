@@ -49,6 +49,10 @@ export class CrmEnv {
 		this.url = this.url.replace(/\/$/, "");
 	}
 
+	clearCookies() {
+		this.cookies = [];
+	}
+
 	/**
 	 * Returns the request header for cookies.
 	 */

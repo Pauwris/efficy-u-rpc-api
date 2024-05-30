@@ -5,13 +5,15 @@ import process from 'process';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
+
 dotenv.config();
 
 // Constants depending on the tested environment
 const url = new URL("https://submariners.efficytest.cloud/");
 const customerAlias = "submariners";
 const compKeyEfficy = "00010Q0u00001Nvm";
-const pdfFilePath = "C:\\Temp\\efficy-u-rpc-api\\Welcome to Word.pdf";
+const workingFolder = "C:\\Temp\\efficy-u-rpc-api\\"
+const pdfFilePath = path.join(workingFolder, "Welcome to Word.pdf")
 const searchedContact = "Kristof Pauwels";
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -37,6 +39,65 @@ test('crmEnv', t => {
 function myLogFunction(message: string) {
 	//console.log(`myLogFunction::${message}`)
 }
+
+test.skip('CrmApi: CFT-2024-354876', async (t) => {
+	const cookieFileName = path.join(workingFolder, "cookies.txt")
+	if (!fs.existsSync(cookieFileName)) {
+		await fs.promises.writeFile(cookieFileName, "[]");
+	}
+	const persitedCookies = JSON.parse(await fs.promises.readFile(cookieFileName, {encoding: "utf8"}))
+	crmEnv.cookies = persitedCookies
+	console.log(crmEnv.cookieHeader)
+
+	const crm = new CrmApi(crmEnv);
+	await crm.listSummary({
+		fields: ["crcyName", "crcyCode", "crcySymbol", "crcyCode", "crcyKey"],
+		tableName: "Currency",
+		query: [["crcyIsDisabled = 0"]]
+	});
+	
+	const cookies = crmEnv.cookies;
+	await fs.promises.writeFile(cookieFileName, JSON.stringify(cookies))
+
+	t.notDeepEqual(true, "manage cookies")	
+});
+
+test.skip('CrmRpc: CFT-2024-354876', async (t) => {
+	const cookieFileName = path.join(workingFolder, "cookies.txt")
+	if (!fs.existsSync(cookieFileName)) {
+		await fs.promises.writeFile(cookieFileName, "[]");
+	}
+	const persitedCookies = JSON.parse(await fs.promises.readFile(cookieFileName, {encoding: "utf8"}))
+	crmEnv.cookies = persitedCookies
+	console.log(crmEnv.cookieHeader)
+
+	const crm = new CrmRpc(crmEnv);
+	const userFullname = crm.currentUserFullName;
+	crm.consultFavorites();
+	//crm.executeSqlQuery("select top 5 userKey, userFullname from <#TABLE NAME=User>");
+	await crm.executeBatch();
+	const cookies = crmEnv.cookies;
+
+	await fs.promises.writeFile(cookieFileName, JSON.stringify(cookies))
+
+	t.notDeepEqual(true, "manage cookies")	
+});
+
+test('CrmRpc: Session clear', async (t) => {
+	const crm = new CrmRpc(crmEnv);
+	crm.consultFavorites();
+	await crm.executeBatch();
+	const sessionCookie1 = crmEnv.cookieHeader;
+
+	// Generate new session
+	crmEnv.clearCookies();
+
+	crm.consultFavorites();
+	await crm.executeBatch();
+	const sessionCookie2 = crmEnv.cookieHeader;
+
+	t.notDeepEqual(sessionCookie1 === sessionCookie2, "clearCookies")	
+});
 
 test('CrmRpc: Settings and session properties', async (t) => {
 	const crm = new CrmRpc(crmEnv, myLogFunction);
