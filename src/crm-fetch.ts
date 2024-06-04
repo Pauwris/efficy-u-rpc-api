@@ -15,7 +15,7 @@ export class CrmFetch {
 
 	fetchOptions: RequestInit = {
 		method: "POST",
-		headers: {			
+		headers: {
 			'Accept': 'application/json'
 		},
 		credentials: 'include' // Always send user credentials (cookies, basic http auth, etc..), even for cross-origin calls.
@@ -60,7 +60,7 @@ export class CrmFetch {
 		} else {
 			throw Error(errorMessage);
 		}
-	}	
+	}
 
 	protected initJsonFetch(method: "GET" | "POST") {
 		const requestHeaders: HeadersInit = new Headers(this.fetchOptions.headers);
@@ -106,7 +106,7 @@ export class CrmFetch {
 			} finally {
 				fetchQueue.finished();
 			}
-			
+
 			crmException = this.getCrmException(responseObject);
 
 			const cookieString = response.headers.get('set-cookie');
@@ -126,8 +126,9 @@ export class CrmFetch {
 		// CFT-2024-354876
 		const couldBeExpiredSession = (
 			responseStatusCode === 401
-			|| crmException?.message.includes("You do not have the right to perform this operation")
+			|| crmException?.message.includes("This operation requires a Database Connection")
 			|| crmException?.message.includes("Invalid User")
+			|| crmException?.message.includes("You do not have the right to perform this operation")
 		)
 
 		if (couldBeExpiredSession && this.crmEnv.retryWithNewSession && isRetry === false) {
@@ -150,7 +151,7 @@ export class CrmFetch {
 				searchParams.append(key, value.toString());
 			}
 		}
-        
+
         // Useful for development environments
         if (this.crmEnv.customer) {
             searchParams.append("customer", this.crmEnv.customer);
@@ -164,7 +165,7 @@ export class CrmFetch {
 
 	/**
 	 * Parse errors in both legacy Enterprise format as from the U {data, errors, status} format
-	 * @param responseObject 
+	 * @param responseObject
 	 */
 	private getCrmException(responseObject: any): CrmException | undefined {
 		const resp = responseObject;
