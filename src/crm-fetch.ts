@@ -1,15 +1,61 @@
 import { CrmEnv } from "./crm-env.js";
 import { isJsonApiErrorNode, isJsonApiResponse } from "./dataguards.js";
-import { ErrorFunction, JsonApiErrorNode, LogFunction, QueryStringArgs } from "./types.js";
+import { CrmFetchErroreInterceptorFunction, CrmFetchRequestInterceptorFunction, CrmFetchResponseInterceptorFunction, JsonApiErrorNode, QueryStringArgs } from "./types.js";
+
+// Base interceptor class with generic type for interceptor function
+// eslint-disable-next-line @typescript-eslint/ban-types
+abstract class CrmFetchInterceptor<T extends Function> {
+	private funcs: T[] = [];
+
+	// Abstract method to define specific interceptor behavior (request or response)
+	protected abstract handle(data: any): Promise<void>;
+
+	// Generic use method to add interceptors
+	use(func: T): void {
+		this.funcs.push(func);
+	}
+
+	// Generic clear method to remove all interceptors
+	clear(): void {
+		this.funcs.length = 0;
+	}
+
+	// Generic get interceptors method
+	get interceptors(): ReadonlyArray<T> {
+		return [...this.funcs]; // Create a copy to prevent mutation
+	}
+
+	// Internal method to chain interceptors for request or response handling
+	protected async chain(data: any): Promise<void> {
+		for (const func of this.funcs) {
+			await func(data);
+		}
+	}
+}
+
+export class CrmFetchRequestInterceptor extends CrmFetchInterceptor<CrmFetchRequestInterceptorFunction> {
+	async handle(request: Request): Promise<void> {
+		await this.chain(request);
+	}
+}
+export class CrmFetchResponseInterceptor extends CrmFetchInterceptor<CrmFetchResponseInterceptorFunction> {
+	async handle(response: Response): Promise<void> {
+		await this.chain(response);
+	}
+}
+export class CrmFetchErrorInterceptor extends CrmFetchInterceptor<CrmFetchErroreInterceptorFunction> {
+	async handle(e: Error): Promise<void> {
+		await this.chain(e);
+	}
+}
 
 export class CrmFetch {
 	protected name = "CrmFetch";
 	protected sessionId?: string;
 	protected requestCounter: number = 0;
-	protected errorFunction?: ErrorFunction;
 	private _lastResponseObject: object | null = null;
 
-	constructor(public crmEnv = new CrmEnv(), protected logFunction?: LogFunction, protected threadId: number = 1) {
+	constructor(public crmEnv = new CrmEnv()) {
 		this.setFetchOptions();
 	}
 
@@ -26,40 +72,23 @@ export class CrmFetch {
 	}
 
 	protected setFetchOptions() {
-		try {
-			const headers: Record<string, any> = { ...this.fetchOptions.headers };
+		const headers: Record<string, any> = { ...this.fetchOptions.headers };
 
-			if (this.crmEnv.apiKey) {
-				headers["X-Efficy-ApiKey"] = this.crmEnv.apiKey;
-			} else if (this.crmEnv.user && this.crmEnv.pwd) {
-				headers["X-Efficy-User"] = this.crmEnv.user;
-				headers["X-Efficy-Pwd"] = this.crmEnv.pwd;
-			}
-			if (this.crmEnv.logOff) {
-				headers["X-Efficy-Logoff"] = true;
-			}
-
-			if (this.crmEnv.useFetchQueue) {
-				FetchQueue.forceSequential = true;
-			}
-
-			this.fetchOptions.headers = headers;
-		} catch (ex: unknown) {
-			if (ex instanceof Error) {
-				this.throwError(`${this.name}.setFetchOptions::${ex.message}`)
-			} else {
-				console.error(ex);
-			}
+		if (this.crmEnv.apiKey) {
+			headers["X-Efficy-ApiKey"] = this.crmEnv.apiKey;
+		} else if (this.crmEnv.user && this.crmEnv.pwd) {
+			headers["X-Efficy-User"] = this.crmEnv.user;
+			headers["X-Efficy-Pwd"] = this.crmEnv.pwd;
 		}
-	}
-
-	protected throwError(rpcException: string | CrmException) {
-		const errorMessage = typeof rpcException === "string" ? rpcException : rpcException.toString();
-		if (typeof this.errorFunction === "function") {
-			this.errorFunction(errorMessage);
-		} else {
-			throw Error(errorMessage);
+		if (this.crmEnv.logOff) {
+			headers["X-Efficy-Logoff"] = true;
 		}
+
+		if (this.crmEnv.useFetchQueue) {
+			FetchQueue.forceSequential = true;
+		}
+
+		this.fetchOptions.headers = headers;
 	}
 
 	protected initJsonFetch(method: "GET" | "POST") {
@@ -74,54 +103,41 @@ export class CrmFetch {
 		let responseBody: string = "";
 		let responseObject: object = {};
 		let responseStatusCode: number = 0;
-		let crmException: CrmException | undefined;
 
-		try {
-			const init: RequestInit = {};
-			Object.assign(init, this.fetchOptions, requestOptions);
+		const init: RequestInit = {};
+		Object.assign(init, this.fetchOptions, requestOptions);
 
-			if (this.crmEnv.cookieHeader) {
-				init.headers = {
-					"Cookie": this.crmEnv.cookieHeader
-				}
-			}
-
-			const fetchQueue = new FetchQueue();
-			try {
-				await fetchQueue.waitMyTurn();
-				response = await fetch(requestUrl, init);
-
-				try {
-					responseBody = await response.text();
-					responseStatusCode = response.status;
-					responseObject = JSON.parse(responseBody || "[]");
-					this._lastResponseObject = responseObject;
-				} catch (ex) {
-					if (ex instanceof SyntaxError) {
-						console.error("Invalid JSON format: ", ex.message);
-					} else {
-						console.error("Unexpected error: ", ex);
-					}
-				}
-			} finally {
-				fetchQueue.finished();
-			}
-
-			crmException = this.getCrmException(responseObject);
-
-			const cookieString = response.headers.get('set-cookie');
-			if (cookieString) {
-				const cookie = parseEfficyCookieString(cookieString);
-				this.crmEnv.cookies = [cookie];
-				this.sessionId = this.crmEnv.shortSessionId;
-			}
-		} catch (ex) {
-			if (ex instanceof Error) {
-				this.throwError(`${this.name}.fetch::${ex.message}`)
-			} else {
-				console.error(ex);
+		if (this.crmEnv.cookieHeader) {
+			init.headers = {
+				"Cookie": this.crmEnv.cookieHeader
 			}
 		}
+
+		const request = new Request(requestUrl, init);
+		await this.crmEnv.interceptors.onRequest.handle(request);
+
+		const fetchQueue = new FetchQueue();
+		try {
+			await fetchQueue.waitMyTurn();
+			response = await fetch(request);
+
+			responseBody = await response.text();
+			responseStatusCode = response.status;
+			responseObject = JSON.parse(responseBody || "[]");
+			this._lastResponseObject = responseObject;
+		} finally {
+			fetchQueue.finished();
+		}
+
+		const crmException = this.getCrmException(responseObject);
+
+		const cookieString = response.headers.get('set-cookie');
+		if (cookieString) {
+			const cookie = parseEfficyCookieString(cookieString);
+			this.crmEnv.cookies = [cookie];
+			this.sessionId = this.crmEnv.shortSessionId;
+		}
+
 
 		// CFT-2024-354876
 		const couldBeExpiredSession = (
@@ -136,15 +152,20 @@ export class CrmFetch {
 			return this.fetch(requestUrl, requestOptions, true);
 		}
 
-		if (crmException instanceof CrmException) {
-			this.throwError(crmException);
+		if (crmException) {
+			await this.crmEnv.interceptors.onError.handle(crmException.error);
+			throw new Error(crmException.toString());
+		}
+
+		if (response) {
+			await this.crmEnv.interceptors.onPositiveResponse.handle(response);
 		}
 
 		return responseObject;
 	}
 
 	protected getRequestUrl(crmPath: string, queryArgs?: QueryStringArgs) {
-        const searchParams = new URLSearchParams();
+		const searchParams = new URLSearchParams();
 
 		if (queryArgs) {
 			for (const [key, value] of Object.entries(queryArgs)) {
@@ -152,16 +173,16 @@ export class CrmFetch {
 			}
 		}
 
-        // Useful for development environments
-        if (this.crmEnv.customer) {
-            searchParams.append("customer", this.crmEnv.customer);
-        }
+		// Useful for development environments
+		if (this.crmEnv.customer) {
+			searchParams.append("customer", this.crmEnv.customer);
+		}
 
-        const queryString = searchParams.toString();
+		const queryString = searchParams.toString();
 		const requestUrl = `${this.crmEnv.url}/crm/${crmPath}?${queryString}`;
 
 		return requestUrl;
-    }
+	}
 
 	/**
 	 * Parse errors in both legacy Enterprise format as from the U {data, errors, status} format
@@ -199,7 +220,6 @@ export class FetchQueue {
 	#id = 0;
 	#startTime = 0;
 
-	static debug = false;
 	static forceSequential = false;
 	static waitTime = 10; // milliseconds
 	static pending = false;
@@ -219,7 +239,6 @@ export class FetchQueue {
 	takeTurn() {
 		FetchQueue.pending = true;
 		this.#startTime = Date.now();
-		FetchQueue.debug && console.log(`takeTurn: ${this.#id}/${FetchQueue.fetchCount}`)
 	}
 	finished() {
 		const requestTime = Date.now() - this.#startTime;
@@ -228,7 +247,6 @@ export class FetchQueue {
 		FetchQueue.maxRequestTime = Math.max(FetchQueue.maxRequestTime, requestTime);
 
 		FetchQueue.pending = false;
-		FetchQueue.debug && console.log(`finished: ${this.#id}/${FetchQueue.fetchCount}`)
 	}
 
 	async sleep() {
@@ -259,7 +277,7 @@ export class FetchQueue {
 	}
 }
 
-class CrmException {
+export class CrmException {
 	constructor(public message: string, public code: string = "RPC", public detail: string = "") { }
 	toString() {
 		return [this.code, this.message, this.detail].join(" - ");
@@ -267,6 +285,10 @@ class CrmException {
 
 	static fromJsonApiErrorNode(o: JsonApiErrorNode) {
 		return new CrmException(o.title, o.id, o.detail)
+	}
+
+	get error(): Error {
+		return new Error(this.toString())
 	}
 }
 

@@ -5,7 +5,7 @@ import { CollectionObject, ConsultManyObject, FavoriteList, RecentList, UserList
 import { EditObject, DeleteEntity } from './rpc-objects/edit.js';
 import { SystemSettings } from './rpc-objects/list-type.js';
 import { QueryObject, QuerySQLObject } from './rpc-objects/query.js';
-import { LogFunction, UnityKey } from '../types.js';
+import { UnityKey } from '../types.js';
 import { CrmFetch } from '../crm-fetch.js';
 import { RpcObject } from './rpc-objects/rpc-object.js';
 import { RpcNamedOperation } from './types.js';
@@ -20,8 +20,8 @@ export class JsonRpcApi extends CrmFetch {
 	remoteObjects: RpcObject[] = [];
 
 
-	constructor(public crmEnv = new CrmEnv(), public logFunction?: LogFunction, public threadId: number = 1) {
-		super(crmEnv, logFunction, threadId)
+	constructor(public crmEnv = new CrmEnv()) {
+		super(crmEnv)
 		this.name = "JsonRpcApi";
 	}
 
@@ -39,36 +39,36 @@ export class JsonRpcApi extends CrmFetch {
 					requestObject.push(jsonRPC);
 				}
 			})
-		} catch (ex: unknown) {
-			if (ex instanceof Error) {
-				this.throwError(`${this.name}.executeBatch::asJsonRpc\n${ex.message}`)
-			} else {
-				console.error(ex);
-			}
+		} catch (e) {
+			this.remoteObjects.length = 0;
+			throw new Error(`${this.name}.executeBatch::asJsonRpc\n${e.message}`)
 		}
-
 
 		// Nothing to execute, ignore silently
 		if (!requestObject.length) return;
 
-		const responseOperations: RpcNamedOperation[] = await this.fetchPost(requestObject);
+		try {
+			const responseOperations: RpcNamedOperation[] = await this.fetchPost(requestObject);
 
-		// Add response info to operations and remove executed operations (handled or not)
-		const items = this.remoteObjects;
-		let index = items.length
-		while (index--) {
-			const operation = items[index];
-			const respOper = responseOperations.find(respOper => {
-				// @ts-expect-error using protected member
-				return respOper["#id"] === operation.id;
-			});
-			if (!respOper)
-				this.throwError(`${this.name}.executeBatch::cannot find response for queued operation [${index}/${items.length}]`);
-			// @ts-expect-error using protected method
-			Object.assign(operation.responseObject, respOper);
-			// @ts-expect-error using protected method
-			operation.afterExecute();
-			items.splice(index, 1);
+			// Add response info to operations and remove executed operations (handled or not)
+			const items = this.remoteObjects;
+			let index = items.length
+			while (index--) {
+				const operation = items[index];
+				const respOper = responseOperations.find(respOper => {
+					// @ts-expect-error using protected member
+					return respOper["#id"] === operation.id;
+				});
+				if (!respOper)
+					throw new Error(`${this.name}.executeBatch::cannot find response for queued operation [${index}/${items.length}]`);
+				// @ts-expect-error using protected method
+				Object.assign(operation.responseObject, respOper);
+				// @ts-expect-error using protected method
+				operation.afterExecute();
+				items.splice(index, 1);
+			}
+		} finally {
+			this.remoteObjects.length = 0;
 		}
 	}
 
@@ -87,8 +87,8 @@ export class JsonRpcApi extends CrmFetch {
 
 		const requestOptions: RequestInit = {
             body: JSON.stringify(requestObject)
-        } 
-					
+        }
+
 		const response: object = await this.fetch(requestUrl, requestOptions)
 
 		if (Array.isArray(response)) {
@@ -109,7 +109,7 @@ export class JsonRpcApi extends CrmFetch {
 
 /**
  * Efficy SDK build around JSON RPC operations send to endpoint "crm/json", the Efficy Enterprise product style.
- * Multiple RPC operations can be registered in a single request until usage of method executeBatch(). 
+ * Multiple RPC operations can be registered in a single request until usage of method executeBatch().
  * Only after this method was executed, the RPC Response objects have data available in their item and items attributes.
  * @example
  * const crm = new CrmRpc(crmEnv);
@@ -124,16 +124,11 @@ export class CrmRpc extends JsonRpcApi {
 	/**
 	 * Construct a CrmRpc object
 	 * @param [crmEnv] When empty, uses the Efficy context of the browser
-	 * @param [logFunction]  Your (custom) log function to call for requests and responses, e.g. console.log
-	 * @param [threadId] Unique thread ID for logging purposes
 	 * @example
-	 * function logger(msg, reqLog) {
-	 *   console.log(msg);
-	 * }
-	 * const crm = new CrmRpc(crmEnv, logger);
+	 * const crm = new CrmRpc(crmEnv);
 	 */
-	constructor(crmEnv?: CrmEnv, logFunction?: LogFunction, threadId?: number) {
-		super(crmEnv, logFunction, threadId);
+	constructor(crmEnv?: CrmEnv) {
+		super(crmEnv);
 	}
 
 	/**
@@ -150,7 +145,7 @@ export class CrmRpc extends JsonRpcApi {
 	}
 
 	/**
-	 * Post and receive JSON with custom endpoint	 
+	 * Post and receive JSON with custom endpoint
 	 */
 	post(requestUrl: string, requestObject: object) {
 		return super.fetch(requestUrl, requestObject);
@@ -242,7 +237,7 @@ export class CrmRpc extends JsonRpcApi {
 	 * const comp = crm.openConsultObject("comp", compKey)
 	 * const dsComp = comp.getMasterDataSet();
 	 * const dsCompCustomer = comp.getCategoryDataSet("COMP$CUSTOMER");
-	 * const linkedContacts = comp.getDetailDataSet("cont");  
+	 * const linkedContacts = comp.getDetailDataSet("cont");
 	 * await crm.executeBatch();
 	 */
 	openConsultObject(entity: string, key: UnityKey) {
@@ -362,4 +357,3 @@ export class CrmRpc extends JsonRpcApi {
 		file_type: RpcConstants.file_type,
 	};
 }
-

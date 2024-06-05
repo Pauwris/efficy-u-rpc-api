@@ -1,3 +1,4 @@
+import { CrmFetchErrorInterceptor, CrmFetchRequestInterceptor, CrmFetchResponseInterceptor } from "./crm-fetch";
 import { Cookie, CrmEnvConfig } from "./types";
 
 /**
@@ -7,7 +8,7 @@ export class CrmEnv {
 	private name = "CrmEnv";
 
 	url?: string;
-	customer?: string;	
+	customer?: string;
 	apiKey?: string;
 	user?: string;
 	pwd?: string;
@@ -38,7 +39,7 @@ export class CrmEnv {
 	setEnv(env: CrmEnvConfig): void {
 		this.url = env.url || "";
 		this.customer = env.customer || "";
-		
+
 		// Sensitive properties
 		this.apiKey = env.apiKey || "";
 		this.user = env.user || "";
@@ -83,4 +84,10 @@ export class CrmEnv {
 		const str = this.sessionId;
 		return str.split("-")[0] || "";
 	}
+
+	readonly interceptors = Object.freeze({
+		onRequest: new CrmFetchRequestInterceptor(),
+		onPositiveResponse: new CrmFetchResponseInterceptor(),
+		onError: new CrmFetchErrorInterceptor(),
+	})
 }

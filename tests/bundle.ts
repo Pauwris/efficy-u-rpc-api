@@ -1,10 +1,11 @@
-import { CrmApi, CrmEnv, CrmNode, CrmRpc, EntitySearch, GetSearchResultPayload, ListSummaryPayload, QueryStringArgs, UnityKey } from '../build/efficy-u-rpc-api-bundle.js'
+import { CrmApi, CrmEnv, CrmEnvConfig, CrmNode, CrmRpc, EntitySearch, GetSearchResultPayload, ListSummaryPayload, QueryStringArgs, UnityKey } from '../build/efficy-u-rpc-api-bundle.js'
 
 import test from 'ava';
 import process from 'process';
 import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
+import { clearScreenDown } from 'readline';
 
 dotenv.config();
 
@@ -22,13 +23,15 @@ test('process.env', t => {
 	t.is(process.env.CRM_ORIGIN, url.origin + "/");
 });
 
-const crmEnv = new CrmEnv({
+const crmEnvConfig = Object.freeze({
 	"url": process.env.CRM_ORIGIN,
 	"user": process.env.CRM_USER,
 	"pwd": process.env.CRM_PWD,
 	"customer": process.env.CRM_CUSTOMER,
 	"retryWithNewSession": true
 })
+
+const crmEnv = new CrmEnv(crmEnvConfig)
 
 if (typeof process.env.CRM_USER !== "string" || !process.env.CRM_USER.toLowerCase()) throw Error("Check .env configuration")
 const currentUserCode = process.env.CRM_USER.toLowerCase();
@@ -56,11 +59,11 @@ test.skip('CrmApi: CFT-2024-354876', async (t) => {
 		tableName: "Currency",
 		query: [["crcyIsDisabled = 0"]]
 	});
-	
+
 	const cookies = crmEnv.cookies;
 	await fs.promises.writeFile(cookieFileName, JSON.stringify(cookies))
 
-	t.notDeepEqual(true, "manage cookies")	
+	t.notDeepEqual(true, "manage cookies")
 });
 
 test.skip('CrmRpc: CFT-2024-354876', async (t) => {
@@ -81,7 +84,7 @@ test.skip('CrmRpc: CFT-2024-354876', async (t) => {
 
 	await fs.promises.writeFile(cookieFileName, JSON.stringify(cookies))
 
-	t.notDeepEqual(true, "manage cookies")	
+	t.notDeepEqual(true, "manage cookies")
 });
 
 test('CrmRpc: Session clear', async (t) => {
@@ -97,22 +100,63 @@ test('CrmRpc: Session clear', async (t) => {
 	await crm.executeBatch();
 	const sessionCookie2 = crmEnv.cookieHeader;
 
-	t.notDeepEqual(sessionCookie1 === sessionCookie2, "clearCookies")	
+	t.notDeepEqual(sessionCookie1 === sessionCookie2, "clearCookies")
 });
 
 test('CrmRpc: Settings and session properties', async (t) => {
-	const crm = new CrmRpc(crmEnv, myLogFunction);
+	const crm = new CrmRpc(crmEnv);
 	const currentDatabaseAlias = crm.currentDatabaseAlias;
-	const currentLicenseName = crm.currentUserCode;
+	const cuc = crm.currentUserCode;
 	const setts = crm.getSystemSettings();
 
 	const defaultCurrency = crm.getSetting("Efficy", "defaultCurrency");
 	await crm.executeBatch();
 
 	t.deepEqual(currentDatabaseAlias.result, customerAlias);
-	t.deepEqual(currentLicenseName.result.toLowerCase(), currentUserCode);
+	t.deepEqual(cuc.result.toLowerCase(), currentUserCode);
 	t.deepEqual(setts.map.get("FileBase"), "efficy/")
 	t.deepEqual(defaultCurrency.result, "EUR")
+});
+
+test.only('CrmRpc: Interceptors', async (t) => {
+	let onRequestUrlOrigin: string = "";
+	let onResponseCustomHeader: string = "";
+	let onErrorEx: Error | null = null;
+
+	const myCrmEnv = new CrmEnv(crmEnvConfig);
+	myCrmEnv.interceptors.onRequest.use(async(request: Request) => {
+		onRequestUrlOrigin = new URL(request.url).origin;
+	})
+	myCrmEnv.interceptors.onPositiveResponse.use(async(response: Response) => {
+		onResponseCustomHeader = response.headers.get("x-efficy-status") ?? "";
+	})
+	myCrmEnv.interceptors.onError.use(async(e: Error) => {
+		onErrorEx = e;
+	})
+
+	const crm = new CrmRpc(myCrmEnv);
+	const cuc = crm.currentUserCode;
+	await crm.executeBatch();
+
+	t.deepEqual(cuc.result.toLowerCase(), currentUserCode);
+	t.deepEqual(onRequestUrlOrigin, url.origin, "onRequest interceptor enabled");
+	t.deepEqual(onResponseCustomHeader, "success");
+
+	crm.executeSqlQuery("select * from fakeTable")
+
+	try {
+		await crm.executeBatch();
+	} catch(e) {
+		onErrorEx = e;
+	}
+
+	myCrmEnv.interceptors.onRequest.clear();
+	onRequestUrlOrigin = "";
+	crm.currentUserCode;
+	await crm.executeBatch();
+
+	t.deepEqual(onRequestUrlOrigin, "", "onRequest interceptor disabled");
+	t.assert(onErrorEx?.message.includes("Invalid object name 'fakeTable'"), "onError interceptor");
 });
 
 test('CrmRpc: Multiple queries', async (t) => {
@@ -290,7 +334,7 @@ test('CrmApi: listSummary Currency', async t => {
 test('CrmApi: listSummary Company', async t => {
 	interface Company {
 		compKey: UnityKey;
-		compName: string;		
+		compName: string;
 	}
 
 	const crm = new CrmApi(crmEnv);
@@ -323,17 +367,17 @@ test('CrmNode: POST json echo', async t => {
 		msg: "Hello, this is a JSON POST unit test!"
 	};
 
-	try {				
+	try {
 		const result = await crm.crmNodeData<EchoResponse>("echo", payload);
 
 		t.deepEqual(JSON.parse(result.content).msg, payload.msg, "msg");
 		t.deepEqual(result.method, "POST", "method")
-		t.deepEqual(result.path, "/node/echo", "path")		
+		t.deepEqual(result.path, "/node/echo", "path")
 	} catch (ex) {
 		console.error(ex)
 	}
 
-	try {				
+	try {
 		const result = await crm.crmNode("echo", payload);
 		t.assert(result && typeof result.data === "object")
 	} catch (ex) {
@@ -354,12 +398,12 @@ test('CrmNode: GET echo', async t => {
 		"msg": "Hello, this is a GET unit test!"
 	}
 
-	try {						
+	try {
 		const result = await crm.crmNodeData<EchoResponse>("echo", undefined, queryStringArgs);
 
 		t.deepEqual(result.method, "GET", "method")
-		t.deepEqual(result.path, "/node/echo", "path")	
-		t.deepEqual(result.query, 'msg=Hello%2C+this+is+a+GET+unit+test%21', "query")	
+		t.deepEqual(result.path, "/node/echo", "path")
+		t.deepEqual(result.query, 'msg=Hello%2C+this+is+a+GET+unit+test%21', "query")
 	} catch (ex) {
 		console.error(ex)
 	}

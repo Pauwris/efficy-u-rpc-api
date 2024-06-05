@@ -16,13 +16,14 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 test('process.env', t => {
     t.is(process.env.CRM_ORIGIN, url.origin + "/");
 });
-const crmEnv = new CrmEnv({
+const crmEnvConfig = Object.freeze({
     "url": process.env.CRM_ORIGIN,
     "user": process.env.CRM_USER,
     "pwd": process.env.CRM_PWD,
     "customer": process.env.CRM_CUSTOMER,
     "retryWithNewSession": true
 });
+const crmEnv = new CrmEnv(crmEnvConfig);
 if (typeof process.env.CRM_USER !== "string" || !process.env.CRM_USER.toLowerCase())
     throw Error("Check .env configuration");
 const currentUserCode = process.env.CRM_USER.toLowerCase();
@@ -80,16 +81,50 @@ test('CrmRpc: Session clear', async (t) => {
     t.notDeepEqual(sessionCookie1 === sessionCookie2, "clearCookies");
 });
 test('CrmRpc: Settings and session properties', async (t) => {
-    const crm = new CrmRpc(crmEnv, myLogFunction);
+    const crm = new CrmRpc(crmEnv);
     const currentDatabaseAlias = crm.currentDatabaseAlias;
-    const currentLicenseName = crm.currentUserCode;
+    const cuc = crm.currentUserCode;
     const setts = crm.getSystemSettings();
     const defaultCurrency = crm.getSetting("Efficy", "defaultCurrency");
     await crm.executeBatch();
     t.deepEqual(currentDatabaseAlias.result, customerAlias);
-    t.deepEqual(currentLicenseName.result.toLowerCase(), currentUserCode);
+    t.deepEqual(cuc.result.toLowerCase(), currentUserCode);
     t.deepEqual(setts.map.get("FileBase"), "efficy/");
     t.deepEqual(defaultCurrency.result, "EUR");
+});
+test.only('CrmRpc: Interceptors', async (t) => {
+    let onRequestUrlOrigin = "";
+    let onResponseCustomHeader = "";
+    let onErrorEx = null;
+    const myCrmEnv = new CrmEnv(crmEnvConfig);
+    myCrmEnv.interceptors.onRequest.use(async (request) => {
+        onRequestUrlOrigin = new URL(request.url).origin;
+    });
+    myCrmEnv.interceptors.onPositiveResponse.use(async (response) => {
+        onResponseCustomHeader = response.headers.get("x-efficy-status") ?? "";
+    });
+    myCrmEnv.interceptors.onError.use(async (e) => {
+        onErrorEx = e;
+    });
+    const crm = new CrmRpc(myCrmEnv);
+    const cuc = crm.currentUserCode;
+    await crm.executeBatch();
+    t.deepEqual(cuc.result.toLowerCase(), currentUserCode);
+    t.deepEqual(onRequestUrlOrigin, url.origin, "onRequest interceptor enabled");
+    t.deepEqual(onResponseCustomHeader, "success");
+    crm.executeSqlQuery("select * from fakeTable");
+    try {
+        await crm.executeBatch();
+    }
+    catch (e) {
+        onErrorEx = e;
+    }
+    myCrmEnv.interceptors.onRequest.clear();
+    onRequestUrlOrigin = "";
+    crm.currentUserCode;
+    await crm.executeBatch();
+    t.deepEqual(onRequestUrlOrigin, "", "onRequest interceptor disabled");
+    t.assert(onErrorEx?.message.includes("Invalid object name 'fakeTable'"), "onError interceptor");
 });
 test('CrmRpc: Multiple queries', async (t) => {
     const crm = new CrmRpc(crmEnv);

@@ -2,8 +2,6 @@ export type UnityKey = "" | string;
 export type Nil = null | undefined;
 export type JSONPrimitive = number | string | boolean | Nil;
 export type JSONPrimitiveRecord = Record<string, JSONPrimitive>
-export type ErrorFunction = (message: string) => void;
-export type LogFunction = (message: string, object: object) => void;
 
 export type ErrorData = Record<"title" | "id" | "detail", string | ErrorDetail>;
 export type ErrorDetail = Record<"id" | "message" | "objectKey", string>;
@@ -41,6 +39,15 @@ export interface Cookie {
 	expires?: string;
 }
 
+export interface CrmFetchRequestInterceptorFunction {
+	(request: Request): Promise<void>
+}
+export interface CrmFetchResponseInterceptorFunction {
+	(response: Response): Promise<void>
+}
+export interface CrmFetchErroreInterceptorFunction {
+	(e: Error): Promise<void>
+}
+
 export * from "./crm-api/types"
 export * from "./crm-rpc/types"
-
