@@ -89,7 +89,7 @@ export class JsonRpcApi extends CrmFetch {
             body: JSON.stringify(requestObject)
         }
 
-		const response: object = await this.fetch(requestUrl, requestOptions)
+		const response: object = await this.crmfetch(requestUrl, requestOptions)
 
 		if (Array.isArray(response)) {
 			response.forEach(item => {
@@ -148,7 +148,7 @@ export class CrmRpc extends JsonRpcApi {
 	 * Post and receive JSON with custom endpoint
 	 */
 	post(requestUrl: string, requestObject: object) {
-		return super.fetch(requestUrl, requestObject);
+		return super.crmfetch(requestUrl, requestObject);
 	}
 
 	/**

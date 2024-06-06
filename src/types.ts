@@ -36,6 +36,7 @@ export interface CrmEnvConfig {
 export interface Cookie {
 	name: string;
 	value: string;
+	path?: string;
 	expires?: string;
 }
 

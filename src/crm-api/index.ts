@@ -14,7 +14,7 @@ export class CrmApi extends CrmFetch {
 		super(crmEnv);
         this.name = "CrmApi";
 	}
-    
+
     /**
      * Global elastic search in Efficy, with various filtering options
      * @example
@@ -30,7 +30,7 @@ export class CrmApi extends CrmFetch {
      *     }
      *   }
      * }
-     * const searchResult: EntitySearch[] = await crm.searchGlobal(payload);	
+     * const searchResult: EntitySearch[] = await crm.searchGlobal(payload);
      */
     searchGlobal = (payload: GetSearchResultPayload) => searchGlobalService(this, payload);
 
@@ -44,7 +44,7 @@ export class CrmApi extends CrmFetch {
      * };
      * const result = await crm.listSummary<Crcy>(currencyPayload);
      * const euro = result?.list.find(item => item.crcyCode === "EUR")
-     * 
+     *
      * const companyPayload: ListSummaryPayload = {
      *   fields: ["compKey", "compName"],
      *   tableName: "Company",
@@ -58,11 +58,11 @@ export class CrmApi extends CrmFetch {
         };
 
         const listSumPayload = payload as ListSummaryPayload;
-        
+
         if (listSumPayload.nbOfLines && listSumPayload.nbOfLines === 0) {
             delete listSumPayload.nbOfLines;
         }
-        
+
         return await this.crmPostData<ListSummaryResponse<T>>("query", payload, urlQueryStrings);
     }
 
@@ -73,10 +73,10 @@ export class CrmApi extends CrmFetch {
     crmPostData = async <R>(crmPath: string, payload: ModulePostPayload, queryStringArgs: QueryStringArgs): Promise<R> =>
         (await this.crmPost<JsonApiResponse<R>>(crmPath, payload, queryStringArgs)).data;
 
-    private async crmGet<R>(crmPath: string, queryStringArgs: QueryStringArgs = {}): Promise<R> {        
+    private async crmGet<R>(crmPath: string, queryStringArgs: QueryStringArgs = {}): Promise<R> {
         this.initJsonFetch("GET");
 		const requestUrl = this.getRequestUrl(crmPath, queryStringArgs)
-		const response: object = await this.fetch(requestUrl);
+		const response: object = await this.crmfetch(requestUrl);
         if (isJsonApiResponse(response)) {
             return response as R;
         } else {
@@ -90,7 +90,7 @@ export class CrmApi extends CrmFetch {
         const requestOptions: RequestInit = {
             body: JSON.stringify(payload)
         }
-		const response: object = await this.fetch(requestUrl, requestOptions);
+		const response: object = await this.crmfetch(requestUrl, requestOptions);
 
         if (isJsonApiResponse(response)) {
             return response as R;

@@ -13,10 +13,10 @@ export class CrmNode extends CrmFetch {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param nodePath The node path without the "/crm/node/"" prefix, e.g. "echo"
-	 * @param payload 
-	 * @param queryStringArgs 
+	 * @param payload
+	 * @param queryStringArgs
 	 * @example
 	 * const payload = {msg: "Hello, this is a unit test!"};
 	 * const result = await crm.crmNodeData<EchoResponse>("echo", payload);
@@ -32,10 +32,10 @@ export class CrmNode extends CrmFetch {
 	}
 
 	/**
-	 * 
+	 *
 	 * @param nodePath The node path without the "/crm/node/"" prefix, e.g. "echo"
-	 * @param payload 
-	 * @param queryStringArgs 
+	 * @param payload
+	 * @param queryStringArgs
 	 * @example
 	 * const payload = {msg: "Hello, this is a unit test!"};
 	 * const result = await crm.crmNode("echo", payload)?.data;
@@ -53,13 +53,13 @@ export class CrmNode extends CrmFetch {
 			} else if (typeof payload === 'object' && payload as any instanceof URLSearchParams) {
 				const p = payload as URLSearchParams;
 				requestOptions.body = p.toString();
-			} else {				
+			} else {
 				throw new Error(`${this.name}.crmNode::Unsupported payload type`);
 			}
 		} else {
 			this.fetchOptions.method = "GET"
 		}
 
-		return await this.fetch(requestUrl, requestOptions);
+		return await this.crmfetch(requestUrl, requestOptions);
 	}
 }

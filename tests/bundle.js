@@ -92,7 +92,7 @@ test('CrmRpc: Settings and session properties', async (t) => {
     t.deepEqual(setts.map.get("FileBase"), "efficy/");
     t.deepEqual(defaultCurrency.result, "EUR");
 });
-test.only('CrmRpc: Interceptors', async (t) => {
+test('CrmRpc: Interceptors', async (t) => {
     let onRequestUrlOrigin = "";
     let onResponseCustomHeader = "";
     let onErrorEx = null;

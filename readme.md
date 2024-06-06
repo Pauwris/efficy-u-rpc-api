@@ -16,5 +16,9 @@ npm i efficy-u-rpc-api
 
 Consult the [github-pages](https://pauwris.github.io/efficy-u-rpc-api/) documentation
 
+## Node fetch
+
+In Node.js 18, an [experimental global fetch API](https://nodejs.org/en/blog/announcements/v18-release-announce) is available by default.
+
 ----------
 (2024) authored by Kristof Pauwels

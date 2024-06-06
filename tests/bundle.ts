@@ -118,7 +118,7 @@ test('CrmRpc: Settings and session properties', async (t) => {
 	t.deepEqual(defaultCurrency.result, "EUR")
 });
 
-test.only('CrmRpc: Interceptors', async (t) => {
+test('CrmRpc: Interceptors', async (t) => {
 	let onRequestUrlOrigin: string = "";
 	let onResponseCustomHeader: string = "";
 	let onErrorEx: Error | null = null;

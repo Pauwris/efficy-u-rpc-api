@@ -98,7 +98,7 @@ export class CrmFetch {
 		this.fetchOptions.method = method;
 	}
 
-	protected async fetch(requestUrl: string, requestOptions?: RequestInit, isRetry: boolean = false): Promise<object> {
+	protected async crmfetch(requestUrl: string, requestOptions?: RequestInit, isRetry: boolean = false): Promise<object> {
 		let response: Response | null = null;
 		let responseBody: string = "";
 		let responseObject: object = {};
@@ -118,15 +118,14 @@ export class CrmFetch {
 
 		const fetchQueue = new FetchQueue();
 		try {
-			await fetchQueue.waitMyTurn();
-			response = await fetch(request);
-
+			if (this.crmEnv.useFetchQueue) await fetchQueue.waitMyTurn();
+			response = await globalThis.fetch(request);
 			responseBody = await response.text();
 			responseStatusCode = response.status;
 			responseObject = JSON.parse(responseBody || "[]");
 			this._lastResponseObject = responseObject;
 		} finally {
-			fetchQueue.finished();
+			if (this.crmEnv.useFetchQueue) fetchQueue.finished();
 		}
 
 		const crmException = this.getCrmException(responseObject);
@@ -149,7 +148,7 @@ export class CrmFetch {
 
 		if (couldBeExpiredSession && this.crmEnv.retryWithNewSession && isRetry === false) {
 			this.crmEnv.clearCookies();
-			return this.fetch(requestUrl, requestOptions, true);
+			return this.crmfetch(requestUrl, requestOptions, true);
 		}
 
 		if (crmException) {
