@@ -73,13 +73,13 @@ export class CrmFetch {
 		try {
 			if (this.crmEnv.useFetchQueue) await fetchQueue.waitMyTurn();
 			response = await globalThis.fetch(request);
-			if (!response.ok) {
-				throw new Error(`Fetch request failed with status code: ${response.status}`);
-			}
 			responseBody = await response.text();
 			responseStatusCode = response.status;
 			responseObject = JSON.parse(responseBody || "[]");
 			this._lastResponseObject = responseObject;
+			if (!response.ok && response.status !== 401) {
+				throw new Error(`Fetch request failed with status code: ${response.status}`);
+			}
 		} finally {
 			if (this.crmEnv.useFetchQueue) fetchQueue.finished();
 		}
