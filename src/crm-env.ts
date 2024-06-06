@@ -1,4 +1,4 @@
-import { CrmFetchErrorInterceptor, CrmFetchRequestInterceptor, CrmFetchResponseInterceptor } from "./crm-fetch";
+import { CrmFetchErrorInterceptor, CrmFetchRequestInterceptor, CrmFetchResponseInterceptor } from "./crm-fetch-Interceptor";
 import { Cookie, CrmEnvConfig } from "./types";
 
 /**

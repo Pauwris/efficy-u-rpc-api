@@ -9,6 +9,7 @@ dotenv.config();
 const url = new URL("https://submariners.efficytest.cloud/");
 const customerAlias = "submariners";
 const compKeyEfficy = "00010Q0u00001Nvm";
+const contKeyMe = "00010QH20000D5Dc";
 const workingFolder = "C:\\Temp\\efficy-u-rpc-api\\";
 const pdfFilePath = path.join(workingFolder, "Welcome to Word.pdf");
 const searchedContact = "Kristof Pauwels";
@@ -79,6 +80,22 @@ test('CrmRpc: Session clear', async (t) => {
     await crm.executeBatch();
     const sessionCookie2 = crmEnv.cookieHeader;
     t.notDeepEqual(sessionCookie1 === sessionCookie2, "clearCookies");
+});
+test('CrmRpc: invoke a 500 internal server error', async (t) => {
+    let errorMsg = "";
+    const crm = new CrmRpc(crmEnv);
+    const cont = crm.openEditObject("Cont", contKeyMe);
+    cont.updateDetail("Comp", compKeyEfficy, {
+        "contcompDepartment": "F&A"
+    });
+    cont.commitChanges();
+    try {
+        await crm.executeBatch();
+    }
+    catch (ex) {
+        errorMsg = ex.message;
+    }
+    t.deepEqual(errorMsg, "Fetch request failed with status code: 500", "catch_500");
 });
 test('CrmRpc: Settings and session properties', async (t) => {
     const crm = new CrmRpc(crmEnv);
