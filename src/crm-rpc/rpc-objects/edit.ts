@@ -12,17 +12,17 @@ export class EditObject extends RpcObject {
 	protected commit: boolean = false;
     protected closecontext: boolean = true;
 
-	masterData: Record<string, string | number> = {};	
+	masterData: Record<string, string | number> = {};
 	otherFuncs: object[] = [];
     categories: Map<string, JSONPrimitiveRecord> = new Map();
-	
+
 	private attachmentList: AttachmentList;
     private dataSetList;
 	private isDirty: boolean =false;
 
     /**
      * Opens an edit context for the record identified by entity and key.
-     * @param remoteAPI 
+     * @param remoteAPI
      * @param entity The entity name, e.g. "Comp"
      * @param key The key of the record. Use key = 0 to create a new record
      */
@@ -103,20 +103,23 @@ export class EditObject extends RpcObject {
 	}
 
 	/**
-	 * Updates the value of a field of any type in a category data set
+	 * Assign a single field:value to a category dataset
 	 */
-	updateCategoryField(categoryName: string, name: string, value: string | number) {       
-        this.categories.set(categoryName, {name: value})
-		this.setDirty();
+	updateCategoryField(categoryName: string, name: string, value: string | number) {
+		const target: JSONPrimitiveRecord = {}
+		target[name] = value;
+		this.updateCategoryFields(categoryName, target)
 	}
 
 	/**
-	 * Updates the value of a field of any type in a category data set
+	 * Assign multiple field:value's in a category dataset
 	 * @param categoryName
-	 * @param fieldsObj e.g. {"name": "value"}
+	 * @param fieldsObj e.g. {"compcustLanguage": "FR"}
 	 */
 	updateCategoryFields(categoryName: string, fieldsObj: JSONPrimitiveRecord) {
-        this.categories.set(categoryName, fieldsObj)
+		const target: JSONPrimitiveRecord = this.categories.get(categoryName) ?? {};
+		Object.assign(target, fieldsObj)
+        this.categories.set(categoryName, target)
 		this.setDirty();
 	}
 
@@ -302,7 +305,7 @@ export class EditObject extends RpcObject {
 		requestObject["@func"].push(...this.otherFuncs);
 
         // Placed after this.otherFuncs, because they could have the activateCategory
-        this.categories.forEach((categoryName, data) => {
+        this.categories.forEach((data, categoryName) => {
             requestObject["@func"].push({
                 "@name": "update",
                 "category": categoryName,
@@ -325,11 +328,11 @@ export class EditObject extends RpcObject {
 
 	protected afterExecute() {
 		super.afterExecute();
-		
+
 		const resp = this.responseObject as JSONPrimitiveRecord;
         if (resp.key && typeof resp.key === "string") {
             this.key = resp.key as UnityKey;
-        }        
+        }
 
 		this.dataSetList.setResponseObject(this.responseObject);
 		this.dataSetList.afterExecute();

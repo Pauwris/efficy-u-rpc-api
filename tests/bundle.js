@@ -190,7 +190,7 @@ test('CrmRpc: Consult operations', async (t) => {
     t.assert(dsLinkedContacts.items.length > 100, "linkedContacts");
     t.assert(linkedOppo.items.length > 10, "linkedOppo");
 });
-test('CrmRpc: Edit operations', async (t) => {
+test.only('CrmRpc: Edit operations', async (t) => {
     const crm = new CrmRpc(crmEnv);
     const userList = crm.getUserList();
     await crm.executeBatch();
@@ -200,6 +200,9 @@ test('CrmRpc: Edit operations', async (t) => {
     const linkedContacts = comp.getDetailDataSet("cont");
     await crm.executeBatch();
     const contKey = linkedContacts.items?.pop()?.contKey;
+    const docuinvcExpenses = 123.456;
+    const docuinvcInvoiceDate = "2021-01-08";
+    const docuinvcCommunication = "Hello World!";
     const docu = crm.openEditObject("Docu");
     docu.updateField("name", "Unittest");
     docu.insertDetail("Comp", compKeyEfficy);
@@ -207,10 +210,10 @@ test('CrmRpc: Edit operations', async (t) => {
     docu.commitChanges();
     docu.activateCategory("DOCU$INVOICING");
     docu.updateCategoryFields("DOCU$INVOICING", {
-        "invoiceDate": "2021-01-08T00:00:00",
-        "communication": "Hello World!"
+        "docuinvcInvoiceDate": docuinvcInvoiceDate,
+        "docuinvcCommunication": docuinvcCommunication
     });
-    docu.updateCategoryField("DOCU$INVOICING", "expenses", 123.456);
+    docu.updateCategoryField("DOCU$INVOICING", "docuinvcExpenses", docuinvcExpenses);
     docu.clearDetail("Comp");
     docu.insertDetail("Comp", compKeyEfficy);
     docu.insertDetail("Cont", contKey);
@@ -219,6 +222,14 @@ test('CrmRpc: Edit operations', async (t) => {
     docu.commitChanges();
     await crm.executeBatch();
     const docuKey = docu.key;
+    // Verify data correctness
+    const dbData = crm.executeSqlQuery("Select docuinvcExpenses, docuinvcInvoiceDate, docuinvcCommunication from DOCU$INVOICING where docuinvcDocumentKey=:p1", [docuKey]);
+    await crm.executeBatch();
+    if (dbData.item) {
+        t.deepEqual(dbData.item["docuinvcExpenses"], docuinvcExpenses, "docuinvcExpenses");
+        t.deepEqual(dbData.item["docuinvcInvoiceDate"], docuinvcInvoiceDate, "docuinvcInvoiceDate");
+        t.deepEqual(dbData.item["docuinvcCommunication"], docuinvcCommunication, "docuinvcCommunication");
+    }
     crm.deleteEntity("Docu", [docuKey]);
     await crm.executeBatch();
     t.assert(docuKey != "", "Edit + Delete docu");
