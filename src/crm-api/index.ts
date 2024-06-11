@@ -90,7 +90,7 @@ export class CrmApi extends CrmFetch {
         const requestOptions: RequestInit = {
             body: JSON.stringify(payload)
         }
-		const response: object = await this.crmfetch(requestUrl, requestOptions);
+		const response: object = await this.crmfetch(requestUrl, payload, requestOptions);
 
         if (isJsonApiResponse(response)) {
             return response as R;

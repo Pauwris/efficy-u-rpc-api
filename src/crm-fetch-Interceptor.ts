@@ -1,4 +1,4 @@
-import { CrmFetchErroreInterceptorFunction, CrmFetchRequestInterceptorFunction, CrmFetchResponseInterceptorFunction } from "./types.js";
+import { CrmFetchErroreInterceptorFunction, CrmFetchRequestInterceptorFunction, CrmFetchResponseInterceptorFunction, ModulePostPayload } from "./types.js";
 
 // Base interceptor class with generic type for interceptor function
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -6,9 +6,21 @@ abstract class CrmFetchInterceptor<T extends Function> {
 	private funcs: T[] = [];
 
 	// Abstract method to define specific interceptor behavior (request or response)
-	protected abstract handle(data: any): Promise<void>;
+	protected abstract handle(...args: any[]): Promise<void>;
 
-	// Generic use method to add interceptors
+	/**
+	 * Generic use method to add interceptors
+	 * @example
+	 * crmEnv.interceptors.onRequest.use(async(request: Request) => {
+	 *   onRequestUrlOrigin = new URL(request.url).origin;
+	 * })
+	 * crmEnv.interceptors.onPositiveResponse.use(async(response: Response) => {
+	 *   onResponseCustomHeader = response.headers.get("x-efficy-status") ?? "";
+	 * })
+	 * crmEnv.interceptors.onError.use(async(e: Error, request: Request, requestPayload: ModulePostPayload | undefined, response: Response | null) => {
+	 *   if (requestPayload && typeof requestPayload === "object") requestObject = requestPayload;
+	 * })
+	 */
 	use(func: T): void {
 		this.funcs.push(func);
 	}
@@ -24,9 +36,9 @@ abstract class CrmFetchInterceptor<T extends Function> {
 	}
 
 	// Internal method to chain interceptors for request or response handling
-	protected async chain(data: any): Promise<void> {
+	protected async chain(...args: any[]): Promise<void> {
 		for (const func of this.funcs) {
-			await func(data);
+			await func(...args);
 		}
 	}
 }
@@ -42,7 +54,7 @@ export class CrmFetchResponseInterceptor extends CrmFetchInterceptor<CrmFetchRes
 	}
 }
 export class CrmFetchErrorInterceptor extends CrmFetchInterceptor<CrmFetchErroreInterceptorFunction> {
-	async handle(e: Error): Promise<void> {
-		await this.chain(e);
+	async handle(e: Error, request: Request, requestPayload: ModulePostPayload | undefined, response: Response | null): Promise<void> {
+		await this.chain(e, request, requestPayload, response);
 	}
 }

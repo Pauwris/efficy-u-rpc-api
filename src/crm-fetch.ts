@@ -1,6 +1,6 @@
 import { CrmEnv } from "./crm-env.js";
 import { isJsonApiErrorNode, isJsonApiResponse } from "./dataguards.js";
-import { JsonApiErrorNode, QueryStringArgs } from "./types.js";
+import { JsonApiErrorNode, ModulePostPayload, QueryStringArgs } from "./types.js";
 
 export class CrmFetch {
 	protected name = "CrmFetch";
@@ -51,7 +51,7 @@ export class CrmFetch {
 		this.fetchOptions.method = method;
 	}
 
-	protected async crmfetch(requestUrl: string, requestOptions?: RequestInit, isRetry: boolean = false): Promise<object> {
+	protected async crmfetch(requestUrl: string, requestPayload?: ModulePostPayload, requestOptions?: RequestInit, isRetry: boolean = false): Promise<object> {
 		let response: Response | null = null;
 		let responseBody: string = "";
 		let responseObject: object = {};
@@ -78,11 +78,15 @@ export class CrmFetch {
 			responseObject = JSON.parse(responseBody || "[]");
 			this._lastResponseObject = responseObject;
 			if (!response.ok && response.status !== 401) {
-				throw new Error(`Fetch request failed with status code: ${response.status}`);
+				throw new Error(`Fetch request failed with status code: ${response.status}`)
 			}
+		} catch(e) {
+			await this.crmEnv.interceptors.onError.handle(e, request, requestPayload, response);
+			throw e;
 		} finally {
 			if (this.crmEnv.useFetchQueue) fetchQueue.finished();
 		}
+
 
 		const crmException = this.getCrmException(responseObject);
 
@@ -104,11 +108,11 @@ export class CrmFetch {
 
 		if (couldBeExpiredSession && this.crmEnv.retryWithNewSession && isRetry === false) {
 			this.crmEnv.clearCookies();
-			return this.crmfetch(requestUrl, requestOptions, true);
+			return this.crmfetch(requestUrl, requestPayload, requestOptions, true);
 		}
 
 		if (crmException) {
-			await this.crmEnv.interceptors.onError.handle(crmException.error);
+			await this.crmEnv.interceptors.onError.handle(crmException.error, request, requestPayload, response);
 			throw new Error(crmException.toString());
 		}
 

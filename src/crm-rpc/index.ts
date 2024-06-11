@@ -89,7 +89,7 @@ export class JsonRpcApi extends CrmFetch {
             body: JSON.stringify(requestObject)
         }
 
-		const response: object = await this.crmfetch(requestUrl, requestOptions)
+		const response: object = await this.crmfetch(requestUrl, requestObject, requestOptions)
 
 		if (Array.isArray(response)) {
 			response.forEach(item => {

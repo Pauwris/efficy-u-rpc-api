@@ -1,4 +1,4 @@
-import { CrmApi, CrmEnv, CrmEnvConfig, CrmNode, CrmRpc, EntitySearch, GetSearchResultPayload, ListSummaryPayload, QueryStringArgs, UnityKey } from '../build/efficy-u-rpc-api-bundle.js'
+import { CrmApi, CrmEnv, CrmEnvConfig, CrmNode, CrmRpc, EntitySearch, GetSearchResultPayload, JSONPrimitiveRecord, ListSummaryPayload, ModulePostPayload, QueryStringArgs, UnityKey } from '../build/efficy-u-rpc-api-bundle.js'
 
 import test from 'ava';
 import process from 'process';
@@ -104,14 +104,17 @@ test('CrmRpc: Session clear', async (t) => {
 	t.notDeepEqual(sessionCookie1 === sessionCookie2, "clearCookies")
 });
 
+// CFT-2024-356235 - A RPC JSON request with an invalid reference value results into a 500 internal server error
 test('CrmRpc: invoke a 500 internal server error', async (t) => {
 	let errorMsg = "";
+	let requestObject: any;
 
 	const crm = new CrmRpc(crmEnv);
-	const cont = crm.openEditObject("Cont", contKeyMe);
-	cont.updateDetail("Comp", compKeyEfficy, {
-		"contcompDepartment": "F&A"
+	crmEnv.interceptors.onError.use(async(e: Error, request: Request, requestPayload: ModulePostPayload | undefined, response: Response | null) => {
+		if (requestPayload && typeof requestPayload === "object") requestObject = requestPayload;
 	})
+	const cont = crm.openEditObject("Cont", contKeyMe);
+	cont.updateField("contLanguage", "fake_code")
 	cont.commitChanges();
 
 	try {
@@ -121,6 +124,7 @@ test('CrmRpc: invoke a 500 internal server error', async (t) => {
 	}
 
 	t.deepEqual(errorMsg,"Fetch request failed with status code: 500", "catch_500")
+	t.deepEqual(requestObject[0]["@name"], "edit")
 });
 
 test('CrmRpc: Settings and session properties', async (t) => {
@@ -150,7 +154,7 @@ test('CrmRpc: Interceptors', async (t) => {
 	myCrmEnv.interceptors.onPositiveResponse.use(async(response: Response) => {
 		onResponseCustomHeader = response.headers.get("x-efficy-status") ?? "";
 	})
-	myCrmEnv.interceptors.onError.use(async(e: Error) => {
+	myCrmEnv.interceptors.onError.use(async(e: Error, request: Request, requestPayload: ModulePostPayload | undefined, response: Response | null) => {
 		onErrorEx = e;
 	})
 
@@ -177,6 +181,9 @@ test('CrmRpc: Interceptors', async (t) => {
 
 	t.deepEqual(onRequestUrlOrigin, "", "onRequest interceptor disabled");
 	t.assert(onErrorEx?.message.includes("Invalid object name 'fakeTable'"), "onError interceptor");
+
+	crm
+
 });
 
 test('CrmRpc: Multiple queries', async (t) => {
@@ -239,7 +246,7 @@ test('CrmRpc: Consult operations', async (t) => {
 });
 
 
-test.only('CrmRpc: Edit operations', async (t) => {
+test('CrmRpc: Edit operations', async (t) => {
 	const crm = new CrmRpc(crmEnv);
 
 	const userList = crm.getUserList();

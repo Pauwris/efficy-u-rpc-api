@@ -60,6 +60,6 @@ export class CrmNode extends CrmFetch {
 			this.fetchOptions.method = "GET"
 		}
 
-		return await this.crmfetch(requestUrl, requestOptions);
+		return await this.crmfetch(requestUrl, payload, requestOptions);
 	}
 }

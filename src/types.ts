@@ -47,7 +47,7 @@ export interface CrmFetchResponseInterceptorFunction {
 	(response: Response): Promise<void>
 }
 export interface CrmFetchErroreInterceptorFunction {
-	(e: Error): Promise<void>
+	(e: Error, request: Request, requestPayload: ModulePostPayload | undefined, response: Response | null): Promise<void>
 }
 
 export * from "./crm-api/types"
