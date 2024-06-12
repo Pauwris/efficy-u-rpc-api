@@ -1,9 +1,10 @@
 import { isJsonApiResponse } from '../dataguards.js';
 import { CrmEnv } from '../crm-env.js';
 import { CrmFetch } from '../crm-fetch.js';
-import { CustomDatasetPayloads, GetSearchResultPayload, JsonApiResponse, ListSummaryPayload, ListSummaryResponse, ModulePostPayload, QueryStringArgs } from '../types.js';
+import { ClearCachesDataResponse, CustomDatasetPayloads, GetSearchResultPayload, JsonApiResponse, ListSummaryPayload, ListSummaryResponse, ModulePostPayload, QueryStringArgs } from '../types.js';
 
 import searchGlobalService from "./service/search.js";
+import { CrmRpc } from '@/crm-rpc/index.js';
 
 /**
  * Efficy SDK build around crm JSON web requests with endpoints such as "crm/query", "crm/global-search" and "crm/save".
@@ -14,6 +15,15 @@ export class CrmApi extends CrmFetch {
 		super(crmEnv);
         this.name = "CrmApi";
 	}
+
+    /**
+     * Some operations cannot create their own session (e.g. systemClearCaches), hence this explicit logon
+     */
+    async logon() {
+        const crmRpc = new CrmRpc(this.crmEnv);
+        crmRpc.currentDatabaseAlias;
+        await crmRpc.executeBatch();
+    }
 
     /**
      * Global elastic search in Efficy, with various filtering options
@@ -66,6 +76,16 @@ export class CrmApi extends CrmFetch {
         return await this.crmPostData<ListSummaryResponse<T>>("query", payload, urlQueryStrings);
     }
 
+    /**
+     * Refresh the Crm server cache. Useful after modifying security or reference values. Requires an active session.
+     * @example
+     * const crmApi = new CrmApi(crmEnv);
+     * await crmApi.logon(); // Makes sure there is an active session
+     * const result = await crmApi.clearServerCaches();
+     */
+    async systemClearCaches(): Promise<ClearCachesDataResponse> {
+        return await this.crmGetData<ClearCachesDataResponse>("system/clearCaches");
+    }
 
     crmGetData = async <R>(crmPath: string, payload?: QueryStringArgs): Promise<R> =>
         (await this.crmGet<JsonApiResponse<R>>(crmPath, payload)).data;

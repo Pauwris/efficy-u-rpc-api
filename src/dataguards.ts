@@ -6,10 +6,8 @@ export function isRPCNamedOperation(obj: any): obj is RpcNamedOperation {
 
 export function isJsonApiResponse(response: any): response is JsonApiResponse {
     return (
-        typeof response === 'object' &&	response !== null && 
-        typeof response.data === 'object' &&
-        Array.isArray(response.errors) &&
-        Array.isArray(response.status)
+        typeof response === 'object' &&	response !== null &&
+        typeof response.data === 'object'
     );
 }
 

@@ -12,13 +12,16 @@ export interface ListSummaryPayload {
 }
 
 export type ListSummaryResponse<T = unknown> = ListSummaryServerResponse<T>
-
 export interface ListSummaryServerResponse<T = unknown> {
-    errors?: ListSummaryError[];
+    errors?: ApiError[];
     list: T[];
 }
 
-export interface ListSummaryError {
+export interface ClearCachesDataResponse {
+    message: string
+}
+
+export interface ApiError {
     detail: string;
     extra: string;
     id: string;

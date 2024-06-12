@@ -164,7 +164,7 @@ export class CrmFetch {
 		} else if (typeof resp === "object" && resp["error"] === true) {
 			const err = resp;
 			return new CrmException(err.message ?? err.errorstring, err.code ?? err.errorcode, err.detail);
-		} else if (isJsonApiResponse(resp) && resp["errors"].length > 0 && isJsonApiErrorNode(resp["errors"][0])) {
+		} else if (isJsonApiResponse(resp) && Array.isArray(resp["errors"]) && resp["errors"].length > 0 && isJsonApiErrorNode(resp["errors"][0])) {
 			const [err] = resp["errors"];
 			return CrmException.fromJsonApiErrorNode(err);
 		}

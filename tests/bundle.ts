@@ -395,6 +395,15 @@ test('CrmApi: listSummary Company', async t => {
 	}
 });
 
+test('CrmApi: systemClearCaches', async t => {
+	const crmApi = new CrmApi(crmEnv);
+	await crmApi.logon();
+	const result = await crmApi.systemClearCaches();
+	console.log(result.message)
+
+	t.deepEqual(result.message, "Caches cleared")
+});
+
 test('CrmNode: POST json echo', async t => {
 	const crm = new CrmNode(crmEnv);
 
