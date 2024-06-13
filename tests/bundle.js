@@ -313,12 +313,13 @@ test('CrmApi: listSummary Company', async (t) => {
         console.error(ex);
     }
 });
-test('CrmApi: systemClearCaches', async (t) => {
+test('CrmApi: system', async (t) => {
     const crmApi = new CrmApi(crmEnv);
     await crmApi.logon();
     const result = await crmApi.systemClearCaches();
-    console.log(result.message);
     t.deepEqual(result.message, "Caches cleared");
+    const references = await crmApi.systemReference(true);
+    t.deepEqual(references.references["00010EZE000009h9"].refCode, "DOC");
 });
 test('CrmNode: POST json echo', async (t) => {
     const crm = new CrmNode(crmEnv);

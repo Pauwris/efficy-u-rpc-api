@@ -1,7 +1,7 @@
 import { isJsonApiResponse } from '../dataguards.js';
 import { CrmEnv } from '../crm-env.js';
 import { CrmFetch } from '../crm-fetch.js';
-import { ClearCachesDataResponse, CustomDatasetPayloads, GetSearchResultPayload, JsonApiResponse, ListSummaryPayload, ListSummaryResponse, ModulePostPayload, QueryStringArgs } from '../types.js';
+import { SystemClearCachesDataResponse, CustomDatasetPayloads, GetSearchResultPayload, JsonApiResponse, ListSummaryPayload, ListSummaryResponse, ModulePostPayload, QueryStringArgs, SystemCachesDataResponse } from '../types.js';
 
 import searchGlobalService from "./service/search.js";
 import { CrmRpc } from '@/crm-rpc/index.js';
@@ -83,8 +83,20 @@ export class CrmApi extends CrmFetch {
      * await crmApi.logon(); // Makes sure there is an active session
      * const result = await crmApi.clearServerCaches();
      */
-    async systemClearCaches(): Promise<ClearCachesDataResponse> {
-        return await this.crmGetData<ClearCachesDataResponse>("system/clearCaches");
+    async systemClearCaches(): Promise<SystemClearCachesDataResponse> {
+        return await this.crmGetData<SystemClearCachesDataResponse>("system/clearCaches");
+    }
+    /**
+     * Get an optionally refresh the Crm reference cache. Requires an active session.
+     * @example
+     * const crmApi = new CrmApi(crmEnv);
+     * await crmApi.logon(); // Makes sure there is an active session
+     * const references = await crmApi.systemReference(false);
+     */
+    async systemReference(noCache: boolean): Promise<SystemCachesDataResponse> {
+        return await this.crmGetData<SystemCachesDataResponse>("system/reference?nocache=", {
+            nocache: noCache ? "T" : undefined
+        });
     }
 
     crmGetData = async <R>(crmPath: string, payload?: QueryStringArgs): Promise<R> =>

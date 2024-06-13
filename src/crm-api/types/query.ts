@@ -17,10 +17,6 @@ export interface ListSummaryServerResponse<T = unknown> {
     list: T[];
 }
 
-export interface ClearCachesDataResponse {
-    message: string
-}
-
 export interface ApiError {
     detail: string;
     extra: string;
