@@ -95,7 +95,7 @@ export class CrmApi extends CrmFetch {
      */
     async systemReference(noCache: boolean): Promise<SystemCachesDataResponse> {
         return await this.crmGetData<SystemCachesDataResponse>("system/reference?nocache=", {
-            nocache: noCache ? "T" : undefined
+            nocache: noCache ? "true" : undefined
         });
     }
 
