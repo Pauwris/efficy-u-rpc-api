@@ -104,6 +104,7 @@ export class CrmFetch {
 			|| crmException?.message.includes("This operation requires a Database Connection")
 			|| crmException?.message.includes("Invalid User")
 			|| crmException?.message.includes("You do not have the right to perform this operation")
+			|| crmException?.message.includes("RetrieveUsersList: Please Logon to Database") // Enterprise only
 		)
 
 		if (couldBeExpiredSession && this.crmEnv.retryWithNewSession && isRetry === false) {
