@@ -75,8 +75,12 @@ export class CrmFetch {
 			response = await globalThis.fetch(request);
 			responseBody = await response.text();
 			responseStatusCode = response.status;
-			responseObject = JSON.parse(responseBody || "[]");
-			this._lastResponseObject = responseObject;
+			try {
+				responseObject = JSON.parse(responseBody || "[]");
+				this._lastResponseObject = responseObject;
+			} catch(e) {
+				// Ignore JSON parsing errors
+			}
 			if (!response.ok && response.status !== 401) {
 				throw new Error(`Fetch request failed with status code: ${response.status}`)
 			}
