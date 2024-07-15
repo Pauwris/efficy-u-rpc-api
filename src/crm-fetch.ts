@@ -106,7 +106,9 @@ export class CrmFetch {
 		const couldBeExpiredSession = (
 			responseStatusCode === 401
 			|| crmException?.detail === "FRMK-2612"  // Efficy U 1.0
-			|| crmException?.message.includes("This operation requires a Database Connection")
+			|| crmException?.detail === "CORE-1243"
+            || crmException?.message.includes("This operation requires a Database Connection")
+            || crmException?.message.includes("You aren't authorized to execute this query")
 			|| crmException?.message.includes("Invalid User")
 			|| crmException?.message.includes("You do not have the right to perform this operation")
 			|| crmException?.message.includes("Session timeout") // Efficy U 1.0
