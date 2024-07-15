@@ -73,8 +73,8 @@ export class CrmFetch {
 		try {
 			if (this.crmEnv.useFetchQueue) await fetchQueue.waitMyTurn();
 			response = await globalThis.fetch(request);
-			responseBody = await response.text();
 			responseStatusCode = response.status;
+			responseBody = await response.text();
 			try {
 				responseObject = JSON.parse(responseBody || "[]");
 				this._lastResponseObject = responseObject;
@@ -108,6 +108,8 @@ export class CrmFetch {
 			|| crmException?.message.includes("This operation requires a Database Connection")
 			|| crmException?.message.includes("Invalid User")
 			|| crmException?.message.includes("You do not have the right to perform this operation")
+			|| crmException?.message.includes("EEfficyException - Session timeout") // Efficy U 1.0
+			|| crmException?.message.includes("FRMK-2612") // Efficy U 1.0
 			|| crmException?.message.includes("RetrieveUsersList: Please Logon to Database") // Enterprise only
 		)
 
