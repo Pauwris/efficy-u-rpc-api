@@ -12,7 +12,7 @@
 		"types": "./build/efficy-u-rpc-api-bundle.d.ts"
 	},
 	"scripts": {
-		"build": "npm run build-all",
+		"build": "npm run build-core",
 		"build:debug": "npm run build:js && npm run build:dts-es",
 		"build:clean": "rimraf build && rimraf docs",
 		"build:ts": "tsc",
@@ -22,7 +22,8 @@
 		"lint": "eslint . --no-fix --ignore-path .gitignore",
 		"watch": "tsc -w",
 		"test": "ava --timeout=45s",
-		"build-all": "npm run build:clean && npm run build:ts && npm run build:js && npm run build:dts-es && npm run build:docs",
+		"build-core": "rimraf build && npm run build:ts && npm run build:js && npm run build:dts-es",
+		"build-all": "rimraf build && rimraf docs && npm run build-core && npm run build:docs",
 		"pack": "npm pack --pack-destination pack/"
 	},
 	"version": "2.0.26",
