@@ -12,8 +12,8 @@ export class QuerySQLObject extends RemoteDataSet {
 		const api: JSONPrimitiveRecord = {
 			"@name": "executesqlquery",
 			"sql": this.sql,
-			"loadBlobs": this.loadBlobs,
-			"recordCount": this.recordCount,
+			"includeblobcontent": this.loadBlobs,
+			"recordcount": this.recordCount,
 		}
 
 		if (Array.isArray(this.queryParams)) {
@@ -31,7 +31,7 @@ export class QuerySQLObject extends RemoteDataSet {
 }
 
 export class QueryObject extends RemoteDataSet {
-	
+
 	constructor(remoteAPI: JsonRpcApi, private key?: UnityKey, private master?: number, private detail?: number, private queryParams: string[] = [], private loadBlobs = false, private recordCount = 0) {
 		super(remoteAPI);
 	}
@@ -39,8 +39,8 @@ export class QueryObject extends RemoteDataSet {
 	protected asJsonRpc(): RpcNamedOperation {
 		const api: JSONPrimitiveRecord = {
 			"@name": "query",
-			"loadBlobs": this.loadBlobs,
-			"recordCount": this.recordCount
+			"includeblobcontent": this.loadBlobs,
+			"recordcount": this.recordCount
 		}
 
 		api.key = this.key;
@@ -56,7 +56,7 @@ export class QueryObject extends RemoteDataSet {
 			"@name": "api",
 			"@func": [api]
 		};
-		
+
 		return requestObject;
 	}
 }

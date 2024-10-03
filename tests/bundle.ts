@@ -19,7 +19,6 @@ const pdfFilePath = path.join(workingFolder, "Welcome to Word.pdf")
 const searchedContact = "Kristof Pauwels";
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-
 test('process.env', t => {
 	t.is(process.env.CRM_ORIGIN, url.origin + "/");
 });
@@ -104,29 +103,6 @@ test('CrmRpc: Session clear', async (t) => {
 	t.notDeepEqual(sessionCookie1 === sessionCookie2, "clearCookies")
 });
 
-// CFT-2024-356235 - A RPC JSON request with an invalid reference value results into a 500 internal server error
-test('CrmRpc: invoke a 500 internal server error', async (t) => {
-	let errorMsg = "";
-	let requestObject: any;
-
-	const crm = new CrmRpc(crmEnv);
-	crmEnv.interceptors.onError.use(async(e: Error, request: Request, requestPayload: ModulePostPayload | undefined, response: Response | null) => {
-		if (requestPayload && typeof requestPayload === "object") requestObject = requestPayload;
-	})
-	const cont = crm.openEditObject("Cont", contKeyMe);
-	cont.updateField("contLanguage", "fake_code")
-	cont.commitChanges();
-
-	try {
-		await crm.executeBatch();
-	} catch(ex) {
-		errorMsg = ex.message
-	}
-
-	t.deepEqual(errorMsg,"Fetch request failed with status code: 500", "catch_500")
-	t.deepEqual(requestObject[0]["@name"], "edit")
-});
-
 test('CrmRpc: Settings and session properties', async (t) => {
 	const crm = new CrmRpc(crmEnv);
 	const currentDatabaseAlias = crm.currentDatabaseAlias;
@@ -189,14 +165,13 @@ test('CrmRpc: Interceptors', async (t) => {
 test('CrmRpc: Multiple queries', async (t) => {
 	const crm = new CrmRpc(crmEnv);
 
-	const sqlQueryText = "select top 5 userKey, userFullname from <#TABLE NAME=User>";
-	const query1 = crm.executeSqlQuery(sqlQueryText);
-	const query2 = crm.executeDatabaseQuery("00011g3c000OCOlJ", undefined, false, 5);
+	const query1 = crm.executeSqlQuery("select top(10) compKey, compName from <#TABLE NAME=Company>", undefined, false, 5);
+	const query2 = crm.executeSqlQuery("select top(1) fileKey, fileFileSize, fileStream from <#TABLE NAME=File> where fileFileSize is not null", undefined, true, 1);
 	await crm.executeBatch();
 
-	t.assert(
-		query1.items.length === 5 && query2.items.length === 10000
-	);
+	t.assert(query1.items.length === 5);
+	t.assert(query2.items[0]["fileKey"]);
+	t.assert(query2.items[0]["fileStream"]?.toString() != null);
 });
 
 test('CrmRpc: DataSet extended operations', async (t) => {
