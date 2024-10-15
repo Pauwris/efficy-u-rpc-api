@@ -7,6 +7,7 @@ export class CrmFetch {
 	protected sessionId?: string;
 	protected requestCounter: number = 0;
 	private _lastResponseObject: object | null = null;
+	private _lastResponseStatus: number = 0;
 
 	constructor(public crmEnv = new CrmEnv()) {
 		this.setFetchOptions();
@@ -22,6 +23,9 @@ export class CrmFetch {
 
 	get lastResponseObject() {
 		return this._lastResponseObject;
+	}
+	get lastResponseStatus() {
+		return this._lastResponseStatus;
 	}
 
 	protected setFetchOptions() {
@@ -78,6 +82,7 @@ export class CrmFetch {
 			try {
 				responseObject = JSON.parse(responseBody || "[]");
 				this._lastResponseObject = responseObject;
+				this._lastResponseStatus = responseStatusCode;
 			} catch(e) {
 				// Ignore JSON parsing errors
 			}
