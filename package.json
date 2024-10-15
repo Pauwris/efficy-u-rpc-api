@@ -26,7 +26,7 @@
 		"build-all": "rimraf build && rimraf docs && npm run build-core && npm run build:docs",
 		"pack": "npm pack --pack-destination pack/"
 	},
-	"version": "2.0.28",
+	"version": "2.0.29",
 	"homepage": "https://github.com/Pauwris/efficy-u-rpc-api#readme",
 	"keywords": [
 		"Efficy",
