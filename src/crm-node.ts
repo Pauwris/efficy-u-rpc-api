@@ -1,5 +1,6 @@
 import { CrmEnv } from "./crm-env";
 import { CrmFetch } from "./crm-fetch";
+import { isJsonApiResponse } from "./dataguards";
 import { ModulePostPayload, QueryStringArgs } from "./types";
 
 /**
@@ -9,6 +10,25 @@ export class CrmNode extends CrmFetch {
 	constructor(public crmEnv = new CrmEnv()) {
 		super(crmEnv)
 		this.name = "CrmNode";
+	}
+
+	/**
+	 *
+	 * @param nodePath The node path without the "/crm/node/"" prefix, e.g. "echo"
+	 * @param payload
+	 * @param queryStringArgs
+	 * @example
+	 * const payload = {msg: "Hello, this is a unit test!"};
+	 * const result = await crm.crmNodeData<EchoResponse>("echo", payload);
+	 */
+	async crmNodeData<R>(nodePath: string, payload?: ModulePostPayload, queryStringArgs?: QueryStringArgs): Promise<R> {
+		const response: object = await this.crmNode(nodePath, payload, queryStringArgs);
+
+		if (isJsonApiResponse(response)) {
+			return response.data as R;
+		} else {
+			throw new Error(`${this.name}.crmNode::unexpected response`);
+		}
 	}
 
 	/**
