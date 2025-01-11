@@ -21,6 +21,7 @@ export interface JsonApiErrorNode {
 }
 
 export interface CrmEnvConfig {
+	id?: string
 	url?: string;
 	customer?: string;
 	apiKey?: string;

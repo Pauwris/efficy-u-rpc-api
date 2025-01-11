@@ -7,6 +7,7 @@ import { Cookie, CrmEnvConfig } from "./types";
 export class CrmEnv {
 	private name = "CrmEnv";
 
+	id?: string
 	url?: string;
 	customer?: string;
 	apiKey?: string;
@@ -37,6 +38,7 @@ export class CrmEnv {
 	 * @param env The definition object of the targeted CRM environment.
 	 */
 	setEnv(env: CrmEnvConfig): void {
+		this.id = env.id
 		this.url = env.url || "";
 		this.customer = env.customer || "";
 
