@@ -118,6 +118,7 @@ export class CrmFetch {
 			|| crmException?.message.includes("You do not have the right to perform this operation")
 			|| crmException?.message.includes("Session timeout") // Efficy U 1.0
 			|| crmException?.message.includes("RetrieveUsersList: Please Logon to Database") // Enterprise only
+			|| crmException?.message.includes("The CRM Session is not active, please log in first") // Maxo 2.0
 		)
 
 		if (couldBeExpiredSession && this.crmEnv.retryWithNewSession && isRetry === false) {
