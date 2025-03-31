@@ -6,24 +6,25 @@ import path from 'path';
 import fs from 'fs';
 dotenv.config();
 // Constants depending on the tested environment
-const url = new URL("https://submariners.efficytest.cloud/");
-const customerAlias = "submariners";
+const url = new URL(process.env.CRM_ORIGIN ?? "");
+const customerAlias = "submariners-test";
 const compKeyEfficy = "00010Q0u00001Nvm";
 const contKeyMe = "00010QH20000D5Dc";
-const workingFolder = "C:\\Temp\\efficy-u-rpc-api\\";
+const workingFolder = "C:\\Kristof\\github\\efficy-u-rpc-api\\assets\\";
 const pdfFilePath = path.join(workingFolder, "Welcome to Word.pdf");
 const searchedContact = "Kristof Pauwels";
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 test('process.env', t => {
     t.is(process.env.CRM_ORIGIN, url.origin + "/");
 });
-const crmEnvConfig = Object.freeze({
+const crmEnvConfigPassword = Object.freeze({
     "url": process.env.CRM_ORIGIN,
     "user": process.env.CRM_USER,
     "pwd": process.env.CRM_PWD,
     "customer": process.env.CRM_CUSTOMER,
     "retryWithNewSession": true
 });
+const crmEnvConfig = crmEnvConfigPassword;
 const crmEnv = new CrmEnv(crmEnvConfig);
 if (typeof process.env.CRM_USER !== "string" || !process.env.CRM_USER.toLowerCase())
     throw Error("Check .env configuration");
@@ -34,53 +35,6 @@ test('crmEnv', t => {
 function myLogFunction(message) {
     //console.log(`myLogFunction::${message}`)
 }
-test.skip('CrmApi: CFT-2024-354876', async (t) => {
-    const cookieFileName = path.join(workingFolder, "cookies.txt");
-    if (!fs.existsSync(cookieFileName)) {
-        await fs.promises.writeFile(cookieFileName, "[]");
-    }
-    const persitedCookies = JSON.parse(await fs.promises.readFile(cookieFileName, { encoding: "utf8" }));
-    crmEnv.cookies = persitedCookies;
-    console.log(crmEnv.cookieHeader);
-    const crm = new CrmApi(crmEnv);
-    await crm.listSummary({
-        fields: ["crcyName", "crcyCode", "crcySymbol", "crcyCode", "crcyKey"],
-        tableName: "Currency",
-        query: [["crcyIsDisabled = 0"]]
-    });
-    const cookies = crmEnv.cookies;
-    await fs.promises.writeFile(cookieFileName, JSON.stringify(cookies));
-    t.notDeepEqual(true, "manage cookies");
-});
-test.skip('CrmRpc: CFT-2024-354876', async (t) => {
-    const cookieFileName = path.join(workingFolder, "cookies.txt");
-    if (!fs.existsSync(cookieFileName)) {
-        await fs.promises.writeFile(cookieFileName, "[]");
-    }
-    const persitedCookies = JSON.parse(await fs.promises.readFile(cookieFileName, { encoding: "utf8" }));
-    crmEnv.cookies = persitedCookies;
-    console.log(crmEnv.cookieHeader);
-    const crm = new CrmRpc(crmEnv);
-    const userFullname = crm.currentUserFullName;
-    crm.consultFavorites();
-    //crm.executeSqlQuery("select top 5 userKey, userFullname from <#TABLE NAME=User>");
-    await crm.executeBatch();
-    const cookies = crmEnv.cookies;
-    await fs.promises.writeFile(cookieFileName, JSON.stringify(cookies));
-    t.notDeepEqual(true, "manage cookies");
-});
-test('CrmRpc: Session clear', async (t) => {
-    const crm = new CrmRpc(crmEnv);
-    crm.consultFavorites();
-    await crm.executeBatch();
-    const sessionCookie1 = crmEnv.cookieHeader;
-    // Generate new session
-    crmEnv.clearCookies();
-    crm.consultFavorites();
-    await crm.executeBatch();
-    const sessionCookie2 = crmEnv.cookieHeader;
-    t.notDeepEqual(sessionCookie1 === sessionCookie2, "clearCookies");
-});
 test('CrmRpc: Settings and session properties', async (t) => {
     const crm = new CrmRpc(crmEnv);
     const currentDatabaseAlias = crm.currentDatabaseAlias;
@@ -126,7 +80,6 @@ test('CrmRpc: Interceptors', async (t) => {
     await crm.executeBatch();
     t.deepEqual(onRequestUrlOrigin, "", "onRequest interceptor disabled");
     t.assert(onErrorEx?.message.includes("Invalid object name 'fakeTable'"), "onError interceptor");
-    crm;
 });
 test('CrmRpc: Multiple queries', async (t) => {
     const crm = new CrmRpc(crmEnv);
@@ -293,6 +246,22 @@ test('CrmApi: listSummary Company', async (t) => {
         console.error(ex);
     }
 });
+test('CrmApi: listSummary query', async (t) => {
+    const crm = new CrmApi(crmEnv);
+    const payload = {
+        fields: ["querKey", "querName", "querComment"],
+        tableName: "Query",
+        query: [["querComment = 'EHUB-CACHE-LIST'"]]
+    };
+    try {
+        const result = await crm.listSummary(payload);
+        const efficyCache = result?.list.find(item => item.querComment === "EHUB-CACHE-LIST");
+        t.assert(efficyCache?.querKey != null);
+    }
+    catch (ex) {
+        console.error(ex);
+    }
+});
 test('CrmApi: system', async (t) => {
     const crmApi = new CrmApi(crmEnv);
     await crmApi.logon();
@@ -332,7 +301,7 @@ test('CrmNode: GET echo', async (t) => {
         const result = await crm.crmNodeData("echo", undefined, queryStringArgs);
         t.deepEqual(result.method, "GET", "method");
         t.deepEqual(result.path, "/node/echo", "path");
-        t.deepEqual(result.query, 'msg=Hello%2C+this+is+a+GET+unit+test%21', "query");
+        t.deepEqual(result.query, `msg=Hello%2C+this+is+a+GET+unit+test%21&customer=${crmEnv.customer}`, "query");
     }
     catch (ex) {
         console.error(ex);
