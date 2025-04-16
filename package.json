@@ -21,7 +21,7 @@
 		"build:docs": "npx typedoc src/index.ts",
 		"lint": "eslint . --no-fix --ignore-path .gitignore",
 		"watch": "tsc -w",
-		"test": "ava --timeout=45s",
+		"test": "ava --serial --timeout=45s",
 		"build-core": "rimraf build && npm run build:ts && npm run build:js && npm run build:dts-es",
 		"build-all": "rimraf build && rimraf docs && npm run build-core && npm run build:docs",
 		"pack": "npm pack --pack-destination pack/"

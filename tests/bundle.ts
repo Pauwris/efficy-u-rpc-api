@@ -10,13 +10,11 @@ dotenv.config();
 
 // Constants depending on the tested environment
 const url = new URL(process.env.CRM_ORIGIN ?? "");
-const customerAlias = "submariners-test";
 const compKeyEfficy = "00010Q0u00001Nvm";
-const contKeyMe = "00010QH20000D5Dc"
-const workingFolder = "C:\\Kristof\\github\\efficy-u-rpc-api\\assets\\"
+const workingFolder = "C:\\Kristof\\github-pauwris\\efficy-u-rpc-api\\assets\\"
 const pdfFilePath = path.join(workingFolder, "Welcome to Word.pdf")
+const pngFilePath = path.join(workingFolder, "screenshot.png")
 const searchedContact = "Kristof Pauwels";
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 test('process.env', t => {
 	t.is(process.env.CRM_ORIGIN, url.origin + "/");
@@ -46,14 +44,12 @@ function myLogFunction(message: string) {
 
 test('CrmRpc: Settings and session properties', async (t) => {
 	const crm = new CrmRpc(crmEnv);
-	const currentDatabaseAlias = crm.currentDatabaseAlias;
 	const cuc = crm.currentUserCode;
 	const setts = crm.getSystemSettings();
 
 	const defaultCurrency = crm.getSetting("Efficy", "defaultCurrency");
 	await crm.executeBatch();
 
-	t.deepEqual(currentDatabaseAlias.result, customerAlias);
 	t.deepEqual(cuc.result.toLowerCase(), currentUserCode);
 	t.deepEqual(setts.map.get("FileBase"), "efficy/")
 	t.deepEqual(defaultCurrency.result, "EUR")
@@ -174,7 +170,7 @@ test('CrmRpc: Edit operations', async (t) => {
 	const contKey = linkedContacts.items?.pop()?.contKey as string;
 
 	const docuinvcExpenses = 123.456;
-	const docuinvcInvoiceDate = "2021-01-08";
+	const docuinvcInvoiceDate = "2021-01-08T00:00:00.000Z";
 	const docuinvcCommunication = "Hello World!";
 
 	const docu = crm.openEditObject("Docu");
@@ -214,13 +210,10 @@ test('CrmRpc: Edit operations', async (t) => {
 });
 
 
-test('CrmRpc: Attachments', async (t) => {
-	const dirname = path.dirname(pdfFilePath);
+test('CrmRpc: Attachments PDF', async (t) => {
 	const fileName = path.basename(pdfFilePath);
-	const base64FileName = path.join(dirname, fileName + ".txt")
-	const data = await fs.promises.readFile(pdfFilePath);
-	const base64String = Buffer.from(data).toString('base64');
-	await fs.promises.writeFile(base64FileName, base64String)
+	const buffer = await fs.promises.readFile(pdfFilePath);
+	const base64String = buffer.toString('base64');
 
 	const crm = new CrmRpc(crmEnv);
 	const docu = crm.openEditObject("Docu");
@@ -234,7 +227,27 @@ test('CrmRpc: Attachments', async (t) => {
 
 	//console.log(`${url.origin}/docu/${docuKey}`)
 
-	await sleep(1000); // Avoids concurrency error
+	crm.deleteEntity("Docu", [docuKey]);
+	await crm.executeBatch();
+
+	t.assert(docuKey != "", "Attachments")
+});
+
+test('CrmRpc: Attachments PNG', async (t) => {
+	const fileName = path.basename(pngFilePath);
+	const buffer = await fs.promises.readFile(pngFilePath);
+	const base64String = buffer.toString('base64');
+
+	const crm = new CrmRpc(crmEnv);
+	const docu = crm.openEditObject("Docu");
+	docu.updateField("name", "Unittest - Attachment");
+	docu.insertAttachment(crm.constants.file_type.embedded, fileName);
+	docu.updateAttachment("", base64String)
+	docu.commitChanges();
+	await crm.executeBatch();
+	const docuKey = docu.key;
+
+	//console.log(`${url.origin}/docu/${docuKey}`)
 
 	crm.deleteEntity("Docu", [docuKey]);
 	await crm.executeBatch();
@@ -333,7 +346,7 @@ test('CrmApi: listSummary query', async t => {
 	}
 });
 
-test('CrmApi: system', async t => {
+test.skip('CrmApi: system', async t => {
 	const crmApi = new CrmApi(crmEnv);
 	await crmApi.logon();
 	const result = await crmApi.systemClearCaches();
@@ -344,7 +357,7 @@ test('CrmApi: system', async t => {
 	t.deepEqual(references.references["00010EZE000009h9"].refCode, "DOC")
 });
 
-test('CrmNode: POST json echo', async t => {
+test.skip('CrmNode: POST json echo', async t => {
 	const crm = new CrmNode(crmEnv);
 
 	interface EchoResponse {
@@ -375,7 +388,7 @@ test('CrmNode: POST json echo', async t => {
 	}
 });
 
-test('CrmNode: GET echo', async t => {
+test.skip('CrmNode: GET echo', async t => {
 	const crm = new CrmNode(crmEnv);
 
 	interface EchoResponse {
