@@ -18,8 +18,9 @@ export class CrmFetch {
 		headers: {
 			'Accept': 'application/json'
 		},
-		credentials: 'include' // Always send user credentials (cookies, basic http auth, etc..), even for cross-origin calls.
+		credentials:  undefined
 	}
+
 
 	get lastResponseObject() {
 		return this._lastResponseObject;
@@ -37,12 +38,17 @@ export class CrmFetch {
 			headers["X-Efficy-User"] = this.crmEnv.user;
 			headers["X-Efficy-Pwd"] = this.crmEnv.pwd;
 		}
+
 		if (this.crmEnv.logOff) {
 			headers["X-Efficy-Logoff"] = true;
 		}
 
 		if (this.crmEnv.useFetchQueue) {
 			FetchQueue.forceSequential = true;
+		}
+
+		if (this.crmEnv.useCookies) {
+			this.fetchOptions.credentials = "include";
 		}
 
 		this.fetchOptions.headers = headers;
@@ -64,7 +70,7 @@ export class CrmFetch {
 		const init: RequestInit = {};
 		Object.assign(init, this.fetchOptions, requestOptions);
 
-		if (this.crmEnv.cookieHeader) {
+		if (this.crmEnv.useCookies && this.crmEnv.cookieHeader) {
 			init.headers = {
 				"Cookie": this.crmEnv.cookieHeader
 			}
@@ -99,6 +105,7 @@ export class CrmFetch {
 
 		const crmException = this.getCrmException(responseObject);
 
+		// Capture returned cookies from the response, even if this.crmEnv.useCookies is false.
 		const cookieString = response.headers.get('set-cookie');
 		if (cookieString) {
 			const cookie = parseEfficyCookieString(cookieString);
@@ -107,13 +114,13 @@ export class CrmFetch {
 		}
 
 
-		// CFT-2024-354876
+		// The long list of possible errors that could be caused by an expired session.
 		const couldBeExpiredSession = (
 			responseStatusCode === 401
 			|| crmException?.detail === "FRMK-2612"  // Efficy U 1.0
 			|| crmException?.detail === "CORE-1243"
-            || crmException?.message.includes("This operation requires a Database Connection")
-            || crmException?.message.includes("You aren't authorized to execute this query")
+			|| crmException?.message.includes("This operation requires a Database Connection")
+      || crmException?.message.includes("You aren't authorized to execute this query")
 			|| crmException?.message.includes("Invalid User")
 			|| crmException?.message.includes("You do not have the right to perform this operation")
 			|| crmException?.message.includes("Session timeout") // Efficy U 1.0

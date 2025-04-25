@@ -20,15 +20,23 @@ test('process.env', t => {
 	t.is(process.env.CRM_ORIGIN, url.origin + "/");
 });
 
-const crmEnvConfigPassword = Object.freeze({
-	"url": process.env.CRM_ORIGIN,
-	"user": process.env.CRM_USER,
-	"pwd": process.env.CRM_PWD,
-	"customer": process.env.CRM_CUSTOMER,
-	"retryWithNewSession": true
-})
+const crmEnvConfigBasic: CrmEnvConfig = {
+	url: process.env.CRM_ORIGIN,
+	customer: process.env.CRM_CUSTOMER,
+	retryWithNewSession: true,
+	useCookies: false
+}
 
-const crmEnvConfig = crmEnvConfigPassword;
+const crmEnvConfigPassword = Object.freeze({...crmEnvConfigBasic, ...{
+	user: process.env.CRM_USER,
+	pwd: process.env.CRM_PWD,
+}})
+
+const crmEnvConfigApiKey = Object.freeze({...crmEnvConfigBasic, ...{
+	apiKey: process.env.CRM_APIKEY,
+}})
+
+const crmEnvConfig = crmEnvConfigPassword ?? crmEnvConfigApiKey;
 const crmEnv = new CrmEnv(crmEnvConfig)
 
 if (typeof process.env.CRM_USER !== "string" || !process.env.CRM_USER.toLowerCase()) throw Error("Check .env configuration")

@@ -18,6 +18,7 @@ export class CrmEnv {
 	logOff?: boolean
 	useFetchQueue?: boolean;
 	retryWithNewSession?: boolean;
+	useCookies?: boolean
 
 	/**
 	 * Creates a CrmEnv instance.
@@ -52,6 +53,7 @@ export class CrmEnv {
 		this.logOff = typeof env.logOff === "boolean" ? env.logOff : false;
 		this.useFetchQueue = typeof env.useFetchQueue === "boolean" ? env.useFetchQueue : false;
 		this.retryWithNewSession = typeof env.retryWithNewSession === "boolean" ? env.retryWithNewSession : false;
+		this.useCookies = typeof env.useCookies === "boolean" ? env.useCookies : true;
 
 		// Remove trailing slash from url
 		this.url = this.url.replace(/\/$/, "");

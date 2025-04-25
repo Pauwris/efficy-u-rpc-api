@@ -32,6 +32,7 @@ export interface CrmEnvConfig {
 	logOff?: boolean;
 	useFetchQueue?: boolean;
 	retryWithNewSession?: boolean;
+	useCookies?: boolean;
 }
 
 export interface Cookie {
