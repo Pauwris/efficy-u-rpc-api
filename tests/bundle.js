@@ -40,13 +40,15 @@ function myLogFunction(message) {
     //console.log(`myLogFunction::${message}`)
 }
 test('CrmUtils: parseRecordKey()', async (t) => {
-    const result = CrmUtils.parseRecordKey(compKeyEfficy);
-    if (!result)
+    const good = CrmUtils.parseRecordKey(compKeyEfficy);
+    if (!good)
         throw Error("parseRecordKey failed");
-    t.deepEqual(result.licenseCode, 1);
-    t.deepEqual(result.stblKTable, 100000);
-    t.deepEqual(result.stblName, 'Company');
-    t.assert(result.nextKey && result.nextKey > 0);
+    t.deepEqual(good.licenseCode, 1);
+    t.deepEqual(good.stblKTable, 100000);
+    t.deepEqual(good.stblName, 'Company');
+    t.assert(good.nextKey && good.nextKey > 0);
+    const failed1 = CrmUtils.parseRecordKey('123454');
+    t.deepEqual(failed1, null);
 });
 test('CrmRpc: Settings and session properties', async (t) => {
     const crm = new CrmRpc(crmEnv);
