@@ -42,6 +42,13 @@ export interface Cookie {
 	expires?: string;
 }
 
+export interface ParsedRecordKey {
+	licenseCode: number | null;
+	stblKTable: number | null;
+	stblName: string | null;
+	nextKey: number | null
+}
+
 export interface CrmFetchRequestInterceptorFunction {
 	(request: Request): Promise<void>
 }

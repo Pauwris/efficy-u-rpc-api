@@ -1,4 +1,4 @@
-import { CrmApi, CrmEnv, CrmNode, CrmRpc } from '../build/efficy-u-rpc-api-bundle.js';
+import { CrmApi, CrmEnv, CrmNode, CrmRpc, CrmUtils } from '../build/efficy-u-rpc-api-bundle.js';
 import test from 'ava';
 import process from 'process';
 import dotenv from 'dotenv';
@@ -39,6 +39,15 @@ test('crmEnv', t => {
 function myLogFunction(message) {
     //console.log(`myLogFunction::${message}`)
 }
+test('CrmUtils: parseRecordKey()', async (t) => {
+    const result = CrmUtils.parseRecordKey(compKeyEfficy);
+    if (!result)
+        throw Error("parseRecordKey failed");
+    t.deepEqual(result.licenseCode, 1);
+    t.deepEqual(result.stblKTable, 100000);
+    t.deepEqual(result.stblName, 'Company');
+    t.assert(result.nextKey && result.nextKey > 0);
+});
 test('CrmRpc: Settings and session properties', async (t) => {
     const crm = new CrmRpc(crmEnv);
     const cuc = crm.currentUserCode;

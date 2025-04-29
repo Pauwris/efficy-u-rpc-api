@@ -1,5 +1,6 @@
 export * as CrmTypes from "./types.js"
 export * as CrmDataGuards from "./dataguards.js"
+export * as CrmUtils from "./utils/index.js"
 export * from "./crm-env.js";
 export * from "./crm-node.js";
 export * from "./crm-api/index.js";
