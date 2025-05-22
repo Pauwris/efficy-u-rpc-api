@@ -134,8 +134,9 @@ export class CrmFetch {
 		}
 
 		if (crmException) {
-			await this.crmEnv.interceptors.onError.handle(crmException.error, request, requestPayload, response);
-			throw new Error(crmException.toString());
+			const e = crmException.error;
+			await this.crmEnv.interceptors.onError.handle(e, request, requestPayload, response);
+			throw e;
 		}
 
 		if (response) {
