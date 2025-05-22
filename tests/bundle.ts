@@ -354,12 +354,12 @@ test('CrmApi: listSummary query', async t => {
 	const payload: ListSummaryPayload = {
 		fields: ["querKey", "querName", "querComment"],
 		tableName: "Query",
-		query: [["querComment = 'EHUB-CACHE-LIST'"]]
+		query: [["querComment = 'ehubQueryList'"]]
 	};
 
 	try {
 		const result = await crm.listSummary<Query>(payload);
-		const efficyCache = result?.list.find(item => item.querComment === "EHUB-CACHE-LIST")
+		const efficyCache = result?.list.find(item => item.querComment === "ehubQueryList")
 
 		t.assert(efficyCache?.querKey != null)
 	} catch (ex) {
