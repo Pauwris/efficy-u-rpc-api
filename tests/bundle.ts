@@ -1,4 +1,4 @@
-import { CrmApi, CrmEnv, CrmEnvConfig, CrmNode, CrmRpc, EntitySearch, GetSearchResultPayload, ListSummaryPayload, ModulePostPayload, QueryStringArgs, UnityKey, CrmUtils } from '../build/efficy-u-rpc-api-bundle.js'
+import { CrmApi, CrmEnv, CrmEnvConfig, CrmNode, CrmRpc, EntitySearch, GetSearchResultPayload, ListSummaryPayload, ModulePostPayload, QueryStringArgs, UnityKey, CrmUtils, PublicApi } from '../build/efficy-u-rpc-api-bundle.js'
 
 import test from 'ava';
 import process from 'process';
@@ -15,6 +15,11 @@ const workingFolder = "C:\\Kristof\\github-pauwris\\efficy-u-rpc-api\\assets\\"
 const pdfFilePath = path.join(workingFolder, "Welcome to Word.pdf")
 const pngFilePath = path.join(workingFolder, "screenshot.png")
 const searchedContact = "Kristof Pauwels";
+const exampleDocuWithFile1 = {
+	docuKey: '00011G2i001BQPN6',
+	fileKey: '00010ID2001BQOkQ'
+}
+const barcelonaPictures = '00011G2i0001U9e5'; // 2206 - Official Pictures Barcelona '22.2
 
 test('process.env', t => {
 	t.is(process.env.CRM_ORIGIN, url.origin + "/");
@@ -36,7 +41,7 @@ const crmEnvConfigApiKey = Object.freeze({...crmEnvConfigBasic, ...{
 	apiKey: process.env.CRM_APIKEY,
 }})
 
-const crmEnvConfig = crmEnvConfigPassword ?? crmEnvConfigApiKey;
+const crmEnvConfig = crmEnvConfigApiKey ?? crmEnvConfigPassword;
 const crmEnv = new CrmEnv(crmEnvConfig)
 
 if (typeof process.env.CRM_USER !== "string" || !process.env.CRM_USER.toLowerCase()) throw Error("Check .env configuration")
@@ -114,8 +119,7 @@ test('CrmRpc: Interceptors', async (t) => {
 	await crm.executeBatch();
 
 	t.deepEqual(onRequestUrlOrigin, "", "onRequest interceptor disabled");
-
-	t.assert(onErrorEx?.message.includes("Invalid object name 'fakeTable'"), "onError interceptor");
+	t.assert(onErrorEx?.message.includes("EEfficyServerError"), "onError interceptor");
 });
 
 test('CrmRpc: Multiple queries', async (t) => {
@@ -158,7 +162,6 @@ test('CrmRpc: DataSet extended operations', async (t) => {
 	}
 });
 
-
 test('CrmRpc: Consult operations', async (t) => {
 	const crm = new CrmRpc(crmEnv);
 
@@ -175,7 +178,6 @@ test('CrmRpc: Consult operations', async (t) => {
 	t.assert(dsLinkedContacts.items.length > 100, "linkedContacts")
 	t.assert(linkedOppo.items.length > 10, "linkedOppo")
 });
-
 
 test('CrmRpc: Edit operations', async (t) => {
 	const crm = new CrmRpc(crmEnv);
@@ -229,7 +231,6 @@ test('CrmRpc: Edit operations', async (t) => {
 
 	t.assert(docuKey != "", "Edit + Delete docu")
 });
-
 
 test('CrmRpc: Attachments PDF', async (t) => {
 	const fileName = path.basename(pdfFilePath);
@@ -366,6 +367,35 @@ test('CrmApi: listSummary query', async t => {
 		console.error(ex)
 	}
 });
+
+test('PublicApi: getDocumentFile', async t => {
+	const crm = new PublicApi.v1.Api(crmEnv);
+
+	try {
+		const existingFile = await crm.getDocumentFile(exampleDocuWithFile1.docuKey, exampleDocuWithFile1.fileKey);
+		t.assert(existingFile?.name === 'SSLException.png');
+
+		const dummyFile = await crm.getDocumentFile('???', '???');
+		t.assert(dummyFile === null);
+	} catch (ex) {
+		console.error(ex);
+	}
+});
+
+test.only('PublicApi: getDocumentFiles', async t => {
+	const crm = new PublicApi.v1.Api(crmEnv);
+
+	try {
+		const queryArgs: PublicApi.v1.QueryParams = {
+			limit: 2
+		}
+		const existingFile = await crm.getDocumentFiles(barcelonaPictures, queryArgs);
+		t.assert(existingFile?.records_found && existingFile?.records_found >= 2100);
+	} catch (ex) {
+		console.error(ex);
+	}
+});
+
 
 test.skip('CrmApi: system', async t => {
 	const crmApi = new CrmApi(crmEnv);

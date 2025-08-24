@@ -108,7 +108,7 @@ export class CrmApi extends CrmFetch {
     private async crmGet<R>(crmPath: string, queryStringArgs: QueryStringArgs = {}): Promise<R> {
         this.initJsonFetch("GET");
 		const requestUrl = this.getRequestUrl(crmPath, queryStringArgs)
-		const response: object = await this.crmfetch(requestUrl);
+		const response: object | null = await this.crmfetch(requestUrl);
         if (isJsonApiResponse(response)) {
             return response as R;
         } else {
@@ -122,7 +122,7 @@ export class CrmApi extends CrmFetch {
         const requestOptions: RequestInit = {
             body: JSON.stringify(payload)
         }
-		const response: object = await this.crmfetch(requestUrl, payload, requestOptions);
+		const response: object | null = await this.crmfetch(requestUrl, payload, requestOptions);
 
         if (isJsonApiResponse(response)) {
             return response as R;

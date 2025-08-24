@@ -9,7 +9,7 @@ export class CrmFetch {
 	private _lastResponseObject: object | null = null;
 	private _lastResponseStatus: number = 0;
 
-	constructor(public crmEnv = new CrmEnv()) {
+	constructor(public crmEnv = new CrmEnv(), private subpage: string = "crm/", private readonly isPublicAPI: boolean = false) {
 		this.setFetchOptions();
 	}
 
@@ -32,23 +32,27 @@ export class CrmFetch {
 	protected setFetchOptions() {
 		const headers: Record<string, any> = { ...this.fetchOptions.headers };
 
-		if (this.crmEnv.apiKey) {
-			headers["X-Efficy-ApiKey"] = this.crmEnv.apiKey;
-		} else if (this.crmEnv.user && this.crmEnv.pwd) {
-			headers["X-Efficy-User"] = this.crmEnv.user;
-			headers["X-Efficy-Pwd"] = this.crmEnv.pwd;
-		}
+		if (this.isPublicAPI && this.crmEnv.apiKey) {
+			headers["X-Api-Key"] = this.crmEnv.apiKey;
+		} else {
+			if (this.crmEnv.apiKey) {
+				headers["X-Efficy-ApiKey"] = this.crmEnv.apiKey;
+			} else if (this.crmEnv.user && this.crmEnv.pwd) {
+				headers["X-Efficy-User"] = this.crmEnv.user;
+				headers["X-Efficy-Pwd"] = this.crmEnv.pwd;
+			}
 
-		if (this.crmEnv.logOff) {
-			headers["X-Efficy-Logoff"] = true;
+			if (this.crmEnv.logOff) {
+				headers["X-Efficy-Logoff"] = true;
+			}
+
+			if (this.crmEnv.useCookies) {
+				this.fetchOptions.credentials = "include";
+			}
 		}
 
 		if (this.crmEnv.useFetchQueue) {
 			FetchQueue.forceSequential = true;
-		}
-
-		if (this.crmEnv.useCookies) {
-			this.fetchOptions.credentials = "include";
 		}
 
 		this.fetchOptions.headers = headers;
@@ -61,10 +65,10 @@ export class CrmFetch {
 		this.fetchOptions.method = method;
 	}
 
-	protected async crmfetch(requestUrl: string, requestPayload?: ModulePostPayload, requestOptions?: RequestInit, isRetry: boolean = false): Promise<object> {
+	protected async crmfetch(requestUrl: string, requestPayload?: ModulePostPayload, requestOptions?: RequestInit, isRetry: boolean = false): Promise<object | null> {
 		let response: Response | null = null;
 		let responseBody: string = "";
-		let responseObject: object = {};
+		let responseObject: object | null = null;
 		let responseStatusCode: number = 0;
 
 		const init: RequestInit = {};
@@ -86,14 +90,22 @@ export class CrmFetch {
 			responseStatusCode = response.status;
 			responseBody = await response.text();
 			try {
-				responseObject = JSON.parse(responseBody || "[]");
-				this._lastResponseObject = responseObject;
-				this._lastResponseStatus = responseStatusCode;
+				if (responseBody) {
+					responseObject = JSON.parse(responseBody);
+					this._lastResponseObject = responseObject;
+					this._lastResponseStatus = responseStatusCode;
+				}
 			} catch(e) {
 				// Ignore JSON parsing errors
 			}
-			if (!response.ok && response.status !== 401) {
-				throw new Error(`Fetch request failed with status code: ${response.status}`)
+
+			if (!response.ok) {
+				if (response.status === 404) {
+					// Not Found - The requested resource doesn’t exist.
+					responseObject = null;
+				} else if (response.status !== 401) {
+					throw new Error(`Fetch request failed with status code: ${response.status}`)
+				}
 			}
 		} catch(e) {
 			await this.crmEnv.interceptors.onError.handle(e, request, requestPayload, response);
@@ -161,7 +173,7 @@ export class CrmFetch {
 		}
 
 		const queryString = searchParams.toString();
-		const requestUrl = `${this.crmEnv.url}/crm/${crmPath}?${queryString}`;
+		const requestUrl = `${this.crmEnv.url}/${this.subpage}${crmPath}?${queryString}`;
 
 		return requestUrl;
 	}
@@ -170,7 +182,9 @@ export class CrmFetch {
 	 * Parse errors in both legacy Enterprise format as from the U {data, errors, status} format
 	 * @param responseObject
 	 */
-	private getCrmException(responseObject: any): CrmException | undefined {
+	private getCrmException(responseObject: any | null): CrmException | undefined {
+		if (!responseObject) return undefined;
+
 		const resp = responseObject;
 		if (Array.isArray(resp)) {
 			const errWrapper = resp.find(operation => operation["@name"] === "exception")

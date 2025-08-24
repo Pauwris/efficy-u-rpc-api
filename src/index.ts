@@ -6,4 +6,5 @@ export * from "./crm-node.js";
 export * from "./crm-api/index.js";
 export * from "./crm-rpc/index.js";
 export * from "./crm-fetch-Interceptor.js";
+export * from "./public-api/index.js";
 export { FetchQueue } from "./crm-fetch.js";

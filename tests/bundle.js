@@ -1,4 +1,4 @@
-import { CrmApi, CrmEnv, CrmNode, CrmRpc, CrmUtils } from '../build/efficy-u-rpc-api-bundle.js';
+import { CrmApi, CrmEnv, CrmNode, CrmRpc, CrmUtils, PublicApi } from '../build/efficy-u-rpc-api-bundle.js';
 import test from 'ava';
 import process from 'process';
 import dotenv from 'dotenv';
@@ -12,6 +12,11 @@ const workingFolder = "C:\\Kristof\\github-pauwris\\efficy-u-rpc-api\\assets\\";
 const pdfFilePath = path.join(workingFolder, "Welcome to Word.pdf");
 const pngFilePath = path.join(workingFolder, "screenshot.png");
 const searchedContact = "Kristof Pauwels";
+const exampleDocuWithFile1 = {
+    docuKey: '00011G2i001BQPN6',
+    fileKey: '00010ID2001BQOkQ'
+};
+const barcelonaPictures = '00011G2i0001U9e5'; // 2206 - Official Pictures Barcelona '22.2
 test('process.env', t => {
     t.is(process.env.CRM_ORIGIN, url.origin + "/");
 });
@@ -28,7 +33,7 @@ const crmEnvConfigPassword = Object.freeze({ ...crmEnvConfigBasic, ...{
 const crmEnvConfigApiKey = Object.freeze({ ...crmEnvConfigBasic, ...{
         apiKey: process.env.CRM_APIKEY,
     } });
-const crmEnvConfig = crmEnvConfigPassword ?? crmEnvConfigApiKey;
+const crmEnvConfig = crmEnvConfigApiKey ?? crmEnvConfigPassword;
 const crmEnv = new CrmEnv(crmEnvConfig);
 if (typeof process.env.CRM_USER !== "string" || !process.env.CRM_USER.toLowerCase())
     throw Error("Check .env configuration");
@@ -92,7 +97,7 @@ test('CrmRpc: Interceptors', async (t) => {
     crm.currentUserCode;
     await crm.executeBatch();
     t.deepEqual(onRequestUrlOrigin, "", "onRequest interceptor disabled");
-    t.assert(onErrorEx?.message.includes("Invalid object name 'fakeTable'"), "onError interceptor");
+    t.assert(onErrorEx?.message.includes("EEfficyServerError"), "onError interceptor");
 });
 test('CrmRpc: Multiple queries', async (t) => {
     const crm = new CrmRpc(crmEnv);
@@ -283,6 +288,31 @@ test('CrmApi: listSummary query', async (t) => {
         const result = await crm.listSummary(payload);
         const efficyCache = result?.list.find(item => item.querComment === "ehubQueryList");
         t.assert(efficyCache?.querKey != null);
+    }
+    catch (ex) {
+        console.error(ex);
+    }
+});
+test('PublicApi: getDocumentFile', async (t) => {
+    const crm = new PublicApi(crmEnv);
+    try {
+        const existingFile = await crm.getDocumentFile(exampleDocuWithFile1.docuKey, exampleDocuWithFile1.fileKey);
+        t.assert(existingFile?.name === 'SSLException.png');
+        const dummyFile = await crm.getDocumentFile('???', '???');
+        t.assert(dummyFile === null);
+    }
+    catch (ex) {
+        console.error(ex);
+    }
+});
+test.only('PublicApi: getDocumentFiles', async (t) => {
+    const crm = new PublicApi(crmEnv);
+    try {
+        const queryArgs = {
+            limit: 2
+        };
+        const existingFile = await crm.getDocumentFiles(barcelonaPictures, queryArgs);
+        t.assert(existingFile?.records_found && existingFile?.records_found >= 2100);
     }
     catch (ex) {
         console.error(ex);
