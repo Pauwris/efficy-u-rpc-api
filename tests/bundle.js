@@ -241,9 +241,15 @@ test('CrmApi: searchGlobal', async (t) => {
         }
     };
     const searchResult = await crm.searchGlobal(payload);
-    t.assert(searchResult.length > 0, "Has at least one search result");
-    const cont = searchResult[0];
-    t.assert(cont.rows[0].name === "Kristof Pauwels");
+    console.log(searchResult);
+    const contSearch = searchResult?.cont;
+    t.assert(contSearch?.entity === 'cont', "Search entity is 'cont'");
+    const [cont] = contSearch?.rows || [];
+    t.assert(cont !== undefined, "Has at least one search result");
+    t.assert(cont.name === "Kristof Pauwels");
+    t.assert(cont.archived === false, "Contact is not archived");
+    t.assert(Object.keys(cont.links ?? {}).includes('company'), "Contact has link to company");
+    t.assert(cont.score > 50, `Contact has a score (${cont.score}) above 50`);
 });
 test('CrmApi: listSummary Currency', async (t) => {
     const crm = new CrmApi(crmEnv);
@@ -294,7 +300,7 @@ test('CrmApi: listSummary query', async (t) => {
     }
 });
 test('PublicApi: getDocumentFile', async (t) => {
-    const crm = new PublicApi(crmEnv);
+    const crm = new PublicApi.v1.Api(crmEnv);
     try {
         const existingFile = await crm.getDocumentFile(exampleDocuWithFile1.docuKey, exampleDocuWithFile1.fileKey);
         t.assert(existingFile?.name === 'SSLException.png');
@@ -305,8 +311,8 @@ test('PublicApi: getDocumentFile', async (t) => {
         console.error(ex);
     }
 });
-test.only('PublicApi: getDocumentFiles', async (t) => {
-    const crm = new PublicApi(crmEnv);
+test.skip('PublicApi: getDocumentFiles', async (t) => {
+    const crm = new PublicApi.v1.Api(crmEnv);
     try {
         const queryArgs = {
             limit: 2

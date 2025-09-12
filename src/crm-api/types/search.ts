@@ -1,11 +1,9 @@
 import { JSONPrimitive, UnityKey } from "../../types";
 
 export interface EntitySearch {
-    name: string;
-    offset: number;
+    entity: string;
     rows: SearchItem[];
     total: number;
-    uniqueKey: string;
 }
 
 export type RefinedOptions = {
@@ -64,6 +62,12 @@ export interface SearchItemLink {
 }
 
 export interface SearchItem<T extends JSONPrimitive = JSONPrimitive> extends BasicSearchItem {
+    key: string;
+    type: string;
+    name: string;
+    archived: boolean;
+    picturePath: string;
+    score: number;
     fields: SearchItemField<T>[];
     links?: Record<string, SearchItemLink>;
     page?: RouterLink;
@@ -76,7 +80,6 @@ export type RouterLink = {
         [key: string]: string;
     };
 }
-export type TransformItemFunc = (item: SearchItem) => Promise<SearchItem>;
 
 export interface SearchPayload {
     identifier: string;
@@ -86,11 +89,4 @@ export interface SearchInServerPayload extends SearchPayload {
 }
 export interface GetSearchResultPayload extends SearchInServerPayload {
     searchMine?: boolean;
-    transformItem?: TransformItemFunc;
-}
-
-export type SearchEntityResponse = {
-    entity: string;
-    rows: SearchItem[];
-    total: number;
 }
