@@ -104,7 +104,7 @@ export class CrmFetch {
 					// Not Found - The requested resource doesn’t exist.
 					responseObject = null;
 				} else if (response.status !== 401) {
-					throw new Error(`Fetch request failed with status code: ${response.status}`)
+					throw new CrmFetchError(response.status, responseBody, requestUrl);
 				}
 			}
 		} catch(e) {
@@ -206,6 +206,22 @@ export class CrmFetch {
 			return CrmException.fromJsonApiErrorNode(err);
 		}
 	}
+}
+
+export class CrmFetchError extends Error {
+  static readonly appId: string = "efficy-u-rpc-api";
+  public bodyText?: string
+  public bodyObject?: object
+
+  constructor(public statusCode: number, body: string, public url: string | undefined) {
+    super([CrmFetchError.appId, statusCode].join(' ').trim())
+    this.bodyText = body;
+    try {
+      this.bodyObject = JSON.parse(body);
+    } catch {
+      // ignore
+    }
+  }
 }
 
 /**
