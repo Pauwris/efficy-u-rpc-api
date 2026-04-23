@@ -138,6 +138,7 @@ export class CrmFetch {
 			|| crmException?.message.includes("Session timeout") // Efficy U 1.0
 			|| crmException?.message.includes("RetrieveUsersList: Please Logon to Database") // Enterprise only
 			|| crmException?.message.includes("The CRM Session is not active, please log in first") // Maxo 2.0
+			|| crmException?.message.includes("The session is not valid anymore") // Maxo 2.4.50
 		)
 
 		if (couldBeExpiredSession && this.crmEnv.retryWithNewSession && isRetry === false) {
