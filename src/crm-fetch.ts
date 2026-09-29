@@ -164,7 +164,9 @@ export class CrmFetch {
 
 		if (queryArgs) {
 			for (const [key, value] of Object.entries(queryArgs)) {
-				searchParams.append(key, value.toString());
+				if (value !== null && value !== undefined) {
+					searchParams.append(key, value.toString());
+				}
 			}
 		}
 
